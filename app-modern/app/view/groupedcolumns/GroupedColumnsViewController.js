@@ -1,9 +1,9 @@
 /**
  * https://docs.sencha.com/extjs/7.2.0/modern/Ext.app.ViewController.html
  */
-Ext.define('Demo.view.celloverflowtip.CellOverflowTipViewController', {
+Ext.define('Demo.view.groupedcolumns.GroupedColumnsViewController', {
     extend: 'Ext.app.ViewController',
-    alias: 'controller.celloverflowtip',
+    alias: 'controller.groupedcolumns',
 
     renderChange: function (value) {
         return this.renderSign(value, '0.00');

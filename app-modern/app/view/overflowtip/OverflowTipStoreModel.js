@@ -1,7 +1,7 @@
 /**
  * https://docs.sencha.com/extjs/7.2.0/modern/Ext.data.Model.html
  */
-Ext.define('Demo.view.columngroup.ColumnGroupStoreModel', {
+Ext.define('Demo.view.overflowtip.OverflowTipStoreModel', {
     extend: 'Ext.data.Model',
     requires: [
         'Ext.data.proxy.Rest'

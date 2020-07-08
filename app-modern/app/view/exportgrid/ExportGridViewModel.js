@@ -1,12 +1,12 @@
 /**
  * https://docs.sencha.com/extjs/7.2.0/modern/Ext.app.ViewModel.html
  */
-Ext.define('Demo.view.simpleexport.SimpleExportViewModel', {
+Ext.define('Demo.view.exportgrid.ExportGridViewModel', {
     extend: 'Ext.app.ViewModel',
-    alias: 'viewmodel.simple-export-viewmodel',
+    alias: 'viewmodel.export-grid-viewmodel',
     stores: {
         companies: {
-            model: 'Demo.view.simpleexport.SimpleExportStoreModel',
+            model: 'Demo.view.exportgrid.ExportGridStoreModel',
             sorters: {
                 property: 'name',
                 direction: 'DESC'
@@ -15,7 +15,7 @@ Ext.define('Demo.view.simpleexport.SimpleExportViewModel', {
 
             proxy: {
                 type: 'ajax',
-                url: 'app/view/simpleexport/data.json',
+                url: 'app/view/exportgrid/data.json',
                 reader: {
                     type: 'json'
                 }

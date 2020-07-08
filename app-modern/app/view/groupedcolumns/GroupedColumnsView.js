@@ -1,19 +1,19 @@
 /**
  * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.Grid.html
  */
-Ext.define('Demo.view.columngroup.ColumnGroupView', {
+Ext.define('Demo.view.groupedcolumns.GroupedColumnsView', {
     extend: 'Ext.grid.Grid',
 
     requires: [
-        'Demo.view.columngroup.ColumnGroupViewController',
-        'Demo.view.columngroup.ColumnGroupViewModel',
-        'Demo.view.columngroup.ColumnGroupStoreModel',
+        'Demo.view.groupedcolumns.GroupedColumnsViewController',
+        'Demo.view.groupedcolumns.GroupedColumnsViewModel',
+        'Demo.view.groupedcolumns.GroupedColumnsStoreModel',
     ],
 
-    xtype: 'column-group',
-    controller: 'columngroup',
+    xtype: 'grouped-columns',
+    controller: 'groupedcolumns',
     viewModel: {
-        type: 'column-group-viewmodel'
+        type: 'grouped-columns-viewmodel'
     },
 
     category: 'Column Operations',

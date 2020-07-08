@@ -13,7 +13,7 @@ Ext.define('Demo.view.main.MainModel', {
         
         filter: '',
 
-        currentExample: {}
+       // currentDemo: null
     },
 
     stores: {

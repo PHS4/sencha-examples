@@ -1,9 +1,9 @@
 /**
  * https://docs.sencha.com/extjs/7.2.0/modern/Ext.app.ViewController.html
  */
-Ext.define('Demo.view.simpleexport.SimpleExportViewController', {
+Ext.define('Demo.view.exportgrid.ExportGridViewController', {
     extend: 'Ext.app.ViewController',
-    alias: 'controller.simpleexport',
+    alias: 'controller.exportgrid',
 
     exportTo: function (btn) {
         Log.event(arguments.callee.name, arguments, this);

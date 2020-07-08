@@ -58,12 +58,21 @@ Ext.define('Demo.view.main.Main', {
                 xtype: 'grid',
                 grouped: true,
                 collapsible: true,
+                collapseDefaults:{
+                    collapsed:true
+                },
                 itemId: 'navigation',
                 width: 300,
                 height: "100%",
                 hideHeaders: true,
+                stateful:true,
                 listeners: {
-                    select: 'currentSelectionChange'
+                    select: 'currentSelectionChange',
+                    painted:function(row){
+
+                        console.log(row)
+
+                    }
                 },
                 selectable: {
                     mode: 'single'
@@ -75,7 +84,12 @@ Ext.define('Demo.view.main.Main', {
                     store: '{nav}'
                 },
                 groupHeader: {
-                    tpl: `<span style="text-transform: uppercase;">{name}</span>`
+                    xtype:'rowheader',
+                    //itemId:'rowheader_id',
+                    name:'rowheader_name',
+                    tpl: `<span style="text-transform: uppercase;">{name}</span>`,
+                    // group:{
+                    // }
                 },
                 columns: [
                     /**

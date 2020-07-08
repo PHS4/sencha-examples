@@ -1,19 +1,19 @@
 /**
  * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.Grid.html
  */
-Ext.define('Demo.view.celloverflowtip.CellOverflowTipView', {
+Ext.define('Demo.view.overflowtip.OverflowTipView', {
     extend: 'Ext.grid.Grid',
 
     requires: [
-        'Demo.view.celloverflowtip.CellOverflowTipViewController',
-        'Demo.view.celloverflowtip.CellOverflowTipViewModel',
-        'Demo.view.celloverflowtip.CellOverflowTipStoreModel',
+        'Demo.view.overflowtip.OverflowTipViewController',
+        'Demo.view.overflowtip.OverflowTipViewModel',
+        'Demo.view.overflowtip.OverflowTipStoreModel',
     ],
 
-    xtype: 'cell-overflow-tip',
-    controller: 'celloverflowtip',
+    xtype: 'overflow-tip',
+    controller: 'overflowtip',
     viewModel: {
-        type: 'cell-overflow-tip-viewmodel'
+        type: 'overflow-tip-viewmodel'
     },
 
     category: 'Row Operations',

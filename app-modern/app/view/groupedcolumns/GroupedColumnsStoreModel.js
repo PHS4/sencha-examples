@@ -1,12 +1,12 @@
 /**
  * https://docs.sencha.com/extjs/7.2.0/modern/Ext.data.Model.html
  */
-Ext.define('Demo.view.simpleexport.SimpleExportStoreModel', {
+Ext.define('Demo.view.groupedcolumns.GroupedColumnsStoreModel', {
     extend: 'Ext.data.Model',
     requires: [
         'Ext.data.proxy.Rest'
     ],
-
+    
     fields: [
         { name: 'name' },
         { name: 'phone', type: 'phonenumber' },
@@ -19,7 +19,7 @@ Ext.define('Demo.view.simpleexport.SimpleExportStoreModel', {
         // Trend begins with the current price. Changes get pushed onto the end
         {
             name: 'trend',
-            calculate: function (data) {
+            calculate: function(data) {
                 // Avoid circular dependency by hiding the read of trend value
                 var trend = data['trend'] || (data['trend'] = []);
                 trend.push(data.price);
@@ -34,7 +34,7 @@ Ext.define('Demo.view.simpleexport.SimpleExportStoreModel', {
             },
             // It's the same array. But we need Model#set to see it as modified so it
             // is flushed to the UI
-            isEqual: function () {
+            isEqual: function() {
                 return false;
             }
         },
@@ -43,7 +43,7 @@ Ext.define('Demo.view.simpleexport.SimpleExportStoreModel', {
         {
             name: 'change',
             type: 'float',
-            calculate: function (data) {
+            calculate: function(data) {
                 var trend = data.trend,
                     len = trend.length;
 
@@ -55,7 +55,7 @@ Ext.define('Demo.view.simpleexport.SimpleExportStoreModel', {
         {
             name: 'pctChange',
             type: 'float',
-            calculate: function (data) {
+            calculate: function(data) {
                 var trend = data.trend,
                     len = trend.length;
 
@@ -71,7 +71,7 @@ Ext.define('Demo.view.simpleexport.SimpleExportStoreModel', {
 
             // The calculator is run whenever price changes.
             // This field is a purely calculated value and can not be edited.
-            calculate: function () {
+            calculate: function() {
                 return new Date();
             }
 
@@ -83,7 +83,7 @@ Ext.define('Demo.view.simpleexport.SimpleExportStoreModel', {
             name: 'rating',
             type: 'int',
             // Use a converter to only derive the value onces on record creation
-            convert: function (value, record) {
+            convert: function(value, record) {
                 var data = record.data,
                     pct = data.pctChange;
 

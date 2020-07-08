@@ -38,47 +38,6 @@ Ext.define('Demo.ux.Code', {
         }
     },
 
-
-    onAfterRender: function () {
-
-        var me = this;
-
-        if (me.config.url) {
-            me.load();
-        } else if (me.value) {
-            me.setValue(me.value);
-        } else {
-            me.setValue('// No Data');
-        }
-    },
-
-    // loadData: function (callback) {
-
-    //     this.clear();
-
-    //     Ext.Ajax.request({
-    //         url: this.getUrl(),
-    //         scope: this,
-    //         cors: true,
-    //         success: function (res) {
-    //             var data = JSON.parse(res.responseText);
-    //             var text = res.responseText == '' ? '' : JSON.stringify(data, null, 4);
-
-    //             this.setValue(text);
-
-    //             if (typeof callback === 'function') {
-    //                 callback(true, data);
-    //             }
-    //         },
-    //         failure: function () {
-    //             this.setValue('// Error Loading Data...');
-    //             if (typeof callback === 'function') {
-    //                 callback(false, null);
-    //             }
-    //         }
-    //     });
-    // },
-
     clear: function () {
         this.setHtml('');
     },
@@ -90,7 +49,6 @@ Ext.define('Demo.ux.Code', {
         var lang = this.getLanguage();
 
         var text;
-
 
         if (typeof this.value == 'object') {
             text = JSON.stringify(this.value, null, 4);

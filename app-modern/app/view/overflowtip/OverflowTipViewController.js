@@ -1,9 +1,9 @@
 /**
  * https://docs.sencha.com/extjs/7.2.0/modern/Ext.app.ViewController.html
  */
-Ext.define('Demo.view.columngroup.ColumnGroupViewController', {
+Ext.define('Demo.view.overflowtip.OverflowTipViewController', {
     extend: 'Ext.app.ViewController',
-    alias: 'controller.columngroup',
+    alias: 'controller.overflowtip',
 
     renderChange: function (value) {
         return this.renderSign(value, '0.00');

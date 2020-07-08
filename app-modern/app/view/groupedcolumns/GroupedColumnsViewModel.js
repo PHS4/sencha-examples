@@ -1,12 +1,12 @@
 /**
  * https://docs.sencha.com/extjs/7.2.0/modern/Ext.app.ViewModel.html
  */
-Ext.define('Demo.view.celloverflowtip.CellOverflowTipViewModel', {
+Ext.define('Demo.view.groupedcolumns.GroupedColumnsViewModel', {
     extend: 'Ext.app.ViewModel',
-    alias: 'viewmodel.cell-overflow-tip-viewmodel',
+    alias: 'viewmodel.grouped-columns-viewmodel',
     stores:{
         companies:{
-            model: 'Demo.view.celloverflowtip.CellOverflowTipStoreModel', 
+            model: 'Demo.view.groupedcolumns.GroupedColumnsStoreModel', 
             sorters: {
                 property: 'name',
                 direction: 'DESC'
@@ -15,7 +15,7 @@ Ext.define('Demo.view.celloverflowtip.CellOverflowTipViewModel', {
             
             proxy: {
                 type: 'ajax',
-                url: 'app/view/celloverflowtip/data.json',
+                url: 'app/view/groupedcolumns/data.json',
                 reader: {
                     type: 'json'
                 }

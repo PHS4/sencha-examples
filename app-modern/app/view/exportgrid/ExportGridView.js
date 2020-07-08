@@ -1,19 +1,19 @@
 /**
  * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.Grid.html
  */
-Ext.define('Demo.view.simpleexport.SimpleExportView', {
+Ext.define('Demo.view.exportgrid.ExportGridView', {
     extend: 'Ext.grid.Grid',
 
     requires: [
-        'Demo.view.simpleexport.SimpleExportViewController',
-        'Demo.view.simpleexport.SimpleExportViewModel',
-        'Demo.view.simpleexport.SimpleExportStoreModel',
+        'Demo.view.exportgrid.ExportGridViewController',
+        'Demo.view.exportgrid.ExportGridViewModel',
+        'Demo.view.exportgrid.ExportGridStoreModel',
     ],
 
-    xtype: 'simple-export',
-    controller: 'simpleexport',
+    xtype: 'export-grid',
+    controller: 'exportgrid',
     viewModel: {
-        type: 'simple-export-viewmodel'
+        type: 'export-grid-viewmodel'
     },
 
     category: 'Rendering and Scrolling',

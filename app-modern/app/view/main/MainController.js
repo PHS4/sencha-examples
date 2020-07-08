@@ -31,21 +31,43 @@ Ext.define('Demo.view.main.MainController', {
         vm.set('toolbar', (params.get('toolbar') == 'false'));
         vm.set('navigation', (params.get('navigation') == 'false'));
         vm.set('description', (params.get('description') == 'false'));
+       
+
+
     },
-    currentSelectionChange: function (t, record) {
+    currentSelectionChange: function (t, record, e) {
         /**
          * Don't proceed if the record is empty. This is 
          * for initial load most times.
          */
+
         if (Ext.Object.isEmpty(record)) {
             return;
         }
+
+        /**
+         * Expand the row with the selected item
+         */
+        var selected = Ext.ComponentQuery.query('rowheader[name~=rowheader_name]');
+        
+        for(var v=0; v < selected.length; v++){
+            if(selected[v].getGroup().data._groupValue === record.data.category){
+                selected[v].getGroup().expand()
+            }
+        }
+         /**
+         * End Expand the row with the selected item
+         */
+
+
         var data = record.data;
 
         var modernDemo = this.getView().down('#modernDemo');
         var demoSource = this.getView().down('#demoSource');
         var descPanel = this.getView().down('#descPanel');
         var demo;
+        
+
 
         /**
          * values extracted from the record
