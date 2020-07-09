@@ -67,12 +67,7 @@ Ext.define('Demo.view.main.Main', {
                 hideHeaders: true,
                 stateful:true,
                 listeners: {
-                    select: 'currentSelectionChange',
-                    painted:function(row){
-
-                        console.log(row)
-
-                    }
+                    select: 'currentSelectionChange'
                 },
                 selectable: {
                     mode: 'single'
@@ -85,11 +80,8 @@ Ext.define('Demo.view.main.Main', {
                 },
                 groupHeader: {
                     xtype:'rowheader',
-                    //itemId:'rowheader_id',
                     name:'rowheader_name',
-                    tpl: `<span style="text-transform: uppercase;">{name}</span>`,
-                    // group:{
-                    // }
+                    tpl: `<span style="text-transform: uppercase;">{name}</span>`
                 },
                 columns: [
                     /**
