@@ -215,11 +215,12 @@ Ext.define('Demo.view.main.MainController', {
     prevDemo: function () {
 
         var grid = this.getView().down('#navigation');
-        var index = grid.store.indexOf(grid.getSelection())
+        var index = grid.getStore().getDataSource().indexOf(grid.getSelection());
+        
         index = index - 1;
 
         if (index >= 0) {
-            var record = grid.getStore().getData().items[index];
+            var record = grid.getStore().getDataSource().items[index];
             grid.setSelection(record);
         }
     },
@@ -227,11 +228,12 @@ Ext.define('Demo.view.main.MainController', {
     nextDemo: function () {
 
         var grid = this.getView().down('#navigation');
-        var index = grid.store.indexOf(grid.getSelection())
+        var index = grid.getStore().getDataSource().indexOf(grid.getSelection());
+      
         index = index + 1;
 
-        if (index < grid.getStore().getData().getCount()) {
-            var record = grid.getStore().getData().items[index];
+        if (index < grid.getStore().getDataSource().getCount()) {
+            var record = grid.getStore().getDataSource().items[index];
             grid.setSelection(record);
         }
     },

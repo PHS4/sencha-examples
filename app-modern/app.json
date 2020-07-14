@@ -407,7 +407,7 @@
      */
 
     "output": {
-        "base": "${workspace.build.modern}/${build.environment}/${app.name}",
+        "base": "${workspace.build.dir}/${build.environment}/${app.name}",
         "appCache": {
             "enable": false
         }
