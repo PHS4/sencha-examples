@@ -1,0 +1,19 @@
+{
+  "name": "sencha-examples",
+  "version": "1.0.0",
+  "description": "## Linking/Routing:",
+  "main": "util.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PHS4/sencha-examples.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PHS4/sencha-examples/issues"
+  },
+  "homepage": "https://github.com/PHS4/sencha-examples#readme"
+}

@@ -102,17 +102,17 @@ Ext.define('Demo.view.main.MainController', {
          * Remove all items from the component but don't destroy as it has a chain reaction for 
          * required classes I think.
          */
-        demoContainer.removeAll(false, false)
+        demoContainer.removeAll(false, false);
 
         /**
          * Add the demo class instance to the panel.
          */
-        demoContainer.add(demo)
+        demoContainer.add(demo);
         
         /**
          * Clear and add the source code tabs to the tabpanel.
          */
-        demoSource.removeAll(true)
+        demoSource.removeAll(true);
         
         /**
          * Create a new array of the requires AND the 
@@ -200,7 +200,7 @@ Ext.define('Demo.view.main.MainController', {
 
         var grid = this.getView().down('#navigation');
         var vm = this.getViewModel();
-        var store = vm.getStore('nav')
+        var store = vm.getStore('nav');
         var collection = store;
 
         if (category) {
@@ -213,11 +213,11 @@ Ext.define('Demo.view.main.MainController', {
 
         if (!collection.length) {
             Ext.Msg.alert('404', 'The URL was not found. Instead loading the application Main View.');
-            return this.onUnmatchedRoute()
+            return this.onUnmatchedRoute();
         }
 
         var record = collection.first();
-        
+
         vm.set('currentDemo', record);
 
         grid.ensureVisible(record, {
@@ -228,7 +228,7 @@ Ext.define('Demo.view.main.MainController', {
     },
     
     prevDemo: function (btn) {
-        this.nextDemo(btn)
+        this.nextDemo(btn);
     },
 
     /**
@@ -247,7 +247,7 @@ Ext.define('Demo.view.main.MainController', {
         
         var result = nextRecord ? nextRecord : (addOne ? store.first() : store.last());
 
-        vm.set('currentDemo', result)
+        vm.set('currentDemo', result);
     },
 
     updateHash: function (category, demo) {
@@ -325,11 +325,6 @@ Ext.define('Demo.view.main.MainController', {
         return string.toLowerCase().replace(/ +/g, '-').replace(/[^\w-]+/g, '').replace(/[-]+/g, '-');
     },
 
-    /**
-     * !!!!!!!!!!!!!!!!!!!! :WARNING: !!!!!!!!!!!!!!!!!!!!
-     * This won't really work when building for testing or production 
-     * since all files get concatenated and/or minified.
-     */
     getFileInfo: function () {
         // console.time('build-nav')
 
@@ -338,49 +333,54 @@ Ext.define('Demo.view.main.MainController', {
              * Filter the class list to only the classes with the 
              * namespace of view and exclude all except the views.
              */
-            .filter(className => (new RegExp('Demo.view.').test(className) && !new RegExp('(_|Controller|Model|Store|Raw|Code)').test(className)))
+            .filter((className) => (new RegExp('Demo.view.').test(className) && !new RegExp('(_|Controller|Model|Store|Raw|Code)').test(className)))
             /**
              * Loop over each and build create some metadata about 
              * each one to be saved as a record in the nav store.
              */
             .map((className, index) => {
+
                 var clazz     = Ext.ClassManager.get(className);
                 var aliases   = Ext.ClassManager.getAliasesByName(className);
                 var config    = clazz && clazz.prototype ? clazz.prototype.config : null;
-                
-                var title    = typeof config.title === 'object' ? className : config.title;
-                var demoSlug = this.titleToSlug(title);
-                
+                var title     = typeof config.title === 'object' ? className : config.title;
+                var demoSlug  = this.titleToSlug(title);
                 // where do these come from? The Panel prototype was 
                 // modified to add two extra properties.
                 var category     = clazz.prototype.category != '' ? clazz.prototype.category : 'Misc.';
                 var categorySlug = this.titleToSlug(category);
+                var description  = clazz.prototype.description != '' ? clazz.prototype.description : title;
+                var xtype        = aliases && aliases.length ? aliases[0].replace('widget.', '') : 'no-xtype';
+                var iconCls      = config.iconCls || 'x-fa fa-table';
+                var filePath     = Ext.Loader.getPath(className);
+                var pathParts    = filePath.split('/');
+                var file         = pathParts.pop();
+                var folder       = pathParts.join('/');
+                var extension    = file.substr(file.lastIndexOf('.') + 1);
+                var packageName  = pathParts.pop();
                 
-                var description = clazz.prototype.description != '' ? clazz.prototype.description : title;
+                // Sencha CMD failed to build unless I buried below into a rediculous # of steps.
+                // -------------------------------------------------------------------------------
+                // var reqClasses = Demo.view[packageName];
+                // var requires = Object.keys(Demo.view[packageName]).map(cls => {
+                //    return Ext.Loader.getPath('Demo.view.' + packageName + '.' + cls);
+                // });
+                // -------------------------------------------------------------------------------
                 
-                var xtype     = aliases && aliases.length ? aliases[0].replace('widget.', '') : 'no-xtype';
-                var iconCls   = config.iconCls || 'x-fa fa-table';
-                var filePath  = Ext.Loader.getPath(className);
-                var pathParts = filePath.split('/');
-                var file      = pathParts.pop();
-                var folder    = pathParts.join('/');
-                var extension = file.substr(file.lastIndexOf('.') + 1);
-                
+                var requires = [];
+                var reqClasses = Object.keys(Ext.ns(Ext.String.format('Demo.view.{0}', packageName)));
+                reqClasses.forEach((cls) => {
+                    // also overly complicated because of sencha cmd.
+                    var requiredClassname = Ext.String.format('Demo.view.{0}.{1}', packageName, cls);
+                    var requiredFilePath = Ext.Loader.getPath(requiredClassname);
+                    requires.push(requiredFilePath);
+                });
                 /**
                  * Since the requires are used to determine the source 
                  * code files but requires only wants js files.
                  */
-                var requires  = [
-                    folder + '/data.json',
-                    filePath,
-                    /**
-                     * Get the classes used by the current class then find the 
-                     * file path for class to add so we know which files and where 
-                     * to read them from when loading the source code tabs.
-                     */
-                    ...Ext.Loader.requiresMap[className].map(cls => Ext.Loader.getPath(cls))
-                ];
-                
+                requires.push(folder + '/data.json');
+        
                 var record = {
                     id: index,
                     title: title,
@@ -396,13 +396,12 @@ Ext.define('Demo.view.main.MainController', {
                     extension: extension,
                     description: description,
                     requires: requires,
-                    searchable: filePath.split('/').join(' ') + ' ' + title
+                    searchable: (filePath.split('/').join(' ') + ' ' + title)
                 };
                 
                 return record;
             });
 
         return files;
-    },
-
+    }
 });

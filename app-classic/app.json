@@ -6,6 +6,13 @@
     "toolkit": "classic",
     "theme": "theme-triton",
 
+    // "language": {
+    //     "js": {
+    //         "input": "ES8",
+    //         "output": "ES8"
+    //     }
+    // },
+
     /**
      * The list of required packages (with optional versions; default is "latest").
      *
@@ -208,17 +215,16 @@
      */
     "js": [
         {
-            "path": "https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/components/prism-core.min.js",
-            "remote": true
+            "path": "../third-party/prism.js"
         },
-        {
-            "path": "https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/plugins/autoloader/prism-autoloader.min.js",
-            "remote": true
-        },
-        {
-            "path": "https://cdnjs.cloudflare.com/ajax/libs/markdown-it/10.0.0/markdown-it.min.js",
-            "remote": true
-        },
+        // {
+        //     "path": "https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/plugins/autoloader/prism-autoloader.min.js",
+        //     "remote": true
+        // },
+        // {
+        //     "path": "https://cdnjs.cloudflare.com/ajax/libs/markdown-it/10.0.0/markdown-it.min.js",
+        //     "remote": true
+        // },
         {
             "path": "${framework.dir}/build/ext-all-rtl-debug.js"
         },
@@ -263,8 +269,7 @@
             "exclude": ["fashion"]
         },
         {
-            "path": "https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/themes/prism-tomorrow.min.css",
-            "remote": true
+            "path": "../third-party/prism.css"
         },
         {
             "path": "https://cdn.jsdelivr.net/highlight.js/9.1.0/styles/github.min.css",
@@ -298,6 +303,11 @@
      */
     "production": {
         "output": {
+            //> ADDED TO ALLOW FOR NEWER JS
+            "js": {
+                "version": "ES6"
+            },
+            //<
             "appCache": {
                 "enable": false,
                 "path": "cache.appcache"
@@ -310,7 +320,7 @@
             "enable": true
         },
         "compressor": {
-            "type": "yui"
+            "type": "cmd"
         }
     },
 
@@ -409,27 +419,34 @@
      *
      */
     "output": {
+        //> @DEMO: 
+        // Modified the build output location.
         "base": "${workspace.build.classic}/${build.environment}/${app.name}",
+        //<
         "appCache": {
             "enable": false
+        },
+        "js": {
+            "path": "app.js",
+            "version": "ES5"
         }
     },
 
     /**
-    * Controls for localStorage caching
-    *   "cache": {
-    *       // This property controls whether localStorage caching of this manifest file is on or off.
-    *       // if disabled no deltas will be generated during a build and full updates will be disabled
-    *       "enable": false,
-    *
-    *       // This property allows for global toggle of deltas.
-    *       // If set to a string the value will be used as the path to where deltas will be generated relative to you build.
-    *       // If set to a Truthy Value the default path ok "deltas" will be used
-    *       // If set to a Falsey value or if this property is not present deltas will be disabled and not generated.
-    *
-    *       "deltas": "deltas"
-    *   }
-    */
+     * Controls for localStorage caching
+     *   "cache": {
+     *       // This property controls whether localStorage caching of this manifest file is on or off.
+     *       // if disabled no deltas will be generated during a build and full updates will be disabled
+     *       "enable": false,
+     *
+     *       // This property allows for global toggle of deltas.
+     *       // If set to a string the value will be used as the path to where deltas will be generated relative to you build.
+     *       // If set to a Truthy Value the default path ok "deltas" will be used
+     *       // If set to a Falsey value or if this property is not present deltas will be disabled and not generated.
+     *
+     *       "deltas": "deltas"
+     *   }
+     */
     "cache": {
         "enable": false,
         "deltas": true
@@ -466,7 +483,11 @@
         {
             "path": "resources",
             "output": "shared"
-        }
+        },
+        //> @DEMO: 
+        // added to force the app dir to be copied to the build. This ignores the data.json files for some reason.
+        // "./app"
+        //<
     ],
 
     /**
