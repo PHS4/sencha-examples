@@ -303,11 +303,6 @@
      */
     "production": {
         "output": {
-            //> ADDED TO ALLOW FOR NEWER JS
-            "js": {
-                "version": "ES6"
-            },
-            //<
             "appCache": {
                 "enable": false,
                 "path": "cache.appcache"
@@ -368,7 +363,6 @@
      */
     "bootstrap": {
         "base": "${app.dir}",
-
         "microloader": "bootstrap.js",
         "css": "bootstrap.css"
     },

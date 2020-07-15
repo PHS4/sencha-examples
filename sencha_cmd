@@ -3,6 +3,7 @@
 # ./sencha_cmd $1 $2
 # ./sencha_cmd classic production
 # ./sencha_cmd modern production
+
 echo $1;
 echo $2;
 
@@ -30,6 +31,6 @@ echo ":::: BUILD DONE ::::" &&
 echo
 echo "COPY: $EXT_APPLICATION/app to $BUILD_DIR"
 cp -r $EXT_APPLICATION/app $BUILD_DIR &&
-cp readme.md $BUILD_DIR
+cp readme.md $BUILD_DIR &&
 echo "FILES COPIED!"
 
