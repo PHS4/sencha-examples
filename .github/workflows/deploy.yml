@@ -17,7 +17,11 @@ jobs:
       - name: Push to server
         uses: appleboy/ssh-action@master
         with:
-          host: trozlabs.com
+          host: "trozlabs.com, 174.138.32.214"
           username: root
-          password: ${{ secrets.TESTING_PUBLIC_KEY }}
-          script: cd /var/www/sencha.trozlabs.com/grids && git pull
+          key: ${{ secrets.TESTING_PRIVATE_KEY }}
+          script: |
+            whoami
+            cd /var/www/sencha.trozlabs.com/grids && 
+            git pull &&
+            ls -al
