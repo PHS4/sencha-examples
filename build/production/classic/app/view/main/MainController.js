@@ -87,7 +87,7 @@ Ext.define('Demo.view.main.MainController', {
         if (className === 'Demo.view.main.Main') {
             demo = Ext.create({
                 xtype: 'code',
-                url: 'Readme.md'
+                url: 'readme.md'
             });
         } else {
             demo = Ext.create(className, {
