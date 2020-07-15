@@ -1,0 +1,4 @@
+#!/bin/sh
+
+./sencha_cmd classic production && 
+./sencha_cmd modern production;

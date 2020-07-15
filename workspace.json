@@ -41,9 +41,7 @@
      * ADDDED MODERN AND CLASSIC TO BUILD TO DIFF DIRS TO PREVENT OVERWRITING THE OTHER.
      */
     "build": {
-        "dir": "${workspace.dir}/build",
-        "classic": "${workspace.dir}/build-classic",
-        "modern": "${workspace.dir}/build-modern"
+        "dir": "${workspace.dir}/build"
     },
 
     /**

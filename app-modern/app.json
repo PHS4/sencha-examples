@@ -274,7 +274,7 @@
      * are supported.
      *
      */
-     "loader": {
+    "loader": {
          // This property controls how the loader manages caching for requests:
          //
          //   - true: allows requests to receive cached responses
@@ -288,13 +288,16 @@
          // to control caching.
          //
          "cacheParam": "_dc"
-     },
+    },
 
     /**
      * Settings specific to production builds.
      */
     "production": {
         "output": {
+            //@DEMO>
+            // "base": "${workspace.build.dir}/${app.toolkit}/demo",
+            //<
             "appCache": {
                 "enable": false,
                 "path": "cache.appcache"
@@ -407,7 +410,7 @@
      */
 
     "output": {
-        "base": "${workspace.build.modern}/${build.environment}/${app.name}",
+        "base": "${workspace.build.dir}/${build.environment}/modern",
         "appCache": {
             "enable": false
         },

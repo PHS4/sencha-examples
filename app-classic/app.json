@@ -6,13 +6,6 @@
     "toolkit": "classic",
     "theme": "theme-triton",
 
-    // "language": {
-    //     "js": {
-    //         "input": "ES8",
-    //         "output": "ES8"
-    //     }
-    // },
-
     /**
      * The list of required packages (with optional versions; default is "latest").
      *
@@ -302,6 +295,9 @@
      */
     "production": {
         "output": {
+            //@DEMO>
+            // "base": "${workspace.build.dir}/${app.toolkit}/demo",
+            //<
             "appCache": {
                 "enable": false,
                 "path": "cache.appcache"
@@ -412,10 +408,7 @@
      *
      */
     "output": {
-        //> @DEMO: 
-        // Modified the build output location.
-        "base": "${workspace.build.classic}/${build.environment}/${app.name}",
-        //<
+        "base": "${workspace.build.dir}/${build.environment}/classic",
         "appCache": {
             "enable": false
         },
@@ -476,11 +469,7 @@
         {
             "path": "resources",
             "output": "shared"
-        },
-        //> @DEMO: 
-        // added to force the app dir to be copied to the build. This ignores the data.json files for some reason.
-        // "./app"
-        //<
+        }
     ],
 
     /**
