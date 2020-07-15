@@ -1,5 +1,7 @@
 # ExtJS Grid Demos
 
+![CI](https://github.com/PHS4/sencha-examples/workflows/CI/badge.svg)
+
 ## Getting Started
 
 ```
