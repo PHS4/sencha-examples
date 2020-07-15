@@ -22,6 +22,7 @@ jobs:
           key: ${{ secrets.TESTING_PRIVATE_KEY }}
           script: |
             whoami
+            ls -lah
             cd /var/www/sencha.trozlabs.com/grids && 
             git fetch --all && 
             git pull && 
