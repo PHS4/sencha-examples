@@ -4,27 +4,30 @@
 # ./sencha_cmd classic production
 # ./sencha_cmd modern production
 
-echo $1;
-echo $2;
+# echo $1;
+# echo $2;
 
 TOOLKIT=$1;
 EXT_APPLICATION_ENV=$2;
 
 WORKSPACE_DIR=$PWD;
 EXT_APPLICATION=$WORKSPACE_DIR/app-$TOOLKIT;
-BUILD_DIR=$WORKSPACE_DIR/build-$TOOLKIT/$EXT_APPLICATION_ENV/Demo;
+BUILD_DIR=$WORKSPACE_DIR/build/$EXT_APPLICATION_ENV/$TOOLKIT;
 
+echo "---------------------------------------------------------------";
+echo "BUILDING: $EXT_APPLICATION";
+echo "TOOLKIT : $TOOLKIT";
+echo "FOR     : $EXT_APPLICATION_ENV";
+echo "---------------------------------------------------------------";
 # not sure if something changed but clean isn't removing the directories..
-rm -r $WORKSPACE_DIR/build-$TOOLKIT
-
-echo "Movng into $EXT_APPLICATION to build $TOOLKIT for $EXT_APPLICATION_ENV" && 
+rm -r $WORKSPACE_DIR/build/$EXT_APPLICATION_ENV/$TOOLKIT &&
+echo
+echo ":::: Movng into $EXT_APPLICATION to build $TOOLKIT for $EXT_APPLICATION_ENV" && 
+echo 
 cd $EXT_APPLICATION && 
-echo "Building in" $EXT_APPLICATION &&
-echo
-echo ":::: CLEAN START ::::" && 
-sencha app clean &&
-echo ":::: CLEAN DONE ::::" && 
-echo
+echo 
+echo ":::: Building in" $EXT_APPLICATION &&
+echo 
 echo ":::: BUILD START ::::" && 
 sencha app build $BUILD_ENV &&
 echo ":::: BUILD DONE ::::" &&
