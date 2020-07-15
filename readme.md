@@ -2,6 +2,8 @@
 
 ![CI](https://github.com/PHS4/sencha-examples/workflows/CI/badge.svg)
 
+Test Deployment ([Classic](https://sencha.trozlabs.com/grids/build/production/classic)) and ([Modern](https://sencha.trozlabs.com/grids/build/production/modern))
+
 ## Getting Started
 
 ```
