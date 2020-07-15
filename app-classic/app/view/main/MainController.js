@@ -10,7 +10,7 @@ Ext.define('Demo.view.main.MainController', {
         // if user is coming to the app without a hash, 
         // then update the hash to trigger router.
         if (!window.location.hash) {
-            this.updateHash('meta', 'demoviewmainmain');
+            this.updateHash('demo code structure', 'demoviewmainmain');
         }
         this.preConfiguredView();
 
@@ -83,10 +83,11 @@ Ext.define('Demo.view.main.MainController', {
          * main view then do something custom. If this isn't done
          * you get a cool infinity mirror situation. Try it out.
          */
+        console.log(className)
         if (className === 'Demo.view.main.Main') {
             demo = Ext.create({
                 xtype: 'code',
-                url: 'readme.md'
+                url: 'Readme.md'
             });
         } else {
             demo = Ext.create(className, {
@@ -161,8 +162,14 @@ Ext.define('Demo.view.main.MainController', {
          * Select the first tab by default
          */
         demoSource.setActiveTab(0);
+        var catSlug;
+        if(categorySlug.charAt(0) === '-'){
+            catSlug = categorySlug.slice(1);
+        }else{
+            catSlug = categorySlug;
+        }
+        this.updateHash(catSlug, slug);
         
-        this.updateHash(categorySlug, slug);
     },
 
     /*******************************
@@ -184,7 +191,7 @@ Ext.define('Demo.view.main.MainController', {
      * When no route is matched just load the main view example
      */
     onUnmatchedRoute: function (token) {
-        this.route('meta', 'demoviewmainmain');
+        this.route('demo code structure', 'demoviewmainmain');
     },
 
     routeCategory: function (category) {
@@ -329,6 +336,7 @@ Ext.define('Demo.view.main.MainController', {
         // console.time('build-nav')
 
         var files = Object.keys(Ext.ClassManager.classes)
+       // console.log(Ext.ClassManager.classes)
             /**
              * Filter the class list to only the classes with the 
              * namespace of view and exclude all except the views.

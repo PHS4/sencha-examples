@@ -9,7 +9,7 @@ Ext.define('Demo.view.main.MainController', {
         // if user is coming to the app without a hash, 
         // then update the hash to trigger router.
         if (!window.location.hash) {
-            this.updateHash('meta', 'demoviewmainmain');
+            this.updateHash('demo code structure', 'demoviewmainmain');
         }
         this.preConfiguredView();
 
@@ -72,6 +72,7 @@ Ext.define('Demo.view.main.MainController', {
         /**
          * values extracted from the record
          */
+      
         var {
             className,
             requires,
@@ -159,7 +160,14 @@ Ext.define('Demo.view.main.MainController', {
 
         descPanel.setHtml('<h2 style="color: #111111;">' + record.data.title + '</h2><p>' + record.data.description + '</p>')
         demoSource.setActiveItem(0);
-        this.updateHash(categorySlug, slug);
+       
+        var catSlug;
+        if(categorySlug.charAt(0) === '-'){
+            catSlug = categorySlug.slice(1);
+        }else{
+            catSlug = categorySlug;
+        }
+        this.updateHash(catSlug, slug);
     },
     listen: {
         global: {
@@ -177,7 +185,7 @@ Ext.define('Demo.view.main.MainController', {
      * When no route is matched just load the main view example
      */
     onUnmatchedRoute: function (token) {
-        this.route('meta', 'demoviewmainmain');
+        this.route('demo code structure', 'demoviewmainmain');
     },
 
     routeCategory: function (category) {
@@ -301,6 +309,26 @@ Ext.define('Demo.view.main.MainController', {
                 var file = pathParts.pop();
                 var folder = pathParts.join('/');
                 var extension = file.substr(file.lastIndexOf('.') + 1);
+                var packageName  = pathParts.pop();
+                
+                // Sencha CMD failed to build unless I buried below into a rediculous # of steps.
+                // -------------------------------------------------------------------------------
+                // var reqClasses = Demo.view[packageName];
+                // var requires = Object.keys(Demo.view[packageName]).map(cls => {
+                //    return Ext.Loader.getPath('Demo.view.' + packageName + '.' + cls);
+                // });
+                // -------------------------------------------------------------------------------
+                
+                var requires = [];
+                var reqClasses = Object.keys(Ext.ns(Ext.String.format('Demo.view.{0}', packageName)));
+                reqClasses.forEach((cls) => {
+                    // also overly complicated because of sencha cmd.
+                    var requiredClassname = Ext.String.format('Demo.view.{0}.{1}', packageName, cls);
+                    var requiredFilePath = Ext.Loader.getPath(requiredClassname);
+                    requires.push(requiredFilePath);
+
+                    
+                });
 
                 /**
                 * Since the requires are used to determine the source 
@@ -312,16 +340,20 @@ Ext.define('Demo.view.main.MainController', {
                 } else {
                    folder = folder + '/data.json'
                 }
-                var requires = [
-                    folder,
-                    filePath,
-                    /**
-                     * Get the classes used by the current class then find the 
-                     * file path for class to add so we know which files and where 
-                     * to read them from when loading the source code tabs.
-                     */
-                    ...Ext.Loader.requiresMap[className].map(cls => Ext.Loader.getPath(cls))
-                ];
+                // var requires = [
+                //     folder,
+                //     filePath,
+                //     /**
+                //      * Get the classes used by the current class then find the 
+                //      * file path for class to add so we know which files and where 
+                //      * to read them from when loading the source code tabs.
+                //      */
+                //     ...Ext.Loader.requiresMap[className].map(cls => Ext.Loader.getPath(cls))
+                // ];
+                // requires.push(filePath)
+
+                 requires.push(folder)
+              //  console.log(requires)
 
                 var record = {
                     id: index,

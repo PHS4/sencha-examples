@@ -18,7 +18,7 @@ Ext.define('Demo.view.main.Main', {
     controller: 'main',
     viewModel: 'main',
 
-    category: 'Meta',
+    category: ' Demo Code Structure',
     description: 'The Main view that is used to organize and display the Demos',
 
     dockedItems: [{

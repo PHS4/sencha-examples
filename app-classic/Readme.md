@@ -96,9 +96,5 @@ If empty or exluded in url they will default to true
         #/category-slug/demo-slug
 ``` 
 
-### Some Examples:
-
-- __Hide Everything except the example:__ https://trozlabs.com/sencha-examples/app-classic/?toolbar=false&description=false&source=false&navigation=false
-- __Collapsed Navigation and Source Code:__ https://trozlabs.com/sencha-examples/app-classic/?toolbar=true&description=true&source=false&navigation=false
 
 

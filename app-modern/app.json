@@ -307,7 +307,7 @@
             "enable": true
         },
         "compressor": {
-            "type": "yui"
+            "type": "cmd"
         }
     },
 
@@ -407,9 +407,13 @@
      */
 
     "output": {
-        "base": "${workspace.build.dir}/${build.environment}/${app.name}",
+        "base": "${workspace.build.modern}/${build.environment}/${app.name}",
         "appCache": {
             "enable": false
+        },
+        "js": {
+            "path": "app.js",
+            "version": "ES5"
         }
     },
 
@@ -477,7 +481,12 @@
     "archivePath": "archive",
 
     "slicer": {
-      
+        "js": [
+            {
+                "path": "sass/example/custom.js",
+                "isWidgetManifest": true
+            }
+        ],
         "output": {
             "appCache": {
                 "enable": false

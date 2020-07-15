@@ -1,2 +1,2 @@
 // @tag full-page
-// @require /Users/trozdol/Dropbox/localhost/sencha/sencha-examples/app-classic/app.js
+// @require /Users/scottsalisburyjr/Sites/app-modern/sencha-examples/app-modern/app.js

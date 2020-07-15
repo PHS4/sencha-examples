@@ -96,10 +96,3 @@ If empty or exluded in url they will default to true
         
         #/category-slug/demo-slug
 ``` 
-
-### Some Examples:
-
-- __Hide Everything except the example:__ https://trozlabs.com/sencha-examples/app-modern/?toolbar=false&source=false&navigation=false
-- __Collapsed Navigation and Source Code:__ https://trozlabs.com/sencha-examples/app-modern/?toolbar=true&source=false&navigation=false
-
-

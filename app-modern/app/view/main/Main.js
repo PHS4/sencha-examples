@@ -15,7 +15,7 @@ Ext.define('Demo.view.main.Main', {
 
     xtype: 'app-main',
     controller: 'main',
-    category: 'Meta',
+    category: ' Demo Code Structure',
     description: 'The Main view that is used to organize and display the Demos',
     viewModel: {
         type: 'main'

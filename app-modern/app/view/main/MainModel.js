@@ -19,14 +19,14 @@ Ext.define('Demo.view.main.MainModel', {
     stores: {
         nav: {
            groupField: 'category',
-
+           
             // prevent the main view from being included
             // in the navigation grid.
-            filters: [{
-                property: 'category',
-                value: 'main',
-                operator: '!='
-            }],
+            // filters: [{
+            //     property: 'category',
+            //     value: 'main',
+            //     operator: '!='
+            // }],
 
             fields: [
                 'id',
