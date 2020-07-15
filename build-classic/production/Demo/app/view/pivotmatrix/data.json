@@ -1,0 +1,135 @@
+{
+    "success": true,
+    "leftAxis": [
+        {
+            "key": "john",
+            "value": "John",
+            "name": "John",
+            "dimensionId": "person"
+        },
+        {
+            "key": "john#_#usa",
+            "value": "USA",
+            "name": "United States of America",
+            "dimensionId": "country"
+        },
+        {
+            "key": "john#_#canada",
+            "value": "Canada",
+            "name": "Canada",
+            "dimensionId": "country"
+        }
+    ],
+    "topAxis": [
+        {
+            "key": "2014",
+            "value": "2014",
+            "name": "2014",
+            "dimensionId": "year"
+        },
+        {
+            "key": "2014#_#2",
+            "value": "2",
+            "name": "February",
+            "dimensionId": "month"
+        }
+    ],
+    "results": [
+        {
+            "leftKey": "grandtotal",
+            "topKey": "grandtotal",
+            "values": {
+                "agg1": 100,
+                "agg2": 20
+            }
+        },
+        {
+            "leftKey": "john",
+            "topKey": "grandtotal",
+            "values": {
+                "agg1": 100,
+                "agg2": 20
+            }
+        },
+        {
+            "leftKey": "john#_#canada",
+            "topKey": "grandtotal",
+            "values": {
+                "agg1": 70,
+                "agg2": 13
+            }
+        },
+        {
+            "leftKey": "john#_#usa",
+            "topKey": "grandtotal",
+            "values": {
+                "agg1": 30,
+                "agg2": 7
+            }
+        },
+        {
+            "leftKey": "grandtotal",
+            "topKey": "2014",
+            "values": {
+                "agg1": 100,
+                "agg2": 20
+            }
+        },
+        {
+            "leftKey": "grandtotal",
+            "topKey": "2014#_#2",
+            "values": {
+                "agg1": 50,
+                "agg2": 70
+            }
+        },
+        {
+            "leftKey": "john",
+            "topKey": "2014",
+            "values": {
+                "agg1": 100,
+                "agg2": 20
+            }
+        },
+        {
+            "leftKey": "john",
+            "topKey": "2014#_#2",
+            "values": {
+                "agg1": 100,
+                "agg2": 20
+            }
+        },
+        {
+            "leftKey": "john#_#usa",
+            "topKey": "2014",
+            "values": {
+                "agg1": 70,
+                "agg2": 13
+            }
+        },
+        {
+            "leftKey": "john#_#usa",
+            "topKey": "2014#_#2",
+            "values": {
+                "agg1": 70,
+                "agg2": 13
+            }
+        },
+        {
+            "leftKey": "john#_#canada",
+            "topKey": "2014",
+            "values": {
+                "agg1": 30,
+                "agg2": 7
+            }
+        },
+        {
+            "leftKey": "john#_#canada",
+            "topKey": "2014#_#2",
+            "values": {
+                "agg1": 30,
+                "agg2": 7
+            }
+        }
+    ]
+}

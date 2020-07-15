@@ -1,0 +1,443 @@
+{
+    "reviews": [
+        {
+            "item_id": 3,
+            "user_id": 1,
+            "review": "5 stars would recommnend.",
+            "rating": 80
+        },
+        {
+            "item_id": 4,
+            "user_id": 1,
+            "review": "Clicky! Annoyed coworkers",
+            "rating": 100
+        }
+    ],
+
+    "orders": [
+        {
+            "id": 1,
+            "items": [
+                {
+                    "user_id": 2,
+                    "item_id": 4,
+                    "qty": 1
+                },
+                {
+                    "user_id": 4,
+                    "item_id": 7,
+                    "qty": 3
+                }
+            ]
+        }
+    ],
+
+    "items": [
+        {
+            "id": 1,
+            "manufacturer_id": 1,
+            "price": 99,
+            "name": "Ducky One 2 Mini Pure White - RGB LED 60% Double Shot PBT Mechanical Keyboard",
+            "description": "Primary: White Double Shot PBT with Backlit (clear) legends",
+            "image": "https://mechanicalkeyboards.com/shop/images/products/large_VTG83MSLV_main.jpg"
+        },
+        {
+            "id": 2,
+            "manufacturer_id": 1,
+            "sku": "DKME1961ST-_USPDZZT1",
+            "price": 129,
+            "name": "Ducky x MK Frozen Llama Mecha Mini RGB LED 60% Double Shot PBT Mechanical Keyboard",
+            "description": "The Mecha's ground-breaking cast aluminum frame offers stunning aesthetics with curves and features that bulky CNC machined Aluminum frames can only dream of. The result is substantial weight, but in a carefully balanced way – not just heavy for the sake of being heavy. You have to feel it to believe it.",
+            "image": "https://mechanicalkeyboards.com/shop/images/products/large_DKME1961ST-USPDZZT1_main.jpg"
+        },
+        {
+            "id": 3,
+            "manufacturer_id": 3,
+            "sku": "CG01000-297301_",
+            "price": 337,
+            "name": "HHKB Hybrid Type-S Charcoal Blank 60% Blank PBT Mechanical Keyboard",
+            "description": "Primary: Gray Blank PBT with Blank legends",
+            "image": "https://mechanicalkeyboards.com/shop/images/products/large_CG01000-297301_main.jpg"
+        },
+        {
+            "id": 4,
+            "manufacturer_id": 4,
+            "sku": "KBP-V80-_-VIN",
+            "price": 99,
+            "name": "KBParadise V80 Vintage TKL Mechanical Keyboard",
+            "description": "Alphas: Laser Etched ABS with Gray legends",
+            "image": "https://mechanicalkeyboards.com/shop/images/products/large_1938_V80_Vintage1.jpg"
+        },
+        {
+            "id": 5,
+            "manufacturer_id": 4,
+            "sku": "",
+            "price": 0,
+            "name": "Leopold FC900R Two Tone White PD Double Shot PBT Mechanical Keyboard",
+            "description": "White with Black legends",
+            "image": "https://mechanicalkeyboards.com/shop/images/products/large_FC900RLEWPD_main.jpg"
+        },
+        {
+            "id": 6,
+            "manufacturer_id": 6,
+            "sku": "FK303QBT_",
+            "price": 159,
+            "name": "Matias FK303QBT Laptop Pro for Mac TKL Mechanical Keyboard",
+            "description": "Connects to iPad & Android tablets, PCs, and other Bluetooth devices.",
+            "image": "https://mechanicalkeyboards.com/shop/images/products/large_290_LaptopPro_main.jpg"
+        },
+        {
+            "id": 7,
+            "manufacturer_id": 7,
+            "sku": "VTG83_MSLV",
+            "price": 139,
+            "name": "Vortex Race 3 TKL Dye Sub PBT Mechanical Keyboard",
+            "description": "The Race 3 features a silver anodized CNC case and cone feet. It also has DSA keycaps with dye-sub legends in a vintage grey colorway with 19 extra RGBY and MAC keycaps. 3 programmable layers on top of the default layer.",
+            "image": "https://mechanicalkeyboards.com/shop/images/products/large_VTG83MSLV_main.jpg"
+        }
+    ],
+
+    "manufacturers": [
+        {
+            "id": 1,
+            "name": "Ducky",
+            "image": "https://yt3.ggpht.com/a/AATXAJwJh86ahu3zZZPLDNA4MGNuRWWkZtzjLOfYrg=s288-c-k-c0xffffffff-no-rj-mo"
+        },
+        {
+            "id": 2,
+            "name": "Das Keyboard",
+            "image": "https://www.daskeyboard.com/images/comparison-keyboard/das-keyboard-logo.png"
+        },
+        {
+            "id": 3,
+            "name": "HHKB",
+            "image": "data:image/png;base64,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"
+        },
+        {
+            "id": 4,
+            "name": "KBParadise",
+            "image": "https://mechanicalkeyboards.com/shop/images/products/thumb_category_kbparadise_detail.png"
+        },
+        {
+            "id": 5,
+            "name": "Leopold",
+            "image": "https://mechanicalkeyboards.com/shop/images/products/tiny_category_ducky200.png"
+        },
+        {
+            "id": 6,
+            "name": "Matias",
+            "image": "https://mechanicalkeyboards.com/shop/images/products/tiny_category_matias_thumb.png"
+        },
+        {
+            "id": 7,
+            "name": "Vortex",
+            "image": "https://mechanicalkeyboards.com/shop/images/products/tiny_category_vortex_thumb.png"
+        }
+    ],
+
+    "roles": [
+        {
+            "id": 0,
+            "name": "Admin"
+        },
+        {
+            "id": 1,
+            "name": "Customer Service"
+        },
+        {
+            "id": 2,
+            "name": "Manager"
+        }
+    ],
+    
+    "users": [
+        {
+            "id": 1,
+            "role_id": 3,
+            "active": false,
+            "first_name": "Melody",
+            "last_name": "Leannon",
+            "address": "0977 Bailey Trace Suite 952",
+            "email": "melody.leannon@gmail.com",
+            "password": "1234",
+            "created_at": "2020-01-01",
+            "updated_at": "2020-04-03"
+        },
+        {
+            "id": 2,
+            "role_id": 3,
+            "active": true,
+            "first_name": "Norwood",
+            "last_name": "Predovic",
+            "address": "83949 Misty Roads Suite 254",
+            "email": "norwood.predovic@gmail.com",
+            "password": "1234",
+            "created_at": "2020-01-01",
+            "updated_at": "2020-04-03"
+        },
+        {
+            "id": 3,
+            "role_id": 3,
+            "active": true,
+            "first_name": "Irving",
+            "last_name": "Bernhard",
+            "address": "2251 Jacobi Summit Suite 310",
+            "email": "irving.bernhard@gmail.com",
+            "password": "1234",
+            "created_at": "2020-01-01",
+            "updated_at": "2020-04-03"
+        },
+        {
+            "id": 4,
+            "role_id": 3,
+            "active": true,
+            "first_name": "Norwood",
+            "last_name": "Hudson",
+            "address": "993 Francisca Well Suite 899",
+            "email": "norwood.hudson@gmail.com",
+            "password": "1234",
+            "created_at": "2020-01-01",
+            "updated_at": "2020-04-03"
+        },
+        {
+            "id": 5,
+            "role_id": 3,
+            "active": true,
+            "first_name": "Hertha",
+            "last_name": "Wintheiser",
+            "address": "89669 Tony Cape Apt. 652",
+            "email": "hertha.wintheiser@gmail.com",
+            "password": "1234",
+            "created_at": "2020-01-01",
+            "updated_at": "2020-04-03"
+        },
+        {
+            "id": 6,
+            "role_id": 3,
+            "active": true,
+            "first_name": "Serenity",
+            "last_name": "Waters",
+            "address": "26756 Tillman Orchard Apt. 279",
+            "email": "serenity.waters@gmail.com",
+            "password": "1234",
+            "created_at": "2020-01-01",
+            "updated_at": "2020-04-03"
+        },
+        {
+            "id": 7,
+            "role_id": 1,
+            "active": true,
+            "first_name": "Verlie",
+            "last_name": "McClure",
+            "address": "626 Wiegand Junction Apt. 783",
+            "email": "verlie.mcclure@gmail.com",
+            "password": "1234",
+            "created_at": "2020-01-01",
+            "updated_at": "2020-04-03"
+        },
+        {
+            "id": 8,
+            "role_id": 1,
+            "active": true,
+            "first_name": "Cara",
+            "last_name": "Kuphal",
+            "address": "2848 Brain Track Apt. 978",
+            "email": "cara.kuphal@gmail.com",
+            "password": "1234",
+            "created_at": "2020-01-01",
+            "updated_at": "2020-04-03"
+        },
+        {
+            "id": 9,
+            "role_id": 1,
+            "active": false,
+            "first_name": "Kyle",
+            "last_name": "Larson",
+            "address": "8837 Lind Land Suite 443",
+            "email": "kyle.larson@gmail.com",
+            "password": "1234",
+            "created_at": "2020-01-01",
+            "updated_at": "2020-04-03"
+        },
+        {
+            "id": 10,
+            "role_id": 1,
+            "active": false,
+            "first_name": "Eduardo",
+            "last_name": "Gleichner",
+            "address": "933 Samanta Drives Suite 622",
+            "email": "eduardo.gleichner@gmail.com",
+            "password": "1234",
+            "created_at": "2020-01-01",
+            "updated_at": "2020-04-03"
+        },
+        {
+            "id": 11,
+            "role_id": 1,
+            "active": true,
+            "first_name": "Jose",
+            "last_name": "Hessel",
+            "address": "19629 Herman Spur Apt. 082",
+            "email": "jose.hessel@gmail.com",
+            "password": "1234",
+            "created_at": "2020-01-01",
+            "updated_at": "2020-04-03"
+        },
+        {
+            "id": 12,
+            "role_id": 1,
+            "active": true,
+            "first_name": "Nelda",
+            "last_name": "Erdman",
+            "address": "29095 Osinski Landing Apt. 171",
+            "email": "nelda.erdman@gmail.com",
+            "password": "1234",
+            "created_at": "2020-01-01",
+            "updated_at": "2020-04-03"
+        },
+        {
+            "id": 13,
+            "role_id": 1,
+            "active": true,
+            "first_name": "Jordan",
+            "last_name": "Batz",
+            "address": "62199 Abshire Radial Suite 604",
+            "email": "jordan.batz@gmail.commm",
+            "password": "1234",
+            "created_at": "2020-01-01",
+            "updated_at": "2020-04-03"
+        },
+        {
+            "id": 14,
+            "role_id": 1,
+            "active": true,
+            "first_name": "Adeline",
+            "last_name": "Botsford",
+            "address": "969 Raleigh Crossroad Apt. 144",
+            "email": "adeline.botsford@gmail.com",
+            "password": "1234",
+            "created_at": "2020-01-01",
+            "updated_at": "2020-04-03"
+        },
+        {
+            "id": 15,
+            "role_id": 1,
+            "active": true,
+            "first_name": "Jeramie",
+            "last_name": "Hagenes",
+            "address": "4395 Mavis Alley Apt. 081",
+            "email": "jeramie.hagenes@gmail.com",
+            "password": "1234",
+            "created_at": "2020-01-01",
+            "updated_at": "2020-04-03"
+        },
+        {
+            "id": 16,
+            "role_id": 1,
+            "active": true,
+            "first_name": "Jean",
+            "last_name": "Windler",
+            "address": "80402 Abner Plain Suite 936",
+            "email": "jean.windler@gmail.com",
+            "password": "1234",
+            "created_at": "2020-01-01",
+            "updated_at": "2020-04-03"
+        },
+        {
+            "id": 17,
+            "role_id": 1,
+            "active": true,
+            "first_name": "Yoshiko",
+            "last_name": "Klein",
+            "address": "492 Dorris Glens Suite 380",
+            "email": "yoshiko.klein@gmail.com",
+            "password": "1234",
+            "created_at": "2020-01-01",
+            "updated_at": "2020-04-03"
+        },
+        {
+            "id": 18,
+            "role_id": 1,
+            "active": true,
+            "first_name": "Haylie",
+            "last_name": "Cassin",
+            "address": "16878 Thiel Point Apt. 180",
+            "email": "haylie.cassin@gmail.com",
+            "password": "1234",
+            "created_at": "2020-01-01",
+            "updated_at": "2020-04-03"
+        },
+        {
+            "id": 19,
+            "role_id": 1,
+            "active": true,
+            "first_name": "Davon",
+            "last_name": "Aufderhar",
+            "address": "9446 Christiansen Cove Suite 262",
+            "email": "davon.aufderhar@gmail.com",
+            "password": "1234",
+            "created_at": "2020-01-01",
+            "updated_at": "2020-04-03"
+        },
+        {
+            "id": 20,
+            "role_id": 1,
+            "active": true,
+            "first_name": "Trinity",
+            "last_name": "Keeling",
+            "address": "3244 Hyatt Junction Suite 125",
+            "email": "trinity.keeling@gmail.com",
+            "password": "1234",
+            "created_at": "2020-01-01",
+            "updated_at": "2020-04-03"
+        },
+        {
+            "id": 21,
+            "role_id": 1,
+            "active": true,
+            "first_name": "Lola",
+            "last_name": "Wilderman",
+            "address": "444 Barton Key Apt. 994",
+            "email": "lola.wilderman@gmail.com",
+            "password": "1234",
+            "created_at": "2020-01-01",
+            "updated_at": "2020-04-03"
+        },
+        {
+            "id": 22,
+            "role_id": 1,
+            "active": true,
+            "first_name": "Jan",
+            "last_name": "Cole",
+            "address": "71154 Stehr Falls Apt. 233",
+            "email": "jan.cole@gmail.com",
+            "password": "1234",
+            "created_at": "2020-01-01",
+            "updated_at": "2020-04-03"
+        },
+        {
+            "id": 23,
+            "role_id": 1,
+            "active": true,
+            "first_name": "Oran",
+            "last_name": "Kuvalis",
+            "address": "612 Theresa Land Apt. 751",
+            "email": "oran.kuvalis@gmail.com",
+            "password": "1234",
+            "created_at": "2020-01-01",
+            "updated_at": "2020-04-03"
+        },
+        {
+            "id": 24,
+            "role_id": 1,
+            "active": true,
+            "first_name": "Anahi",
+            "last_name": "Cruickshank",
+            "address": "64574 Coralie Locks Suite 011",
+            "email": "anahi.cruickshank@gmail.com",
+            "password": "1234",
+            "created_at": "2020-01-01",
+            "updated_at": "2020-04-03"
+        }
+    ]
+}

@@ -1,10 +1,13 @@
 {
   "name": "sencha-examples",
   "version": "1.0.0",
-  "description": "## Linking/Routing:",
-  "main": "util.js",
+  "description": "ExtJS Grid Demos",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "echo '### run npm run modern-start, modern-build, classic-start or classic-build ###'",
+    "classic-start": "./sencha_cmd_start classic",
+    "classic-build": "./sencha_cmd classic production",
+    "modern-start": "./sencha_cmd_start modern",
+    "modern-build": "./sencha_cmd modern production"
   },
   "repository": {
     "type": "git",

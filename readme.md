@@ -1,5 +1,16 @@
 # ExtJS Grid Demos
 
+## Getting Started
+
+```
+npm run classic-start
+npm run classic-build
+
+npm run modern-start
+npm run modern-build
+```
+
+
 ## Linking/Routing:
 
 Supported parameters:
