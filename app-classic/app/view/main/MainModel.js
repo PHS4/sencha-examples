@@ -24,13 +24,6 @@ Ext.define('Demo.view.main.MainModel', {
         nav: {
             groupField: 'category',
 
-            // prevent the main view from being included
-            // in the navigation grid.
-            // filters: [{
-            //     property: 'category',
-            //     value: 'main',
-            //     operator: '!='
-            // }],
             sorters: [{
                 property: 'category', 
                 direction: 'ASC'

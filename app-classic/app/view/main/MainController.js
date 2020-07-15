@@ -87,7 +87,7 @@ Ext.define('Demo.view.main.MainController', {
         if (className === 'Demo.view.main.Main') {
             demo = Ext.create({
                 xtype: 'code',
-                url: 'Readme.md'
+                url: 'readme.md'
             });
         } else {
             demo = Ext.create(className, {
@@ -248,7 +248,7 @@ Ext.define('Demo.view.main.MainController', {
         var store = vm.getStore('nav');
         
         var prevRecord = vm.get('currentDemo');
-        var prevIndex = store.find('id', prevRecord.get('id')) ;
+        var prevIndex = store.find('id', prevRecord.get('id'));
         var nextIndex = addOne ? prevIndex + 1 : prevIndex -1;
         var nextRecord = store.getAt(nextIndex);
         
