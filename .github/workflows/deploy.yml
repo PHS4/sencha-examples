@@ -23,5 +23,6 @@ jobs:
           script: |
             whoami
             cd /var/www/sencha.trozlabs.com/grids && 
-            git pull &&
-            ls -al
+            git fetch --all && 
+            git pull && 
+            git status;
