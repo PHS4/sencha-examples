@@ -21,9 +21,7 @@ jobs:
           username: root
           key: ${{ secrets.TESTING_PRIVATE_KEY }}
           script: |
-            whoami
-            ls -lah
-            cd /var/www/sencha.trozlabs.com/grids && 
-            git fetch --all && 
-            git pull && 
-            git status;
+            cd /var/www/sencha.trozlabs.com/grids
+            echo $PWD
+            git reset --hard origin/master
+            git status
