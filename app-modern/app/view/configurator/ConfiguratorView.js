@@ -192,10 +192,6 @@ Ext.define('Demo.view.configurator.ConfiguratorView', {
             docked: 'top',
             ui: 'transparent',
             padding: '5 8',
-            layout: {
-                type: 'hbox',
-                align: 'stretch'
-            },
             defaults: {
                 shadow: 'true',
                 ui: 'action'
