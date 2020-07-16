@@ -1,1 +1,1 @@
-cache_path = '/Users/trozdol/Dropbox/localhost/sencha/sencha-examples/build/.sass-cache'
+cache_path = '/Users/scottsalisburyjr/Sites/app-modern/sencha-examples/build/.sass-cache'
