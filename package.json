@@ -4,10 +4,11 @@
   "description": "ExtJS Grid Demos",
   "scripts": {
     "start": "echo '### run npm run modern-start, modern-build, classic-start or classic-build ###'",
-    "classic-start": "./sencha_cmd_start classic",
-    "classic-build": "./sencha_cmd classic production",
-    "modern-start": "./sencha_cmd_start modern",
-    "modern-build": "./sencha_cmd modern production"
+    "build": "sh ./sencha_cmd_build_all",
+    "classic-start": "sh ./sencha_cmd_start classic",
+    "classic-build": "sh ./sencha_cmd classic production",
+    "modern-start": "sh ./sencha_cmd_start modern",
+    "modern-build": "sh ./sencha_cmd modern production"
   },
   "repository": {
     "type": "git",
