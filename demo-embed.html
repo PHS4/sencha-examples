@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Embedding</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+
+        div {
+            flex: 1 1 50%;
+            padding: 20px;
+        }
+
+        code {
+            display: inline-block;
+            background-color: #ccc;
+            padding: 2px;
+        }
+
+        iframe {
+            margin: 10px 0;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    
+</body>
+</html>
+
+<div>
+<h2>Parameters:</h2>
+<code><pre>
+ navigation  = true | false 
+ source      = true | false 
+ toolbar     = true | false 
+ description = true | false 
+ demo        = true | false 
+</pre></code>
+</div>
+
+<div>
+    <h3>Default</h3>
+    <code>?navigation=true&source=true&toolbar=true&description=true&demp=true</code>
+    <code>#/category/demo</code>
+    <iframe 
+         style="width:100%; height: 400px;"
+         src="https://sencha.trozlabs.com/grids/build/production/classic/?navigation=true&source=true&toolbar=true&description=true&demp=true#/editing/form-editing" 
+         frameborder="0"
+    >
+    </iframe>
+</div>
+
+<div>
+    <h3>Collapsed Navigation</h3>
+    <code>?navigation=false&source=true&toolbar=true&description=false</code>
+    <code>#/category/demo</code>
+    <iframe 
+         style="width:100%; height: 400px;"
+         src="https://sencha.trozlabs.com/grids/build/production/classic/?navigation=false&source=true&toolbar=true&description=false" 
+         frameborder="0"
+    >
+    </iframe>
+</div>
+
+<div>
+    <h3>Description + Demo Only</h3>
+    <code>?navigation=false&source=false&toolbar=false</code>
+    <code>#/category/demo</code>
+    <iframe 
+         style="width:100%; height: 400px;"
+         src="https://sencha.trozlabs.com/grids/build/production/classic/?navigation=false&source=false&toolbar=false#/editing/cell-editing" 
+         frameborder="0"
+    >
+    </iframe>
+</div>
+
+<div>
+    <h3>Demo Only</h3>
+    <code>?navigation=false&source=false&toolbar=false&description=false</code>
+    <code>#/category/demo</code>
+    <iframe 
+         style="width:100%; height: 400px;"
+         src="https://sencha.trozlabs.com/grids/build/production/classic/?navigation=false&source=false&toolbar=false&description=false#/editing/cell-editing" 
+         frameborder="0"
+    >
+    </iframe>
+</div>
+
+<div>
+    <h3>Code Only</h3>
+    <code>?navigation=false&demo=false&source=true&toolbar=false&description=false</code>
+    <code>#/category/demo</code>
+    <iframe 
+         style="width:100%; height: 400px;"
+         src="https://sencha.trozlabs.com/grids/build/production/classic/?navigation=false&demo=false&source=true&toolbar=false&description=false" 
+         frameborder="0"
+    >
+    </iframe>
+</div>

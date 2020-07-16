@@ -1,0 +1,27 @@
+
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Push to server
+        uses: appleboy/ssh-action@master
+        with:
+          host: "trozlabs.com, 174.138.32.214"
+          username: root
+          key: ${{ secrets.TESTING_PRIVATE_KEY }}
+          script: |
+            cd /var/www/sencha.trozlabs.com/grids
+            echo $PWD
+            git reset --hard origin/master
+            git status

@@ -1,5 +1,9 @@
 # ExtJS Grid Demos
 
+![CI](https://github.com/PHS4/sencha-examples/workflows/CI/badge.svg)
+
+Test Deployment ([Classic](https://sencha.trozlabs.com/grids/build/production/classic)) and ([Modern](https://sencha.trozlabs.com/grids/build/production/modern))
+
 ## Getting Started
 
 ```
@@ -24,16 +28,17 @@ If empty or exluded in url they will default to true
         &description    =[false|true] (hides/shows)
         &navigation     =[false|true] (collapses/expands)
         &source         =[false|true] (collapses/expands)
+        &demo           =[false|true] (collapses/expands)
         
         #/category-slug/demo-slug
 ``` 
 
 ### Some Examples:
 
-- __Hide Everything except the example:__ https://trozlabs.com/sencha-examples/app-classic/?toolbar=false&description=false&source=false&navigation=false
-- __Collapsed Navigation and Source Code:__ https://trozlabs.com/sencha-examples/app-classic/?toolbar=true&description=true&source=false&navigation=false
+- __Hide Everything except the example:__ ../app-{toolkit}/?toolbar=false&description=false&source=false&navigation=false
+- __Collapsed Navigation and Source Code:__ ../app-{toolkit}/?toolbar=true&description=true&source=false&navigation=false
 
-
+Live examples: https://codepen.io/Trozdol/pen/GRoEeZO
 
 ## Demo file structure:
 
