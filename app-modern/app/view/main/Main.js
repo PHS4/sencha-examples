@@ -11,7 +11,7 @@ Ext.define('Demo.view.main.Main', {
         'Ext.panel.Resizer',
         'Demo.view.main.MainController',
         'Demo.view.main.MainModel',
-        'Ext.scroll.Scroller',
+        'Ext.panel.Collapser',
         'Ext.Responsive'
     ],
 
@@ -197,10 +197,7 @@ Ext.define('Demo.view.main.Main', {
                 height: '100%',
                 style: 'border:1px solid #4BA1DD',
                 tabBar: {
-                    scrollable:true,
-                    layout:{
-
-                    }
+                    scrollable:true
                 },
                 items: []
 
