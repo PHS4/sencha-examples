@@ -6,14 +6,43 @@ Test Deployment ([Classic](https://sencha.trozlabs.com/grids/build/production/cl
 
 ## Getting Started
 
-```
-npm run classic-start
-npm run classic-build
+### Classic:
 
-npm run modern-start
-npm run modern-build
+Run locally
+
+```
+cd app-classic
+sencha app watch
 ```
 
+### Modern:
+
+```shell
+cd app-modern
+sencha app watch
+```
+
+### Building:
+
+A script is used to handle an extra build step where the app directories are copied to the build project unminified for displaying code in the source tabs.
+
+Build a single app:
+
+```shell
+
+cd sencha-examples/ # the workspace
+
+./sencha_cmd classic production
+# outputs to ./build/production/classic
+
+./sencha_cmd modern production
+# outputs to ./build/production/modern
+```
+
+To build all apps:
+```
+./sencha_cmd_build_all
+```
 
 ## Linking/Routing:
 
