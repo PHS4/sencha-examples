@@ -25410,6 +25410,159 @@ hideAnimation:null, tplWriteMode:'overwrite', data:null, contentEl:null, record:
     Ext.log.warn('Ext JS requires a viewport meta tag in order to function correctly on mobile ' + 'devices. Please add the following tag to the \x3chead\x3e of your html page: \n ' + '\x3cmeta name\x3d"viewport" content\x3d"width\x3ddevice-width, initial-scale\x3d1, ' + 'maximum-scale\x3d10, user-scalable\x3dyes"\x3e');
   }
 });
+Ext.define('Ext.mixin.Responsive', function(Responsive) {
+  return {extend:Ext.Mixin, mixinConfig:{id:'responsive', after:{destroy:'destroy'}}, config:{responsiveConfig:{$value:undefined, merge:function(newValue, oldValue, target, mixinClass) {
+    var marker, entry, ret, rule;
+    if (!newValue) {
+      return oldValue;
+    }
+    ret = oldValue ? Ext.Object.chain(oldValue) : {};
+    marker = Responsive.context;
+    for (rule in newValue) {
+      if (!mixinClass || !(rule in ret)) {
+        entry = newValue[rule];
+        if (entry.fn !== marker) {
+          entry = {fn:marker, config:entry};
+        }
+        ret[rule] = entry;
+      }
+    }
+    return ret;
+  }}, responsiveFormulas:{$value:null, merge:function(newValue, oldValue, target, mixinClass) {
+    return this.mergeNew(newValue, oldValue, target, mixinClass);
+  }}}, destroy:function() {
+    Responsive.unregister(this);
+  }, privates:{statics:{active:false, all:{}, _configNames:['responsiveConfig', 'responsiveFormulas'], context:Ext.Object.chain(Ext.platformTags), count:0, nextId:0, activate:function() {
+    Responsive.active = true;
+    Responsive.updateContext();
+    Ext.on('resize', Responsive.onResize, Responsive);
+  }, deactivate:function() {
+    Responsive.active = false;
+    Ext.un('resize', Responsive.onResize, Responsive);
+  }, notify:function() {
+    var all = Responsive.all, context = Responsive.context, timer = Responsive.timer, id;
+    if (timer) {
+      Responsive.timer = Ext.unasap(timer);
+    }
+    Responsive.updateContext();
+    Ext.suspendLayouts();
+    Ext.fireEvent('beforeresponsiveupdate', context);
+    for (id in all) {
+      all[id].setupResponsiveContext();
+    }
+    Ext.fireEvent('beginresponsiveupdate', context);
+    for (id in all) {
+      all[id].updateResponsiveState();
+    }
+    Ext.fireEvent('responsiveupdate', context);
+    Ext.resumeLayouts(true);
+  }, onResize:function() {
+    if (!Responsive.timer) {
+      Responsive.timer = Ext.asap(Responsive.onTimer);
+    }
+  }, onTimer:function() {
+    Responsive.timer = null;
+    Responsive.notify();
+  }, register:function(responder) {
+    var id = responder.$responsiveId;
+    if (!id) {
+      responder.$responsiveId = id = ++Responsive.nextId;
+      Responsive.all[id] = responder;
+      if (++Responsive.count === 1) {
+        Responsive.activate();
+      }
+    }
+  }, unregister:function(responder) {
+    var id = responder.$responsiveId;
+    if (id in Responsive.all) {
+      responder.$responsiveId = null;
+      delete Responsive.all[id];
+      if (--Responsive.count === 0) {
+        Responsive.deactivate();
+      }
+    }
+  }, updateContext:function() {
+    var El = Ext.Element, width = El.getViewportWidth(), height = El.getViewportHeight(), context = Responsive.context;
+    context.width = width;
+    context.height = height;
+    context.tall = width < height;
+    context.wide = !context.tall;
+    context.landscape = context.portrait = false;
+    if (!context.platform) {
+      context.platform = Ext.platformTags;
+    }
+    context[Ext.dom.Element.getOrientation()] = true;
+  }}, afterClassMixedIn:function(targetClass) {
+    var proto = targetClass.prototype, responsiveConfig = proto.responsiveConfig, responsiveFormulas = proto.responsiveFormulas, config;
+    if (responsiveConfig || responsiveFormulas) {
+      config = {};
+      if (responsiveConfig) {
+        delete proto.responsiveConfig;
+        config.responsiveConfig = responsiveConfig;
+      }
+      if (responsiveFormulas) {
+        delete proto.responsiveFormulas;
+        config.responsiveFormulas = responsiveFormulas;
+      }
+      targetClass.getConfigurator().add(config);
+    }
+    targetClass.addConfigTransform('transformResponsiveConfig', 10);
+  }, applyResponsiveConfig:function(rules) {
+    var rule;
+    for (rule in rules) {
+      rules[rule].fn = Ext.createRuleFn(rule);
+    }
+    return rules;
+  }, applyResponsiveFormulas:function(formulas) {
+    var fn, name, ret;
+    if (formulas) {
+      ret = {};
+      for (name in formulas) {
+        if (Ext.isString(fn = formulas[name])) {
+          fn = Ext.createRuleFn(fn);
+        }
+        ret[name] = fn;
+      }
+    }
+    return ret;
+  }, getResponsiveState:function() {
+    var context = Responsive.context, rules = this.getResponsiveConfig(), entry, ret, rule;
+    if (rules) {
+      ret = {};
+      for (rule in rules) {
+        entry = rules[rule];
+        if (entry.fn.call(this, context)) {
+          Ext.merge(ret, entry.config);
+        }
+      }
+    }
+    return ret;
+  }, setupResponsiveContext:function() {
+    var formulas = this.getResponsiveFormulas(), context = Responsive.context, name;
+    if (formulas) {
+      for (name in formulas) {
+        context[name] = formulas[name].call(this, context);
+      }
+    }
+  }, transformResponsiveConfig:function(instanceConfig, configurator) {
+    var me = this, ret = instanceConfig, state;
+    if (configurator.hoistConfigs(me, instanceConfig, Responsive._configNames)) {
+      Responsive.register(me);
+      me.setupResponsiveContext();
+      state = me.getResponsiveState();
+      if (state) {
+        ret = Ext.merge({}, instanceConfig, state);
+        delete ret.responsiveConfig;
+        delete ret.responsiveFormulas;
+      }
+    }
+    return ret;
+  }, updateResponsiveState:function() {
+    var config = this.getResponsiveState();
+    this.setConfig(config);
+  }}};
+});
+Ext.define('Ext.Responsive', {override:'Ext.Widget', mixins:[Ext.mixin.Responsive]});
 Ext.define('Ext.fx.State', {isAnimatable:{'background-color':true, 'background-image':true, 'background-position':true, 'border-bottom-color':true, 'border-bottom-width':true, 'border-color':true, 'border-left-color':true, 'border-left-width':true, 'border-right-color':true, 'border-right-width':true, 'border-spacing':true, 'border-top-color':true, 'border-top-width':true, 'border-width':true, 'bottom':true, 'color':true, 'crop':true, 'font-size':true, 'font-weight':true, 'height':true, 'left':true, 
 'letter-spacing':true, 'line-height':true, 'margin-bottom':true, 'margin-left':true, 'margin-right':true, 'margin-top':true, 'max-height':true, 'max-width':true, 'min-height':true, 'min-width':true, 'opacity':true, 'outline-color':true, 'outline-offset':true, 'outline-width':true, 'padding-bottom':true, 'padding-left':true, 'padding-right':true, 'padding-top':true, 'right':true, 'text-indent':true, 'text-shadow':true, 'top':true, 'vertical-align':true, 'visibility':true, 'width':true, 'word-spacing':true, 
 'z-index':true, 'zoom':true, 'transform':true}, constructor:function(data) {
@@ -44832,6 +44985,708 @@ Ext.define('Ext.data.NodeStore', {extend:Ext.data.Store, alias:'store.node', isN
   }
   return added;
 }}});
+Ext.define('Ext.data.query.Compiler', {compile:function() {
+  var me = this, ast = me.ast, body, factory, vars;
+  me.error = null;
+  if (!ast) {
+    me.fn = Ext.returnTrue;
+  } else {
+    body = ['return function (item) {', '\tvar rec \x3d item.isEntity \x26\x26 item;', '\treturn '];
+    vars = [];
+    me.query = me;
+    me.assemble(body, vars, '\t', ast);
+    body.push('}');
+    body = vars.concat(body).join('\n');
+    try {
+      factory = new Function('Ext', 'O', 'F', body);
+      me.fn = factory(Ext, me.operators, me.getFunctions());
+      me.fn.generation = me.generation;
+    } catch (e$29) {
+      me.error = e$29;
+      e$29.message = 'Failed to compile: ' + e$29.message;
+      throw e$29;
+    } finally {
+      me.query = null;
+    }
+  }
+}, privates:{asmOps:{'\x3e':'gt', '\x3c':'lt', '\x3d\x3d':'eq', '\x3e\x3d':'ge', '\x3c\x3d':'le', '!\x3d':'ne'}, assemblers:{binary:function(me, body, vars, indent, node, last, childIndent) {
+  var op = me.operatorTypeMap[node.type][1], asmOp = me.asmOps[op], operands = node.on, close = '', i;
+  if (asmOp) {
+    body[last] += 'O.' + asmOp + '(';
+    op = ', ';
+    close = ')';
+  } else {
+    op = ' ' + op + ' ';
+  }
+  body[last] += '(';
+  for (i = 0; i < operands.length; ++i) {
+    if (i) {
+      body.push(indent + ')' + op + '(');
+    }
+    body.push(childIndent);
+    me.assemble(body, vars, childIndent, operands[i]);
+  }
+  body.push(indent + ')' + close);
+}, between:function(me, body, vars, indent, node, last, childIndent) {
+  var operands = node.on, i;
+  body[last] += 'O.between(';
+  for (i = 0; i < 3; ++i) {
+    if (i) {
+      last = body.length - 1;
+      body[last] += ', ';
+    }
+    me.assemble(body, vars, childIndent, operands[i]);
+  }
+  body.push(indent + ')');
+}, fn:function(me, body, vars, indent, node, last, childIndent) {
+  var fn = node.fn.toLowerCase(), func = me.query.getFunctions(), exprs, i;
+  if (!func[fn]) {
+    Ext.raise('Unsupported function "' + node.fn + '"');
+  }
+  func = func[fn];
+  if (func.vargs) {
+    body[last] += 'F.' + fn + '.fn([';
+  } else {
+    body[last] += 'F.' + fn + '.fn(';
+  }
+  exprs = node.args;
+  for (i = 0; i < exprs.length; ++i) {
+    if (i) {
+      last = body.length - 1;
+      body[last] += ', ';
+    }
+    body.push(childIndent);
+    me.assemble(body, vars, childIndent, exprs[i]);
+  }
+  if (func.vargs) {
+    body.push(indent + '])');
+  } else {
+    body.push(indent + ')');
+  }
+}, id:function(me, body, vars, indent, node, last, childIndent) {
+  var v = node.value, exprs = v.split('.');
+  if (exprs.length === 1) {
+    body[last] += 'rec ? rec.interpret(' + Ext.JSON.encode(v) + ') : item.' + v;
+  } else {
+    v = 'p' + vars.length;
+    vars.push('var ' + v + ' \x3d ' + Ext.JSON.encode(exprs) + ';');
+    body[last] += 'O.dots(item, ' + v + ')';
+  }
+}, 'in':function(me, body, vars, indent, node, last, childIndent) {
+  var operands = node.on;
+  body[last] += 'O.in(';
+  me.assemble(body, vars, childIndent, operands[0]);
+  last = body.length - 1;
+  body[last] += ', ';
+  me.assemble(body, vars, childIndent, operands[1]);
+  body.push(indent + ')');
+}, like:function(me, body, vars, indent, node, last, childIndent) {
+  var operands = node.on, rhs;
+  body[last] += 'O.like(';
+  me.assemble(body, vars, childIndent, operands[0]);
+  last = body.length - 1;
+  body[last] += ', ';
+  rhs = operands[1];
+  if (rhs.re) {
+    rhs = {type:'regexp', value:rhs.re, flags:rhs.flags};
+  }
+  me.assemble(body, vars, childIndent, rhs);
+  last = body.length - 1;
+  body[last] += ') ';
+}, list:function(me, body, vars, indent, node, last, childIndent) {
+  body[last] += '[';
+  for (var i = 0, exprs = node.value; i < exprs.length; ++i) {
+    if (i) {
+      last = body.length - 1;
+      body[last] += ', ';
+    }
+    body.push(childIndent);
+    me.assemble(body, vars, childIndent, exprs[i]);
+  }
+  body.push(indent + ']');
+}, string:'regexp', regexp:function(me, body, vars, indent, node, last) {
+  var re = 're' + vars.length;
+  vars.push('var ' + re + ' \x3d /' + (node.re || node.value) + '/' + (node.flags || '') + ';');
+  body[last] += re;
+}, unary:function(me, body, vars, indent, node, last, childIndent) {
+  var op = me.operatorTypeMap[node.type][1], operands = node.on;
+  body[last] += op + '(';
+  body.push(childIndent);
+  me.assemble(body, vars, childIndent, operands);
+  body.push(indent + ')');
+}}, operators:{between:function(val, lo, hi) {
+  return lo <= val && val <= hi;
+}, dots:function(item, names) {
+  var i, ret;
+  if (item.isEntity) {
+    for (ret = item, i = 0; i < names.length; ++i) {
+      if (!ret || !ret.interpret) {
+        ret = undefined;
+        break;
+      }
+      ret = ret.interpret(names[i]);
+    }
+  } else {
+    for (ret = item, i = 0; i < names.length; ++i) {
+      if (!ret) {
+        ret = undefined;
+        break;
+      }
+      ret = ret[names[i]];
+    }
+  }
+  return ret;
+}, 'in':function(val, values) {
+  return Ext.Array.contains(values, val);
+}, like:function(val, pat) {
+  val = String(val);
+  if (typeof pat === 'string') {
+    return !!val && val.toLowerCase().indexOf(pat.toLowerCase()) > -1;
+  }
+  return pat.test(val);
+}, eq:function(lhs, rhs) {
+  if (lhs && rhs && (lhs instanceof Date || rhs instanceof Date)) {
+    return !Ext.Date.compare(lhs, rhs);
+  }
+  return lhs == rhs;
+}, ge:function(lhs, rhs) {
+  if (lhs && rhs && (lhs instanceof Date || rhs instanceof Date)) {
+    return Ext.Date.compare(lhs, rhs) >= 0;
+  }
+  return lhs >= rhs;
+}, gt:function(lhs, rhs) {
+  if (lhs && rhs && (lhs instanceof Date || rhs instanceof Date)) {
+    return Ext.Date.compare(lhs, rhs) > 0;
+  }
+  return lhs > rhs;
+}, le:function(lhs, rhs) {
+  if (lhs && rhs && (lhs instanceof Date || rhs instanceof Date)) {
+    return Ext.Date.compare(lhs, rhs) <= 0;
+  }
+  return lhs <= rhs;
+}, lt:function(lhs, rhs) {
+  if (lhs && rhs && (lhs instanceof Date || rhs instanceof Date)) {
+    return Ext.Date.compare(lhs, rhs) < 0;
+  }
+  return lhs < rhs;
+}, ne:function(lhs, rhs) {
+  if (lhs && rhs && (lhs instanceof Date || rhs instanceof Date)) {
+    return !!Ext.Date.compare(lhs, rhs);
+  }
+  return lhs != rhs;
+}}, assemble:function(body, vars, indent, node) {
+  var me = this, assemblers = me.assemblers, t = typeof node, last = body.length - 1, childIndent = indent + '\t', type = node.type, arity, asm;
+  if (t === 'boolean' || t === 'number') {
+    body[last] += node;
+  } else {
+    if (t === 'string') {
+      body[last] += Ext.JSON.encode(node);
+    } else {
+      arity = me.operatorTypeMap[type];
+      asm = assemblers[type] || arity && assemblers[arity[0]];
+      if (typeof asm === 'string') {
+        asm = assemblers[asm];
+      }
+      asm(me, body, vars, indent, node, body.length - 1, childIndent);
+    }
+  }
+}}});
+Ext.define('Ext.data.query.Converter', {getFilters:function() {
+  var me = this, ast = me.ast, exprToFilter = me.exprToFilter, operatorTypeMap = me.operatorTypeMap, fn = me.fn, on = ast && ast.on, expr, filter, filters, i, ident, n, op, ret, value, xlat;
+  if (ast) {
+    if (fn.hasOwnProperty('$filters')) {
+      ret = fn.$filters;
+    } else {
+      if (ast.type === 'and' && on) {
+        filters = [];
+        for (i = 0, n = on.length; i < n; ++i) {
+          expr = on[i];
+          ident = expr.on;
+          if (!ident || ident.length !== 2) {
+            break;
+          }
+          value = ident[1];
+          ident = ident[0];
+          if (ident.type !== 'id') {
+            break;
+          }
+          if (!(xlat = exprToFilter[expr.type])) {
+            op = operatorTypeMap[expr.type];
+            if (!op || !(xlat = exprToFilter[op[0]])) {
+              break;
+            }
+          }
+          if (!(filter = xlat(expr, ident.value, value, op))) {
+            break;
+          }
+          filters.push(filter);
+        }
+        if (i === n) {
+          ret = filters;
+        }
+      }
+      fn.$filters = ret;
+    }
+  } else {
+    ret = null;
+  }
+  return ret;
+}, setFilters:function(filters) {
+  var me = this, ast = null, n = filters && filters.length, expr, filter, i, op, xlat;
+  if (n) {
+    ast = {type:'and', on:[]};
+    for (i = 0; i < n; ++i) {
+      filter = filters[i];
+      if (!(xlat = me.filterToExpr[op = filter.operator])) {
+        expr = {type:me.getOperatorType(op), on:[{type:'id', value:filter.property}, filter.value]};
+      } else {
+        expr = xlat(filter);
+      }
+      ast.on.push(expr);
+    }
+  }
+  me.ast = ast;
+  me.refresh();
+}, privates:{exprToFilter:{binary:function(expr, ident, value, info) {
+  return Ext.isPrimitive(value) && {property:ident, operator:info[1], value:value};
+}, 'in':function(expr, ident, value) {
+  var i = 0, list = value.value;
+  if (value.type === 'list' && Ext.isArray(list)) {
+    for (i = list.length; i-- > 0;) {
+      if (!Ext.isPrimitive(list[i])) {
+        break;
+      }
+    }
+  }
+  return i < 0 && {property:ident, operator:'in', value:list};
+}, like:function(expr, ident, value) {
+  if (value.type === 'regexp') {
+    return {property:ident, operator:'/\x3d', value:value.value};
+  }
+  return value.type === 'string' && {property:ident, operator:'like', value:value.value};
+}}, filterToExpr:{'/\x3d':function(filter) {
+  return {type:'like', on:[{type:'id', value:filter.property}, {type:'regexp', value:filter.value}]};
+}, 'in':function(filter) {
+  return {type:'in', on:[{type:'id', value:filter.property}, {type:'list', value:filter.value}]};
+}, like:function(filter) {
+  return {type:'like', on:[{type:'id', value:filter.property}, {type:'string', value:filter.value, re:filter.value, flags:'i'}]};
+}}}});
+Ext.define('Ext.data.query.Stringifier', {stringify:function(node) {
+  var me = this, t = typeof node, type = node.type, operatorTypeMap = me.operatorTypeMap, priority = me.getPriority(node), stringifiers = me.stringifiers, op, stringifier;
+  if (t === 'boolean' || t === 'number') {
+    return String(node);
+  }
+  if (t === 'string') {
+    return Ext.JSON.encode(node);
+  }
+  stringifier = stringifiers[type];
+  if (!stringifier && type in operatorTypeMap) {
+    op = operatorTypeMap[type];
+    stringifier = stringifiers[op[0]];
+    op = op[2] || op[1];
+  }
+  if (typeof stringifier === 'string') {
+    stringifier = stringifiers[stringifier];
+  }
+  return stringifier(me, node, priority, op);
+}, privates:{getPriority:function(node) {
+  var symbols = this.symbols, operatorTypeMap = this.operatorTypeMap, type = node.type, ret = 1000000000, op;
+  if (type === 'between') {
+    ret = 0;
+    ret = symbols[type].priority;
+  } else {
+    if (type === 'and' || type === 'or' || type === 'in' || type === 'like') {
+      ret = symbols[type].priority;
+    } else {
+      if (type in operatorTypeMap) {
+        op = operatorTypeMap[type];
+        ret = symbols[op[1]].priority;
+      }
+    }
+  }
+  return ret;
+}, stringifiers:{and:'or', or:function(me, node, priority) {
+  var op = node.type === 'or' ? ' or ' : ' and ', s = '', on = node.on, i, lhs, parenL;
+  for (i = 0; i < on.length; ++i) {
+    if (s) {
+      s += op;
+    }
+    lhs = on[i];
+    parenL = me.getPriority(lhs) < priority;
+    lhs = me.stringify(lhs);
+    if (parenL) {
+      lhs = '(' + lhs + ')';
+    }
+    s += lhs;
+  }
+  return s;
+}, between:function(me, node, priority) {
+  var on = node.on, lhs = on[0], parenL = me.getPriority(lhs) < priority, i, parenR, rhs, s;
+  lhs = me.stringify(lhs);
+  if (parenL) {
+    lhs = '(' + lhs + ')';
+  }
+  s = lhs + ' between ';
+  priority = me.symbols.and.priority;
+  for (i = 0; i < 2; ++i) {
+    if (i) {
+      s += ' and ';
+    }
+    rhs = on[i + 1];
+    parenR = i ? rhs.type !== 'id' && !Ext.isPrimitive(rhs) : me.getPriority(rhs) < priority;
+    rhs = me.stringify(rhs);
+    if (parenR) {
+      rhs = '(' + rhs + ')';
+    }
+    s += rhs;
+  }
+  return s;
+}, binary:function(me, node, priority, op) {
+  var on = node.on, lhs = on[0], rhs = on[1], parenL = me.getPriority(lhs) < priority, parenR = me.getPriority(rhs) < priority;
+  lhs = me.stringify(lhs);
+  rhs = me.stringify(rhs);
+  if (parenL) {
+    lhs = '(' + lhs + ')';
+  }
+  if (parenR) {
+    rhs = '(' + rhs + ')';
+  }
+  return lhs + ' ' + op + ' ' + rhs;
+}, fn:function(me, node) {
+  return node.fn + '(' + me.stringifyArray(node.args) + ')';
+}, id:function(me, node) {
+  return node.value;
+}, list:function(me, node) {
+  return '(' + me.stringifyArray(node.value) + ')';
+}, regexp:function(me, node) {
+  return '/' + node.value + '/' + (node.flags || '');
+}, string:function(me, node) {
+  return Ext.JSON.encode(node.value);
+}, unary:function(me, node, priority, op) {
+  var on = node.on, rhs = me.stringify(on), t = on.type;
+  if (t !== 'fn' && t !== 'id' && t !== 'unary') {
+    rhs = '(' + rhs + ')';
+  }
+  return op + rhs;
+}}, stringifyArray:function(array) {
+  var s = '', i, expr;
+  for (i = 0; i < array.length; ++i) {
+    if (s) {
+      s += ', ';
+    }
+    expr = array[i];
+    expr = this.stringify(expr);
+    s += expr;
+  }
+  return s;
+}}});
+Ext.define('Ext.data.query.Parser', function(QueryParser) {
+  var LIST = {list:true, literal:true, type:'list'};
+  return {extend:Ext.parse.Parser, tokenizer:{keywords:{and:{type:'operator', name:'and', value:'\x26\x26', is:{operator:true}}, or:{type:'operator', name:'or', value:'||', is:{operator:true}}, not:{type:'operator', name:'not', value:'!', is:{operator:true}}, between:{type:'operator', name:'between', value:'between', is:{operator:true}}, like:{type:'operator', name:'like', value:'like', is:{operator:true}}, 'in':{type:'operator', name:'in', value:'in', is:{operator:true}}}, operators:{'\x3d':'eq', 
+  '\x3d\x3d':'seq', '\x3d\x3d\x3d':'seq', '!\x3d\x3d':'sne', '!\x3d':'neq', '\x3c\x3e':'neq', '\x3c':'lt', '\x3c\x3d':'lte', '\x3e':'gt', '\x3e\x3d':'gte', '\x26\x26':'and', '||':'or', ',':'comma'}, patterns:{regex:{type:'literal', is:{literal:true, regexp:true, type:'regexp'}, re:/\/(?!\/)((?:\[.+?]|\\.|[^/\\\r\n])+)\/([gimyu]{0,5})/g, extract:function(match) {
+    var body = match[1], flags = match[2];
+    return flags ? [body, flags] : body;
+  }}}}, infix:{'\x3d':40, '\x3c\x3e':40, like:40, between:{priority:70, led:function(left) {
+    var me = this, parser = me.parser;
+    me.arity = 'between';
+    me.operand = left;
+    me.low = parser.parseExpression(parser.symbols.and.priority);
+    parser.advance('\x26\x26');
+    me.high = parser.parseExpression(80);
+    return me;
+  }}, 'in':{priority:40, led:function(left) {
+    var me = this, parser = me.parser;
+    parser.advance('(');
+    me.arity = 'binary';
+    me.lhs = left;
+    me.rhs = {arity:'literal', value:parser.parseList(), is:LIST};
+    parser.advance(')');
+    return me;
+  }}}, infixRight:{'and':30, 'or':30}, prefix:{not:0}, parse:function() {
+    var expr = this.parseExpression();
+    return this.convert(expr);
+  }, privates:{opCodes:{binary:{'\x3d':'eq', '\x3e':'gt', '\x3c':'lt', '\x3e\x3d':'ge', '\x3c\x3d':'le', '!\x3d':'ne', '\x3c\x3e':'ne', '+':'add', '/':'div', '*':'mul', '-':'sub'}, unary:{'-':'neg', '!':'not'}}, convert:function(node) {
+    var me = this, arity = node.arity, is = node.is, name = node.name, opCodes = me.opCodes, value = node.value, exprs, lhs, rhs, ret;
+    switch(arity) {
+      case 'between':
+        ret = {type:'between', on:[me.convert(node.operand), me.convert(node.low), me.convert(node.high)]};
+        break;
+      case 'ident':
+        ret = {type:'id', value:value};
+        break;
+      case 'invoke':
+        ret = {type:'fn', fn:node.operand.value, args:me.convertArray(node.args)};
+        break;
+      case 'unary':
+        ret = {type:opCodes.unary[value], on:me.convert(node.operand)};
+        break;
+      case 'binary':
+        if (name === 'and' || name === 'or') {
+          lhs = me.convert(node.lhs);
+          rhs = me.convert(node.rhs);
+          if (rhs.type === name) {
+            exprs = rhs.on;
+            exprs.unshift(lhs);
+          } else {
+            exprs = [lhs, rhs];
+          }
+          ret = {type:name, on:exprs};
+        } else {
+          if (value === 'or') {
+            value = '||';
+          }
+          ret = {type:opCodes.binary[value] || name, on:[me.convert(node.lhs), me.convert(node.rhs)]};
+          if (name === 'like') {
+            ret.on[1] = me.likeToRe(ret.on[1], node.rhs.at);
+          }
+        }
+        break;
+      case 'literal':
+        if (is.string || is.number || is['boolean']) {
+          ret = value;
+        } else {
+          ret = {type:is.type, value:value};
+          if (is.list) {
+            ret.value = me.convertArray(value);
+          } else {
+            if (is.regexp && typeof value !== 'string') {
+              ret.value = value[0];
+              ret.flags = value[1];
+            }
+          }
+        }
+        break;
+    }
+    if (ret && typeof ret === 'object' && !ret.type) {
+      ret.type = arity;
+    }
+    return ret;
+  }, convertArray:function(array) {
+    var ret = [], i = array.length;
+    for (; i-- > 0;) {
+      ret[i] = this.convert(array[i]);
+    }
+    return ret;
+  }, likeToRe:function(node, at) {
+    if (typeof node === 'string') {
+      node = {type:'string', value:node};
+    } else {
+      if (node.type === 'regexp') {
+        return node;
+      }
+    }
+    var specialChars = this.specialChars || (QueryParser.prototype.specialChars = Ext.Array.toMap('.+*?^$\x3d!|:-\x3c\x3e[](){}\\'.split(''))), like = node.value, n = like.length, re = '', simple = true, escape, c, i, start;
+    outer: for (i = 0; i < n; ++i) {
+      c = like[i];
+      if (!escape) {
+        if (c === '\\') {
+          escape = c;
+          continue;
+        }
+        if (c === '*' || c === '%') {
+          re += '.*';
+          simple = false;
+          continue;
+        }
+        if (c === '?' || c === '_') {
+          re += '.';
+          simple = false;
+          continue;
+        }
+        if (c === '[') {
+          re += c;
+          simple = false;
+          start = i;
+          while (++i < n) {
+            c = like[i];
+            if (escape) {
+              re += escape + c;
+              escape = 0;
+            } else {
+              if (c === '\\') {
+                escape = c;
+              } else {
+                re += c;
+                if (c === ']') {
+                  continue outer;
+                }
+              }
+            }
+          }
+          this.syntaxError(start + (node.at || at || 0), 'Incomplete character set');
+        }
+      }
+      escape = 0;
+      if (specialChars[c]) {
+        re += '\\';
+      }
+      re += c;
+    }
+    node.re = re || '.*';
+    if (simple) {
+      node.flags = 'i';
+    } else {
+      node.re = '^' + re + '$';
+    }
+    return node;
+  }, parseList:function() {
+    var me = this, list = [];
+    do {
+      if (list.length) {
+        me.advance();
+      }
+      list.push(me.parseExpression());
+    } while (me.token.id === ',');
+    return list;
+  }}};
+});
+Ext.define('Ext.data.Query', {extend:Ext.util.BasicFilter, mixins:[Ext.mixin.Factoryable, Ext.data.query.Compiler, Ext.data.query.Converter, Ext.data.query.Stringifier], alias:'query.default', config:{format:'ast', functions:{cached:true, $value:{abs:function(arg) {
+  return Math.abs(arg);
+}, 'avg...':function(args) {
+  var count = 0, sum = 0, i = args.length, v;
+  for (; i-- > 0;) {
+    v = args[i];
+    if (v != null) {
+      sum += v;
+      ++count;
+    }
+  }
+  return count ? sum / count : 0;
+}, date:function(arg) {
+  return arg instanceof Date ? arg : Ext.Date.parse(arg);
+}, lower:function(arg) {
+  return arg == null ? '' : String(arg).toLowerCase();
+}, 'max...':function(args) {
+  var ret = null, i = args.length, v;
+  for (; i-- > 0;) {
+    v = args[i];
+    if (v != null) {
+      ret = ret === null ? v : ret < v ? v : ret;
+    }
+  }
+  return ret;
+}, 'min...':function(args) {
+  var ret = null, i = args.length, v;
+  for (; i-- > 0;) {
+    v = args[i];
+    if (v != null) {
+      ret = ret === null ? v : ret < v ? ret : v;
+    }
+  }
+  return ret;
+}, 'sum...':function(args) {
+  var ret = null, i = args.length, v;
+  for (; i-- > 0;) {
+    v = args[i];
+    if (v != null) {
+      ret = ret === null ? v : ret + v;
+    }
+  }
+  return ret === null ? 0 : ret;
+}, upper:function(arg) {
+  return arg == null ? '' : String(arg).toUpperCase();
+}}}, source:''}, ast:null, error:null, generation:0, constructor:function(config) {
+  if (typeof config === 'string') {
+    config = {source:config};
+  }
+  var parser = Ext.data.query.Parser.fly();
+  this.symbols = parser.symbols;
+  parser.release();
+  this.callParent([config]);
+}, filter:function(item) {
+  var me = this, error = me.error;
+  if (error) {
+    throw error;
+  }
+  return !!me.fn(item);
+}, refresh:function() {
+  ++this.generation;
+  this.compile();
+}, serialize:function() {
+  var me = this, format = me.getFormat(), serializer = me.getSerializer(), ret, serialized;
+  switch(format) {
+    case 'ast':
+      ret = me.ast;
+      if (serializer) {
+        ret = Ext.clone(ret);
+      }
+      break;
+    case 'filters':
+      ret = me.getFilters() || null;
+      break;
+    case 'query':
+      ret = me.toString();
+      break;
+  }
+  if (ret && serializer) {
+    serialized = serializer.call(this, ret);
+    if (serialized) {
+      ret = serialized;
+    }
+  }
+  return ret;
+}, serializeTo:function(out) {
+  var filters = this.serialize(), ret;
+  if (filters && filters.length) {
+    out.push.apply(out, filters);
+    ret = true;
+  }
+  return ret;
+}, sync:function() {
+  var me = this, fn = me.fn;
+  if (!fn || fn.generation !== me.generation) {
+    me.compile();
+  }
+}, toString:function() {
+  var ast = this.ast;
+  return ast ? this.stringify(ast) : '';
+}, validFormatsRe:/^(ast|filters|query)$/, applyFormat:function(format) {
+  if (!this.validFormatsRe.test(format)) {
+    Ext.raise('Invalid query format');
+  }
+  return format;
+}, applyFunctions:function(funcs) {
+  var ret = {}, vargsRe = this.vargsRe, def, key, name;
+  for (key in funcs) {
+    def = {fn:funcs[name = key], vargs:vargsRe.test(key)};
+    if (def.vargs) {
+      name = key.substr(0, key.length - 3);
+    }
+    ret[name.toLowerCase()] = def;
+  }
+  return ret;
+}, applySource:function(source) {
+  if (source) {
+    return source;
+  }
+  ++this.generation;
+  this.ast = null;
+  this.compile();
+}, updateSource:function(source) {
+  var me = this, parser = Ext.data.query.Parser.fly(source);
+  ++me.generation;
+  try {
+    me.error = me.fn = null;
+    me.ast = parser.parse();
+  } catch (e$30) {
+    me.error = e$30;
+    e$30.message = 'Failed to parse: ' + e$30.message;
+    throw e$30;
+  } finally {
+    parser.release();
+  }
+  me.compile();
+}, privates:{operatorTypeMap:{and:['binary', '\x26\x26', 'and'], or:['binary', '||', 'or'], eq:['binary', '\x3d\x3d', '\x3d'], ge:['binary', '\x3e\x3d', null], gt:['binary', '\x3e', null], le:['binary', '\x3c\x3d', null], lt:['binary', '\x3c', null], ne:['binary', '!\x3d', null], add:['binary', '+', null], div:['binary', '/', null], mul:['binary', '*', null], sub:['binary', '-', null], 'in':['binary', null, 'in'], like:['binary', null, 'like'], seq:['binary', '\x3d\x3d\x3d', '\x3d\x3d'], sne:['binary', 
+'!\x3d\x3d', null], neg:['unary', '-', null], not:['unary', '!', null]}, vargsRe:/\.\.\.$/, getOperatorType:function(op) {
+  var map = this.operatorTypeMap, key;
+  for (key in map) {
+    if (map[key][1] === op || map[key][2] === op) {
+      return key;
+    }
+  }
+  Ext.raise('Unrecognized filter operator: "' + op + '"');
+  return null;
+}}});
 Ext.define('Ext.data.Request', {isDataRequest:true, config:{action:undefined, params:undefined, method:'GET', url:null, operation:null, proxy:null, disableCaching:false, headers:{}, callbackKey:null, rawRequest:null, jsonData:undefined, xmlData:undefined, withCredentials:false, username:null, password:null, binary:false, callback:null, scope:null, timeout:30000, records:null, directFn:null, args:null, useDefaultXhrHeader:null, responseType:null}, constructor:function(config) {
   this.initConfig(config);
 }, getParam:function(key) {
@@ -45949,7 +46804,7 @@ Ext.define('Ext.dom.Helper', function() {
             try {
               range[setStart](el[rangeEl]);
               frag = range.createContextualFragment(html);
-            } catch (e$29) {
+            } catch (e$31) {
               frag = this.createContextualFragment(html);
             }
           } else {
@@ -46489,7 +47344,7 @@ Ext.define('Ext.dom.Query', function() {
           root = root.parentNode;
         }
         return single ? [root.querySelector(path)] : Ext.Array.toArray(root.querySelectorAll(path));
-      } catch (e$30) {
+      } catch (e$32) {
       }
     }
     return DQ.jsSelect.call(this, path, root, type);
@@ -47779,7 +48634,7 @@ Ext.define('Ext.util.TaskRunner', {fireIdleEvent:null, interval:10, timerId:null
               if (task.onError) {
                 rt = task.onError.call(task.scope || task, task, taskError);
               }
-            } catch (e$31) {
+            } catch (e$33) {
             }
           }
         }
@@ -48110,7 +48965,7 @@ Ext.define('Ext.dom.GarbageCollector', {singleton:true, interval:30000, construc
     }
     try {
       isGarbage = Ext.isGarbage(dom);
-    } catch (e$32) {
+    } catch (e$34) {
       delete cache[eid];
       collectedIds.push('#' + el.id);
       continue;
@@ -52566,6 +53421,91 @@ Ext.define('Ext.sparkline.TriState', {extend:Ext.sparkline.BarBase, alias:'widge
   }
   canvas.drawRect(x, y, me.getBarWidth() - 1, height - 1, color, color).append();
 }});
+Ext.define('Ext.util.Base64', {singleton:true, _str:'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/\x3d', encode:function(input) {
+  var me = this, output = '', i = 0, chr1, chr2, chr3, enc1, enc2, enc3, enc4, len;
+  input = me._utf8_encode(input);
+  len = input.length;
+  while (i < len) {
+    chr1 = input.charCodeAt(i++);
+    chr2 = input.charCodeAt(i++);
+    chr3 = input.charCodeAt(i++);
+    enc1 = chr1 >> 2;
+    enc2 = (chr1 & 3) << 4 | chr2 >> 4;
+    enc3 = (chr2 & 15) << 2 | chr3 >> 6;
+    enc4 = chr3 & 63;
+    if (isNaN(chr2)) {
+      enc3 = enc4 = 64;
+    } else {
+      if (isNaN(chr3)) {
+        enc4 = 64;
+      }
+    }
+    output = output + me._str.charAt(enc1) + me._str.charAt(enc2) + me._str.charAt(enc3) + me._str.charAt(enc4);
+  }
+  return output;
+}, decode:function(input) {
+  var me = this, output = '', i = 0, chr1, chr2, chr3, enc1, enc2, enc3, enc4, len;
+  input = input.replace(/[^A-Za-z0-9+=\/]/g, '');
+  len = input.length;
+  while (i < len) {
+    enc1 = me._str.indexOf(input.charAt(i++));
+    enc2 = me._str.indexOf(input.charAt(i++));
+    enc3 = me._str.indexOf(input.charAt(i++));
+    enc4 = me._str.indexOf(input.charAt(i++));
+    chr1 = enc1 << 2 | enc2 >> 4;
+    chr2 = (enc2 & 15) << 4 | enc3 >> 2;
+    chr3 = (enc3 & 3) << 6 | enc4;
+    output = output + String.fromCharCode(chr1);
+    if (enc3 !== 64) {
+      output = output + String.fromCharCode(chr2);
+    }
+    if (enc4 !== 64) {
+      output = output + String.fromCharCode(chr3);
+    }
+  }
+  output = me._utf8_decode(output);
+  return output;
+}, _utf8_encode:function(string) {
+  var utftext = '', c, n, len;
+  string = string.replace(/\r\n/g, '\n');
+  for (n = 0, len = string.length; n < len; n++) {
+    c = string.charCodeAt(n);
+    if (c < 128) {
+      utftext += String.fromCharCode(c);
+    } else {
+      if (c > 127 && c < 2048) {
+        utftext += String.fromCharCode(c >> 6 | 192);
+        utftext += String.fromCharCode(c & 63 | 128);
+      } else {
+        utftext += String.fromCharCode(c >> 12 | 224);
+        utftext += String.fromCharCode(c >> 6 & 63 | 128);
+        utftext += String.fromCharCode(c & 63 | 128);
+      }
+    }
+  }
+  return utftext;
+}, _utf8_decode:function(utftext) {
+  var string = '', i = 0, c = 0, c3 = 0, c2 = 0, len = utftext.length;
+  while (i < len) {
+    c = utftext.charCodeAt(i);
+    if (c < 128) {
+      string += String.fromCharCode(c);
+      i++;
+    } else {
+      if (c > 191 && c < 224) {
+        c2 = utftext.charCodeAt(i + 1);
+        string += String.fromCharCode((c & 31) << 6 | c2 & 63);
+        i += 2;
+      } else {
+        c2 = utftext.charCodeAt(i + 1);
+        c3 = utftext.charCodeAt(i + 2);
+        string += String.fromCharCode((c & 15) << 12 | (c2 & 63) << 6 | c3 & 63);
+        i += 3;
+      }
+    }
+  }
+  return string;
+}});
 Ext.define('Ext.util.CSS', function() {
   var CSS, rules = null, doc = document, camelRe = /(-[a-z])/gi, camelFn = function(m, a) {
     return a.charAt(1).toUpperCase();
@@ -52619,7 +53559,7 @@ Ext.define('Ext.util.CSS', function() {
         }
         CSS.cacheRule(rule, ss);
       }
-    } catch (e$33) {
+    } catch (e$35) {
     }
   }, cacheRule:function(cssRule, styleSheet) {
     var selectorText, selectorCount, j;
@@ -52651,7 +53591,7 @@ Ext.define('Ext.util.CSS', function() {
         if (!ds[i].disabled) {
           CSS.cacheStyleSheet(ds[i]);
         }
-      } catch (e$34) {
+      } catch (e$36) {
       }
     }
   }, getRule:function(selector, refreshCache, rawCache) {
@@ -56701,6 +57641,7 @@ getLocation:Ext.emptyFn, beforeEdit:function(el, value) {
   }
   me.callParent();
 }});
+Ext.define('Ext.Label', {extend:Ext.Component, xtype:'label', baseCls:Ext.baseCSSPrefix + 'label'});
 Ext.define('Ext.LoadMask', {extend:Ext.Mask, xtype:'loadmask', config:{message:'Loading...', cls:Ext.baseCSSPrefix + 'loading-mask', messageCls:Ext.baseCSSPrefix + 'mask-message', indicator:true}, getTemplate:function() {
   var prefix = Ext.baseCSSPrefix;
   return [{reference:'innerElement', cls:prefix + 'mask-inner', children:[{reference:'indicatorElement', cls:prefix + 'loading-spinner-outer', children:[{cls:prefix + 'loading-spinner', children:[{tag:'span', cls:prefix + 'loading-top'}, {tag:'span', cls:prefix + 'loading-right'}, {tag:'span', cls:prefix + 'loading-bottom'}, {tag:'span', cls:prefix + 'loading-left'}]}]}, {reference:'messageElement'}]}];
@@ -67283,10 +68224,10 @@ Ext.define('Ext.form.Panel', {extend:Ext.field.Panel, xtype:'formpanel', isFormP
             if (Ext.isString(responseText)) {
               try {
                 response = Ext.decode(responseText);
-              } catch (e$35) {
+              } catch (e$37) {
                 response.success = false;
-                response.error = e$35;
-                response.message = e$35.message;
+                response.error = e$37;
+                response.message = e$37.message;
               }
             } else {
               if (Ext.isSimpleObject(responseText)) {
@@ -70084,6 +71025,47 @@ summaryCell:null, summaryDataIndex:null, summaryFormatter:null, summaryRenderer:
   }
   return config;
 }}});
+Ext.define('Ext.grid.filters.Column', {override:'Ext.grid.column.Column', config:{filter:null}, createFilter:function(config) {
+  var me = this, filter = me.getFilter(), cloned, field, model;
+  if (filter !== false) {
+    if (!filter || filter === true) {
+      cloned = true;
+      filter = {};
+    } else {
+      if (typeof filter === 'string') {
+        cloned = true;
+        filter = {type:filter};
+      }
+    }
+    if (!filter.type) {
+      if (!cloned) {
+        cloned = true;
+        filter = Ext.clone(filter);
+      }
+      if (!(filter.type = me.defaultFilterType || me.columnFilterTypes[me.xtype])) {
+        model = me.getGrid().getStore();
+        model = model && model.getModel();
+        field = me.getDataIndex();
+        if (field && model) {
+          field = model.getField(field);
+          filter.type = me.fieldFilterTypes[field && field.type];
+        }
+      }
+      if (!filter.type) {
+        filter = false;
+      }
+    }
+    if (config && filter) {
+      if (!cloned) {
+        filter = Ext.clone(filter);
+      }
+      filter = Ext.apply(filter, config);
+    }
+  }
+  return filter;
+}, privates:{columnFilterTypes:{booleancolumn:'boolean', datecolumn:'date', numbercolumn:'number'}, fieldFilterTypes:{auto:'string', bool:'boolean', date:'date', 'float':'number', number:'number', 'int':'number', integer:'number', string:'string'}}}, function() {
+  Ext.Factory.define('gridFilters', {defaultType:'string'});
+});
 Ext.define('Ext.grid.cell.Date', {extend:Ext.grid.cell.Text, xtype:'datecell', isDateCell:true, config:{format:''}, updateColumn:function(column, oldColumn) {
   var format;
   this.callParent([column, oldColumn]);
@@ -72578,6 +73560,95 @@ Ext.define('Ext.plugin.dd.DragZone', {extend:Ext.drag.Source, dragMarkerCls:Ext.
 }, getDragText:function(info) {
   return '';
 }, getDragData:Ext.emptyFn});
+Ext.define('Ext.grid.GridDragZone', {extend:Ext.plugin.dd.DragZone, getViewScrollable:function() {
+  var me = this, view = me.view, scroller = view.getScrollable(), item, grid;
+  if (!scroller) {
+    if (view.isLockedGrid) {
+      if (me.ddRow) {
+        item = me.ddRow;
+      } else {
+        item = Ext.dd.Manager.getTargetComp(me.info);
+      }
+      if (item && item.getGrid) {
+        grid = item.getGrid();
+      }
+      if (grid) {
+        scroller = grid.getScrollable();
+      }
+    }
+  }
+  return scroller;
+}, toggleDragMarker:function(rows, state) {
+  var ddManager = Ext.dd.Manager, view = this.view, row, i;
+  for (i = 0; i < rows.length; i++) {
+    row = rows[i];
+    if (!row.isDestroyed) {
+      if (!state) {
+        delete row.isDragging;
+        delete row.draggingRecordId;
+        delete row.dragMarkerCls;
+      }
+      ddManager.toggleMarkerCls(view, row, this.dragMarkerCls, state);
+    }
+  }
+}, getDraggingRows:function(info) {
+  var data = info.data.dragData, records = data.records || [], view = this.view, rows = [], i, row;
+  for (i = 0; i < records.length; i++) {
+    row = null;
+    if (view.isLockedGrid && view.visibleGrids.length) {
+      row = view.visibleGrids[0].itemFromRecord(records[i]);
+    } else {
+      row = view.itemFromRecord(records[i]);
+    }
+    if (row) {
+      row.isDragging = true;
+      row.draggingRecordId = records[i].id;
+      row.dragMarkerCls = this.dragMarkerCls;
+      rows.push(row);
+    }
+  }
+  return rows;
+}, onDragStart:function(info) {
+  var me = this, scroller = me.getViewScrollable();
+  if (scroller && scroller.isVirtualScroller) {
+    scroller.setDisabled(true);
+  }
+  if (me.containerScroll) {
+    Ext.dd.ScrollManager.scrollTowardsPointer.apply(me, [me.view]);
+  }
+  me.rows = me.getDraggingRows(info);
+  me.toggleDragMarker(me.rows, true);
+}, onDragEnd:function() {
+  var me = this, scroller = me.getViewScrollable();
+  if (scroller && scroller.isVirtualScroller) {
+    scroller.setDisabled(false);
+  }
+  if (me.containerScroll) {
+    Ext.dd.ScrollManager.stopAutoScroller.apply(me);
+  }
+  me.onDragCancel();
+}, onDragCancel:function() {
+  this.toggleDragMarker(this.rows, false);
+  this.rows = null;
+}, getDragData:function(e) {
+  var view = this.view, cell = Ext.Component.from(e, view), selections, record, selectionIndex;
+  if (!cell) {
+    return;
+  }
+  record = cell.getRecord();
+  selections = view.getSelections();
+  if (selections) {
+    selectionIndex = selections.indexOf(record);
+    record = selectionIndex !== -1 ? selections : record;
+  }
+  return {eventTarget:e, view:view, item:cell, records:Ext.Array.from(record)};
+}, getDragText:function(info) {
+  var data = info.data.dragData, count = data.records.length;
+  if (Ext.isFunction(this.dragText)) {
+    return this.dragText(count, info);
+  }
+  return Ext.String.format(this.dragText, count, count === 1 ? '' : Ext.util.Inflector.pluralize(''));
+}});
 Ext.define('Ext.plugin.dd.DropZone', {extend:Ext.drag.Target, dropMarkerCls:Ext.baseCSSPrefix + 'drop-indicator', validDropCls:Ext.baseCSSPrefix + 'valid-drop', onDragMove:Ext.emptyFn, onDrop:Ext.emptyFn, onDragLeave:function(info) {
   this.removeDropMarker();
   Ext.dd.Manager.toggleProxyCls(info, this.validDropCls, false);
@@ -72900,7 +73971,252 @@ Ext.define('Ext.grid.cell.Widget', {extend:Ext.grid.cell.Base, xtype:'widgetcell
     widget.setWidth(width - leftPad - rightPad);
   }
 }}});
+Ext.define('Ext.grid.column.Drag', {extend:Ext.grid.column.Column, xtype:'dragcolumn', classCls:Ext.baseCSSPrefix + 'drag-column', cell:{bodyCls:Ext.baseCSSPrefix + 'row-drag-indicator'}, menu:null, sortable:false, draggable:false, resizable:false, hideable:false, ignore:true, width:'auto', minWidth:30, ignoreExport:true, text:'', isDragColumn:true, onViewColumnAdd:function(grid, column, index) {
+  if (!index && !column.isDragColumn) {
+    grid.insertColumn(0, this);
+  }
+}, onColumnMoved:function(grid, column, fromIndex, toIndex) {
+  this.onViewColumnAdd(grid, column, toIndex);
+}, updateGrid:function(grid, oldGrid) {
+  var listeners = {scope:this, columnadd:'onViewColumnAdd', columnmove:'onColumnMoved'};
+  if (this.isDestructing()) {
+    return;
+  }
+  if (oldGrid) {
+    oldGrid.un(listeners);
+  }
+  if (grid) {
+    grid.on(listeners);
+  }
+}});
 Ext.define('Ext.grid.column.Text', {extend:Ext.grid.column.Column, xtype:'textcolumn', cell:{xtype:'textcell'}});
+Ext.define('Ext.grid.filters.menu.Base', {extend:Ext.menu.CheckItem, isFilterMenuItem:true, mixins:[Ext.mixin.Bufferable], text:'Filter', menu:{indented:false}, weight:-70, bufferableMethods:{onInputChange:300}, syncFilter:function() {
+  var me = this, dataIndex = me.column.getDataIndex(), query = me.plugin.getQuery(), filters = query.getFilters(), items = me.getMenu().getItems().items, f, i, k, item, value;
+  for (i = items.length; i-- > 0;) {
+    item = items[i];
+    if (item.operator) {
+      value = null;
+      for (k = dataIndex && filters && filters.length; k-- > 0;) {
+        f = filters[k];
+        if (f.property === dataIndex && f.operator === item.operator) {
+          value = f.value;
+          break;
+        }
+      }
+      item.setValue(value);
+    }
+  }
+}, syncQuery:function() {
+  var me = this, dataIndex = me.column.getDataIndex(), plugin = me.plugin, query = plugin.getQuery(), added = 0, removed = 0, filters, i, item, items, value;
+  if (dataIndex) {
+    filters = Ext.clone(query.getFilters());
+    items = me.getMenu().getItems().items;
+    for (i = filters && filters.length; i-- > 0;) {
+      if (filters[i].property === dataIndex) {
+        filters.splice(i, 1);
+        ++removed;
+      }
+    }
+    if (me.getChecked()) {
+      for (i = items.length; i-- > 0;) {
+        item = items[i];
+        if (item.operator) {
+          value = item.getValue();
+          if (value !== null && value !== '') {
+            ++added;
+            if (Ext.isDate(value)) {
+              value = Ext.Date.format(value, 'C');
+            }
+            (filters || (filters = [])).push({property:dataIndex, operator:item.operator, value:value});
+          }
+        }
+      }
+    }
+    if (!added) {
+      me.setChecked(false);
+    }
+    if (added || removed) {
+      plugin.setActiveFilter(filters);
+    }
+  }
+}, privates:{doOnInputChange:function() {
+  this.setChecked(true);
+  this.syncQuery();
+}}});
+Ext.define('Ext.grid.filters.menu.Boolean', {extend:Ext.grid.filters.menu.Base, alias:'gridFilters.boolean', menu:{defaults:{name:'boolfilter', group:'value', xtype:'menuradioitem', operator:'\x3d\x3d', checkHandler:'up.onInputChange'}, items:{yes:{value:true, text:'True', weight:10}, no:{value:false, text:'False', weight:20}}}, syncFilter:function() {
+  var me = this, column = me.column, dataIndex = column.getDataIndex(), query = me.plugin.getQuery(), filters = query.getFilters(), items = me.getMenu().getItems().items, f, i, k, item, value;
+  for (i = items.length; i-- > 0;) {
+    item = items[i];
+    if (item.operator) {
+      value = null;
+      for (k = dataIndex && filters && filters.length; k-- > 0;) {
+        f = filters[k];
+        if (f.property === dataIndex && f.operator === item.operator) {
+          if (item.getChecked) {
+            if (f.value === item.getValue()) {
+              value = f.value;
+              break;
+            }
+          } else {
+            value = f.value;
+            break;
+          }
+        }
+      }
+      if (item.operator === '\x3d\x3d' && item.getChecked) {
+        if (item.getValue() === value) {
+          item.setChecked(true);
+        } else {
+          item.setChecked(false);
+        }
+      } else {
+        item.setValue(value);
+      }
+    }
+  }
+}, syncQuery:function() {
+  var me = this, dataIndex = me.column.getDataIndex(), plugin = me.plugin, query = plugin.getQuery(), added = 0, removed = 0, filters, i, item, items, value;
+  if (dataIndex) {
+    filters = Ext.clone(query.getFilters());
+    items = me.getMenu().getItems().items;
+    for (i = filters && filters.length; i-- > 0;) {
+      if (filters[i].property === dataIndex) {
+        filters.splice(i, 1);
+        ++removed;
+      }
+    }
+    if (me.getChecked()) {
+      for (i = items.length; i-- > 0;) {
+        item = items[i];
+        if (item.operator) {
+          if (item && item.getChecked) {
+            if (item.getChecked() && (item.getValue() === true || item.getValue() === false)) {
+              value = item.getValue();
+            } else {
+              value = null;
+            }
+          } else {
+            value = item.getValue();
+            me.setChecked(true);
+          }
+          if (value !== null && value !== '') {
+            ++added;
+            (filters || (filters = [])).push({property:dataIndex, operator:item.operator, value:value});
+          }
+        }
+      }
+    }
+    if (!added) {
+      me.setChecked(false);
+    }
+    if (added || removed) {
+      plugin.setActiveFilter(filters);
+    }
+  }
+}});
+Ext.define('Ext.grid.filters.menu.Date', {extend:Ext.grid.filters.menu.Base, alias:'gridFilters.date', menu:{items:{lt:{xtype:'datefield', label:'Before', placeholder:'Before...', operator:'\x3c', weight:10, listeners:{change:'up.onInputChange'}}, gt:{xtype:'datefield', label:'After', placeholder:'After...', operator:'\x3e', weight:20, listeners:{change:'up.onInputChange'}}, eq:{xtype:'datefield', label:'On', placeholder:'On...', operator:'\x3d', separator:true, weight:30, listeners:{change:'up.onInputChange'}}}}, 
+syncFilter:function() {
+  var me = this, column = me.column, dataIndex = column.getDataIndex(), query = me.plugin.getQuery(), filters = query.getFilters(), items = me.getMenu().getItems().items, f, i, k, item, value;
+  for (i = items.length; i-- > 0;) {
+    item = items[i];
+    if (item.operator) {
+      value = null;
+      for (k = dataIndex && filters && filters.length; k-- > 0;) {
+        f = filters[k];
+        if (f.operator === '\x3d\x3d' && !item.getChecked && !(typeof f.value === 'boolean')) {
+          f.operator = '\x3d';
+        }
+        if (f.property === dataIndex && f.operator === item.operator) {
+          value = f.value;
+          break;
+        }
+      }
+      if (column.columnFilterTypes[column.xtype] === 'date') {
+        value = value && Ext.Date.parse(value);
+      }
+      item.setValue(value);
+    }
+  }
+}});
+Ext.define('Ext.grid.filters.menu.Number', {extend:Ext.grid.filters.menu.Base, alias:'gridFilters.number', menu:{items:{lt:{xtype:'numberfield', label:'Less than', placeholder:'Less than...', floatedPickerAlign:'tl-tr?', operator:'\x3c', weight:10, listeners:{change:'up.onInputChange'}}, gt:{xtype:'numberfield', label:'Greater than', placeholder:'Greater than...', floatedPickerAlign:'tl-tr?', operator:'\x3e', weight:20, listeners:{change:'up.onInputChange'}}, eq:{xtype:'numberfield', label:'Equal to', 
+placeholder:'Equal to...', floatedPickerAlign:'tl-tr?', operator:'\x3d', separator:true, weight:30, listeners:{change:'up.onInputChange'}}}}, syncFilter:function() {
+  var me = this, dataIndex = me.column.getDataIndex(), query = me.plugin.getQuery(), filters = query.getFilters(), items = me.getMenu().getItems().items, f, i, k, item, value;
+  for (i = items.length; i-- > 0;) {
+    item = items[i];
+    if (item.operator) {
+      value = null;
+      for (k = dataIndex && filters && filters.length; k-- > 0;) {
+        f = filters[k];
+        if (f.operator === '\x3d\x3d' && !item.getChecked && !(typeof f.value === 'boolean')) {
+          f.operator = '\x3d';
+        }
+        if (f.property === dataIndex && f.operator === item.operator) {
+          value = f.value;
+          break;
+        }
+      }
+      item.setValue(value);
+    }
+  }
+}});
+Ext.define('Ext.grid.filters.menu.String', {extend:Ext.grid.filters.menu.Base, alias:'gridFilters.string', menu:{items:{like:{xtype:'textfield', placeholder:'Like...', operator:'like', listeners:{change:'up.onInputChange'}}}}});
+Ext.define('Ext.grid.filters.Plugin', {extend:Ext.plugin.Abstract, alias:'plugin.gridfilters', mixins:[Ext.state.Stateful, Ext.mixin.StoreWatcher], config:{activeFilter:null, query:{type:'default', format:'filters'}}, stateful:['activeFilter'], init:function(grid) {
+  this.setOwner(grid);
+  grid.on({beforeshowcolumnmenu:'onBeforeShowColumnMenu', scope:this});
+}, destroy:function() {
+  this.setOwner(null);
+  this.callParent();
+}, updateActiveFilter:function(filter) {
+  var query = this.getQuery();
+  if (Ext.isString(filter)) {
+    query.setSource(filter);
+  } else {
+    query.setFilters(filter);
+  }
+}, applyQuery:function(config, query) {
+  return Ext.Factory.query.update(query, config);
+}, updateQuery:function(query) {
+  if (query) {
+    var me = this, fn = query.compile;
+    query.compile = function() {
+      fn.call(query);
+      me.queryModified(query);
+    };
+  }
+}, updateStore:function(store, oldStore) {
+  var me = this, query = me.getQuery();
+  me.mixins.storewatcher.updateStore.call(me, store, oldStore);
+  if (oldStore && !(oldStore.destroying || oldStore.destroyed)) {
+    oldStore.getFilters().remove(query);
+  }
+  if (store) {
+    store.getFilters().add(query);
+  }
+}, onSetFilter:function(menuItem) {
+  this.setActiveFilter(menuItem.rec.data.query);
+}, privates:{onBeforeShowColumnMenu:function(grid, column, menu) {
+  var me = this, filterMenuItem = menu.getComponent('filter'), menuConfig;
+  if (!filterMenuItem) {
+    menuConfig = column.createFilter({itemId:'filter', plugin:me, column:column});
+    filterMenuItem = menuConfig && menu.add(Ext.Factory.gridFilters(menuConfig));
+    if (filterMenuItem) {
+      filterMenuItem.setCheckHandler(me.onFilterItemCheckChange.bind(me));
+    }
+  }
+  if (filterMenuItem) {
+    filterMenuItem.syncFilter();
+  }
+}, onFilterItemCheckChange:function(item) {
+  item.syncQuery();
+}, queryModified:function() {
+  var filters = this.cmp.getStore();
+  filters = filters && filters.getFilters();
+  if (filters) {
+    filters.beginUpdate();
+    ++filters.generation;
+    filters.endUpdate();
+  }
+}}});
 Ext.define('Ext.layout.Fit', {extend:Ext.layout.Auto, alias:'layout.fit', isFit:true, cls:Ext.baseCSSPrefix + 'layout-fit', itemCls:Ext.baseCSSPrefix + 'layout-fit-item'});
 Ext.define('Ext.grid.locked.Grid', {extend:Ext.Panel, xtype:'lockedgrid', alternateClassName:'Ext.grid.LockedGrid', isLockedGrid:true, classCls:Ext.baseCSSPrefix + 'lockedgrid', config:{columnMenu:{items:{region:{text:'Locked', iconCls:'fi-lock', menu:{}}}}, columns:null, defaultLockedRegion:'left', gridDefaults:null, hideHeaders:false, itemConfig:{}, leftRegionDefaults:{locked:true, menuItem:{iconCls:'fi-chevron-left'}}, regions:{left:{menuItem:{text:'Locked (Left)'}, weight:-10}, center:{flex:1, 
 menuItem:{text:'Unlocked', iconCls:'fi-unlock'}, weight:0}, right:{menuItem:{text:'Locked (Right)'}, weight:10}}, rightRegionDefaults:{locked:true, menuItem:{iconCls:'fi-chevron-right'}}, store:null, variableHeights:false, enableColumnMove:true, grouped:true}, weighted:true, layout:{type:'hbox', align:'stretch'}, onRender:function() {
@@ -73737,6 +75053,68 @@ Ext.define('Ext.grid.plugin.PagingToolbar', {extend:Ext.plugin.Abstract, alias:[
   toolbar.getNextButton().setDisabled(currentPage === totalPages);
   toolbar.getPrevButton().setDisabled(currentPage === 1);
 }}});
+Ext.define('Ext.grid.plugin.RowDragDrop', {extend:Ext.plugin.dd.DragDrop, alias:'plugin.gridrowdragdrop', handle:'.' + Ext.baseCSSPrefix + 'gridrow', groups:'gridRowGroup', dropIndicator:Ext.baseCSSPrefix + 'grid-drop-indicator', dragText:'{0} selected row{1}', dragIcon:Ext.supports.Touch && Ext.supports.TouchEvents ? true : false, init:function(view) {
+  var me = this;
+  if (view.isLockedGrid) {
+    me.addDragIndicator(view);
+  }
+  view.on('initialize', me.onViewInitialize, me);
+}, onViewInitialize:function(view) {
+  var me = this, dragZone = {};
+  if (me.enableDrag) {
+    if (me.proxy) {
+      dragZone.proxy = me.proxy;
+    }
+    if (me.activateOnLongPress) {
+      dragZone.activateOnLongPress = me.activateOnLongPress;
+    }
+    me.dragZone = new Ext.grid.GridDragZone(Ext.apply({element:view.bodyElement, view:view, dragText:me.dragText, handle:me.handle, groups:me.groups, scrollAmount:me.scrollAmount, containerScroll:me.containerScroll, constrain:Ext.getBody()}, dragZone));
+  }
+  if (me.enableDrop) {
+    me.dropZone = new Ext.grid.GridDropZone({view:view, element:view.bodyElement, groups:me.groups, dropIndicator:me.dropIndicator, overCls:me.overCls, copy:me.copy});
+  }
+  if (!view.isLockedGrid) {
+    me.addDragIndicator(view);
+  }
+}, addDragIndicator:function(view) {
+  if (!this.dragIcon) {
+    return;
+  }
+  if (view.isLockedGrid) {
+    view.on({columnremove:'onColumnRemove', createregion:'onCreateRegion', scope:this});
+  } else {
+    if (view.insertColumn) {
+      view.insertColumn(0, {xtype:'dragcolumn'});
+    }
+  }
+}, onCreateRegion:function(grid, columns) {
+  columns = Ext.Array.from(columns);
+  if (columns.length && !grid.hasDragColumn) {
+    columns = Ext.Array.insert(columns, 0, [{xtype:'dragcolumn'}]);
+    grid.hasDragColumn = true;
+  }
+  return columns;
+}, onColumnRemove:function(regionGrid, column) {
+  if (this.cmp.hasDragColumn && !column.isDragColumn) {
+    Ext.asap(this.handleColumnMove, this);
+  }
+}, handleColumnMove:function() {
+  var view = this.cmp, dragCol = view.query('dragcolumn')[0], leftRegion, leftGrid, centerRegion, columns;
+  if (!dragCol) {
+    return;
+  }
+  leftRegion = view.getRegion('left');
+  leftGrid = leftRegion.getGrid();
+  columns = leftGrid.getColumns();
+  if (columns.indexOf(dragCol) !== -1 && columns.length === 1) {
+    centerRegion = view.getRegion('center');
+    centerRegion.getGrid().insertColumn(0, dragCol);
+  } else {
+    if (columns.length && columns.indexOf(dragCol) === -1) {
+      leftGrid.insertColumn(0, dragCol);
+    }
+  }
+}});
 Ext.define('Ext.grid.plugin.RowExpander', {extend:Ext.plugin.Abstract, alias:'plugin.rowexpander', config:{grid:null, column:{weight:-1100, xtype:'gridcolumn', align:'center', text:'', width:50, resizable:false, hideable:false, sortable:false, editable:false, ignore:true, ignoreExport:true, cell:{xtype:'expandercell'}, menuDisabled:true}}, expanderSelector:'.' + Ext.baseCSSPrefix + 'expandercell .' + Ext.baseCSSPrefix + 'icon-el', init:function(grid) {
   grid.setVariableHeights(true);
   this.setGrid(grid);
@@ -77521,6 +78899,3007 @@ mousemove:'onMouseMove', mouseenter:'onMouseEnter', mouseleave:'onMouseLeave'}, 
   value = value / this.getLimit() * 100;
   return value + '%';
 }}});
+Ext.define('Ext.exporter.data.Base', {config:{idPrefix:'id', id:null, autoGenerateId:true, autoGenerateKey:{$value:false, merge:function(newValue, oldValue) {
+  return newValue ? Ext.concat(newValue, oldValue || null) : false;
+}}}, internalCols:null, clearPropertiesOnDestroy:false, constructor:function(config) {
+  var me = this;
+  me.internalCols = [];
+  me.initConfig(config);
+  if (!me._id) {
+    me.setId(null);
+  }
+  return me.callParent([config]);
+}, destroy:function() {
+  this.destroyCollections();
+  this.callParent();
+  this.internalCols = null;
+}, destroyCollections:function() {
+  var cols = this.internalCols, len = cols.length, i, j, length, col;
+  for (i = 0; i < len; i++) {
+    col = cols[i];
+    length = col.length;
+    for (j = 0; j < length; j++) {
+      col.items[j].destroy();
+    }
+    col.destroy();
+  }
+  cols.length = 0;
+}, clearCollections:function(cols) {
+  var i, len, col;
+  cols = cols ? Ext.Array.from(cols) : this.internalCols;
+  len = cols.length;
+  for (i = len - 1; i >= 0; i--) {
+    col = cols[i];
+    if (col) {
+      col.destroy();
+    }
+    Ext.Array.remove(this.internalCols, col);
+  }
+}, applyId:function(data) {
+  var id;
+  if (!data && this._autoGenerateId) {
+    id = this._idPrefix + ++Ext.idSeed;
+  } else {
+    id = data;
+  }
+  return id;
+}, checkCollection:function(data, dataCollection, className) {
+  var col;
+  if (data) {
+    col = this.constructCollection(className);
+    col.add(data);
+  }
+  if (dataCollection) {
+    Ext.Array.remove(this.internalCols, dataCollection);
+    Ext.destroy(dataCollection.items, dataCollection);
+  }
+  return col;
+}, constructCollection:function(className) {
+  var cls = Ext.ClassManager.get(className), cfg = {decoder:this.getCollectionDecoder(cls)}, col;
+  if (typeof cls.prototype.getKey === 'function') {
+    cfg.keyFn = this.getCollectionItemKey;
+  }
+  col = new Ext.util.Collection(cfg);
+  this.internalCols.push(col);
+  return col;
+}, getCollectionDecoder:function(klass) {
+  return function(config) {
+    return config && config.isInstance ? config : new klass(config || {});
+  };
+}, getCollectionItemKey:function(item) {
+  return item.getKey ? item.getKey() : item._id || item.getId();
+}, getKey:function() {
+  var generate = this.getAutoGenerateKey(), key = '', config = this.getConfig(), len, i;
+  if (!Ext.isArray(generate) || !generate.length) {
+    return this.getId();
+  }
+  len = generate.length;
+  for (i = 0; i < len; i++) {
+    key += this.serializeKeyValue(config[generate[i]]);
+  }
+  return key;
+}, serializeKeyValue:function(value) {
+  var key = '', keys, len, i;
+  if (value === null) {
+    key = '_';
+  } else {
+    if (Ext.isDate(value)) {
+      key = value.getTime();
+    } else {
+      if (Ext.isArray(value)) {
+        len = value.length;
+        for (i = 0; i < len; i++) {
+          key += this.serializeKeyValue(value[i]);
+        }
+      } else {
+        if (typeof value === 'object') {
+          if (value.isInstance) {
+            key = value.getKey ? value.getKey() : '_';
+          } else {
+            keys = Ext.Object.getAllKeys(value);
+            keys = Ext.Array.sort(keys);
+            len = keys.length;
+            for (i = 0; i < len; i++) {
+              key += this.serializeKeyValue(value[keys[i]]);
+            }
+          }
+        } else {
+          key = value;
+        }
+      }
+    }
+  }
+  return key;
+}});
+Ext.define('Ext.exporter.data.Cell', {extend:Ext.exporter.data.Base, config:{style:null, value:null}});
+Ext.define('Ext.exporter.data.Row', {extend:Ext.exporter.data.Base, config:{cells:null}, destroy:function() {
+  this.clearCollections();
+}, applyCells:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.data.Cell');
+}, addCell:function(config) {
+  if (!this._cells) {
+    this.setCells([]);
+  }
+  return this._cells.add(config || {});
+}, getCell:function(id) {
+  return this._cells ? this._cells.get(id) : null;
+}});
+Ext.define('Ext.exporter.data.Group', {extend:Ext.exporter.data.Base, config:{text:null, rows:null, summaries:null, summary:null, groups:null}, applyRows:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.data.Row');
+}, addRow:function(config) {
+  if (!this._rows) {
+    this.setRows([]);
+  }
+  return this._rows.add(config || {});
+}, getRow:function(id) {
+  return this._rows ? this._rows.get(id) : null;
+}, applyGroups:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.data.Group');
+}, addGroup:function(config) {
+  if (!this._groups) {
+    this.setGroups([]);
+  }
+  return this._groups.add(config || {});
+}, getGroup:function(id) {
+  return this._groups ? this._groups.get(id) : null;
+}, applySummaries:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.data.Row');
+}, applySummary:function(value) {
+  if (value) {
+    this.addSummary(value);
+  }
+  return null;
+}, addSummary:function(config) {
+  if (!this._summaries) {
+    this.setSummaries([]);
+  }
+  return this._summaries.add(config || {});
+}, getSummary:function(id) {
+  return this._summaries ? this._summaries.get(id) : null;
+}});
+Ext.define('Ext.exporter.data.Column', {extend:Ext.exporter.data.Base, config:{table:null, text:null, style:null, width:null, mergeAcross:null, mergeDown:null, level:0, index:null, columns:null}, destroy:function() {
+  this.setTable(null);
+  this.callParent();
+}, updateTable:function(table) {
+  var cols = this.getColumns(), i, length;
+  if (cols) {
+    length = cols.length;
+    for (i = 0; i < length; i++) {
+      cols.getAt(i).setTable(table);
+    }
+  }
+}, applyColumns:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.data.Column');
+}, updateColumns:function(collection, oldCollection) {
+  var me = this;
+  if (oldCollection) {
+    oldCollection.un({add:me.onColumnAdd, remove:me.onColumnRemove, scope:me});
+    Ext.destroy(oldCollection.items, oldCollection);
+  }
+  if (collection) {
+    collection.on({add:me.onColumnAdd, remove:me.onColumnRemove, scope:me});
+    me.onColumnAdd(collection, {items:collection.getRange()});
+  }
+}, sync:function(level, depth) {
+  var me = this, count = me.getColumnCount() - 1, cols = me.getColumns(), i, length, down;
+  me.setLevel(level);
+  if (cols) {
+    length = cols.length;
+    for (i = 0; i < length; i++) {
+      cols.items[i].sync(level + 1, depth);
+    }
+    me.setMergeDown(null);
+  } else {
+    down = depth - level;
+    me.setMergeDown(down > 0 ? down : null);
+  }
+  me.setMergeAcross(count > 0 ? count : null);
+}, onColumnAdd:function(collection, details) {
+  var items = details.items, length = items.length, table = this.getTable(), i, item;
+  for (i = 0; i < length; i++) {
+    item = items[i];
+    item.setTable(table);
+  }
+  if (table) {
+    table.syncColumns();
+  }
+}, onColumnRemove:function(collection, details) {
+  var table = this.getTable();
+  Ext.destroy(details.items);
+  if (table) {
+    table.syncColumns();
+  }
+}, getColumnCount:function(columns) {
+  var s = 0, cols, i;
+  if (!columns) {
+    columns = this.getColumns();
+    if (!columns) {
+      return 1;
+    }
+  }
+  for (i = 0; i < columns.length; i++) {
+    cols = columns.getAt(i).getColumns();
+    if (!cols) {
+      s += 1;
+    } else {
+      s += this.getColumnCount(cols);
+    }
+  }
+  return s;
+}, addColumn:function(config) {
+  if (!this.getColumns()) {
+    this.setColumns([]);
+  }
+  return this.getColumns().add(config || {});
+}, getColumn:function(id) {
+  return this.getColumns().get(id);
+}});
+Ext.define('Ext.exporter.data.Table', {extend:Ext.exporter.data.Group, isDataTable:true, config:{columns:null}, autoGenerateId:false, applyColumns:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.data.Column');
+}, updateColumns:function(collection, oldCollection) {
+  var me = this;
+  if (oldCollection) {
+    oldCollection.un({add:me.onColumnAdd, remove:me.onColumnRemove, scope:me});
+    Ext.destroy(oldCollection.items, oldCollection);
+  }
+  if (collection) {
+    collection.on({add:me.onColumnAdd, remove:me.onColumnRemove, scope:me});
+    me.onColumnAdd(collection, {items:collection.getRange()});
+    me.syncColumns();
+  }
+}, syncColumns:function() {
+  var cols = this.getColumns(), depth = this.getColDepth(cols, -1), result = {}, i, j, length, len, keys, arr, prevCol, index;
+  if (!cols) {
+    return;
+  }
+  length = cols.length;
+  for (i = 0; i < length; i++) {
+    cols.items[i].sync(0, depth);
+  }
+  this.getColumnLevels(cols, depth, result);
+  keys = Ext.Object.getKeys(result);
+  length = keys.length;
+  for (i = 0; i < length; i++) {
+    arr = result[keys[i]];
+    len = arr.length;
+    for (j = 0; j < len; j++) {
+      if (j === 0) {
+        index = 1;
+      } else {
+        if (arr[j - 1]) {
+          prevCol = arr[j - 1].getConfig();
+          index += prevCol.mergeAcross ? prevCol.mergeAcross + 1 : 1;
+        } else {
+          index++;
+        }
+      }
+      if (arr[j]) {
+        arr[j].setIndex(index);
+      }
+    }
+  }
+}, getLeveledColumns:function() {
+  var cols = this.getColumns(), depth = this.getColDepth(cols, -1), result = {};
+  this.getColumnLevels(cols, depth, result, true);
+  return result;
+}, getBottomColumns:function() {
+  var result = this.getLeveledColumns(), keys, len;
+  keys = Ext.Object.getKeys(result);
+  len = keys.length;
+  return len ? result[keys[keys.length - 1]] : [];
+}, getColumnLevels:function(columns, depth, result, topDown) {
+  var col, i, j, len, name, level, cols;
+  if (!columns) {
+    return;
+  }
+  len = columns.length;
+  for (i = 0; i < len; i++) {
+    col = columns.items[i];
+    level = col.getLevel();
+    cols = col.getColumns();
+    name = 's' + level;
+    result[name] = result[name] || [];
+    result[name].push(col);
+    if (!cols) {
+      for (j = level + 1; j <= depth; j++) {
+        name = 's' + j;
+        result[name] = result[name] || [];
+        result[name].push(topDown ? col : null);
+      }
+    } else {
+      this.getColumnLevels(cols, depth, result, topDown);
+    }
+  }
+}, onColumnAdd:function(collection, details) {
+  var items = details.items, length = items.length, i, item;
+  for (i = 0; i < length; i++) {
+    item = items[i];
+    item.setTable(this);
+  }
+  this.syncColumns();
+}, onColumnRemove:function(collection, details) {
+  Ext.destroy(details.items);
+  this.syncColumns();
+}, getColumnCount:function() {
+  var cols = this._columns, s = 0, i, length;
+  if (cols) {
+    length = cols.length;
+    for (i = 0; i < length; i++) {
+      s += cols.items[i].getColumnCount();
+    }
+  }
+  return s;
+}, getColDepth:function(columns, level) {
+  var m = 0, i, len;
+  if (!columns) {
+    return level;
+  }
+  len = columns.length;
+  for (i = 0; i < len; i++) {
+    m = Math.max(m, this.getColDepth(columns.items[i]._columns, level + 1));
+  }
+  return m;
+}, addColumn:function(config) {
+  if (!this._columns) {
+    this.setColumns([]);
+  }
+  return this._columns.add(config || {});
+}, getColumn:function(id) {
+  return this._columns ? this._columns.get(id) : null;
+}});
+Ext.define('Ext.exporter.file.Base', {extend:Ext.exporter.data.Base, tpl:null, destroy:function() {
+  this.tpl = null;
+  this.callParent();
+}, render:function() {
+  var me = this, data = me.processRenderData(me.getRenderData());
+  return me.tpl ? Ext.XTemplate.getTpl(me, 'tpl').apply(data) : '';
+}, processRenderData:function(data) {
+  return data;
+}, getRenderData:function() {
+  var data = this.getConfig();
+  data.self = this;
+  return data;
+}});
+Ext.define('Ext.exporter.file.Style', {extend:Ext.exporter.file.Base, config:{name:null, alignment:null, font:null, interior:null, format:null, borders:null, checks:{alignment:{horizontal:['Automatic', 'Left', 'Center', 'Right', 'Justify'], readingOrder:['LeftToRight', 'RightToLeft', 'Context'], vertical:['Automatic', 'Top', 'Bottom', 'Center']}, font:{bold:[true, false], italic:[true, false], strikeThrough:[true, false], underline:['None', 'Single']}, border:{position:['Left', 'Top', 'Right', 'Bottom'], 
+lineStyle:['None', 'Continuous', 'Dash', 'Dot']}, interior:{pattern:['None', 'Solid']}}}, datePatterns:{'General Date':'Y-m-d H:i:s', 'Long Date':'l, F d, Y', 'Medium Date':'Y-m-d', 'Short Date':'n/j/Y', 'Long Time':'g:i:s A', 'Medium Time':'H:i:s', 'Short Time':'g:i A'}, numberPatterns:{'General Number':'0', 'Fixed':'0.00', 'Standard':'0.00'}, booleanPatterns:{'Yes/No':['Yes', 'No'], 'True/False':['True', 'False'], 'On/Off':['On', 'Off']}, isStyle:true, autoGenerateKey:['alignment', 'font', 'interior', 
+'format', 'borders'], constructor:function(config) {
+  this.callParent([this.uncapitalizeKeys(config)]);
+}, uncapitalizeKeys:function(config) {
+  var ret = config, keys, len, i, key;
+  if (Ext.isObject(config)) {
+    ret = {};
+    keys = Ext.Object.getAllKeys(config);
+    len = keys.length;
+    for (i = 0; i < len; i++) {
+      key = keys[i];
+      ret[Ext.String.uncapitalize(key)] = this.uncapitalizeKeys(config[key]);
+    }
+  } else {
+    if (Ext.isArray(config)) {
+      ret = [];
+      len = config.length;
+      for (i = 0; i < len; i++) {
+        ret.push(this.uncapitalizeKeys(config[i]));
+      }
+    }
+  }
+  return ret;
+}, destroy:function() {
+  var me = this;
+  me.setAlignment(null);
+  me.setFont(null);
+  me.setInterior(null);
+  me.setBorders(null);
+  me.setChecks(null);
+  me.callParent();
+}, updateAlignment:function(data) {
+  this.checkAttribute(data, 'alignment');
+}, updateFont:function(data) {
+  this.checkAttribute(data, 'font');
+}, updateInterior:function(data) {
+  this.checkAttribute(data, 'interior');
+}, applyBorders:function(borders, oldBolders) {
+  if (!borders) {
+    return borders;
+  }
+  borders = Ext.Array.from(borders);
+  if (Ext.Array.unique(Ext.Array.pluck(borders, 'position')).length !== borders.length) {
+    Ext.raise('Invalid border positions supplied');
+  }
+  return borders;
+}, updateBorders:function(data) {
+  this.checkAttribute(data, 'border');
+}, checkAttribute:function(data, checkName) {
+  var checks = this.getChecks(), values, keys, len, i, j, arr, key, obj, lenV, valid;
+  if (!data || !checks || !checks[checkName]) {
+    return;
+  }
+  values = Ext.Array.from(data);
+  lenV = values.length;
+  for (i = 0; i < lenV; i++) {
+    obj = values[i];
+    keys = Ext.Object.getKeys(obj || {});
+    len = keys.length;
+    for (j = 0; j < len; j++) {
+      key = keys[j];
+      arr = checks[checkName][key];
+      if (arr && obj[key]) {
+        valid = Ext.isArray(arr) ? Ext.Array.indexOf(arr, obj[key]) > -1 : arr === obj[key];
+        if (!valid) {
+          delete obj[key];
+          Ext.raise(Ext.String.format('Invalid key (%0) or value (%1) provided for Style!', key, obj[key]));
+        }
+      }
+    }
+  }
+}, getFormattedValue:function(v) {
+  var me = this, f = me.getFormat(), ret = v, fmt = Ext.util.Format;
+  if (!f || f === 'General' || Ext.isEmpty(v)) {
+    return ret;
+  }
+  if (f === 'Currency') {
+    return fmt.currency(v);
+  } else {
+    if (f === 'Euro Currency') {
+      return fmt.currency(v, '€');
+    } else {
+      if (f === 'Percent') {
+        return fmt.number(v * 100, '0.00') + '%';
+      } else {
+        if (f === 'Scientific') {
+          return Number(v).toExponential();
+        } else {
+          if (me.datePatterns[f]) {
+            return fmt.date(v, me.datePatterns[f]);
+          } else {
+            if (me.numberPatterns[f]) {
+              return fmt.number(v, me.numberPatterns[f]);
+            } else {
+              if (me.booleanPatterns[f]) {
+                return v ? me.booleanPatterns[f][0] : me.booleanPatterns[f][1];
+              } else {
+                if (Ext.isFunction(f)) {
+                  return f(v);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return fmt.number(v, f);
+}});
+Ext.define('Ext.exporter.File', {singleton:true, textPopupWait:'You may close this window after the file is downloaded!', textPopupBlocker:'The file was not saved because pop-up blocker might be enabled! ' + 'Please check your browser settings.', url:'https://exporter.sencha.com', forceDownload:false, requiresPopup:function() {
+  var pt = Ext.platformTags;
+  return this.forceDownload || Ext.isSafari || pt.phone || pt.tablet;
+}, initializePopup:function(binary) {
+  var me = this, required = me.requiresPopup(), win;
+  if (!required && binary) {
+    required = !me.saveBlobAs;
+  }
+  me.popup = null;
+  if (required) {
+    win = window.open('', '_blank');
+    if (win) {
+      me.popup = win;
+      win.document.write(Ext.dom.Helper.markup({tag:'html', children:[{tag:'head'}, {tag:'body', children:[{tag:'p', html:me.textPopupWait}]}]}));
+    }
+  }
+}, saveBinaryAs:function(content, filename, charset, mimeType) {
+  var me = this, saveAs = me.downloadBinaryAs;
+  if (!me.requiresPopup() && me.saveBlobAs) {
+    saveAs = me.saveBlobAs;
+  }
+  return saveAs.call(me, content, filename, charset, mimeType);
+}, downloadBinaryAs:function(content, filename, charset, mimeType) {
+  var deferred = new Ext.Deferred, markup, win;
+  if (!this.url) {
+    Ext.raise('Cannot download file since no URL was defined!');
+    return deferred.promise;
+  }
+  markup = Ext.dom.Helper.markup({tag:'html', children:[{tag:'head'}, {tag:'body', children:[{tag:'form', method:'POST', action:this.url, children:[{tag:'input', type:'hidden', name:'content', value:Ext.util.Base64.encode(content)}, {tag:'input', type:'hidden', name:'filename', value:filename}, {tag:'input', type:'hidden', name:'charset', value:charset || 'UTF-8'}, {tag:'input', type:'hidden', name:'mime', value:mimeType || 'application/octet-stream'}]}, {tag:'script', type:'text/javascript', children:'document.getElementsByTagName("form")[0].submit();'}]}]});
+  win = this.popup || window.open('', '_blank');
+  if (win) {
+    win.document.write(markup);
+    deferred.resolve();
+  } else {
+    deferred.reject(this.textPopupBlocker);
+  }
+  this.popup = null;
+  return deferred.promise;
+}}, function(File) {
+  var navigator = window.navigator, saveAs = window.saveAs || function(view) {
+    if (typeof navigator !== 'undefined' && /MSIE [1-9]\./.test(navigator.userAgent)) {
+      return;
+    }
+    var doc = view.document, get_URL = function() {
+      return view.URL || view.webkitURL || view;
+    }, save_link = doc.createElementNS('http://www.w3.org/1999/xhtml', 'a'), can_use_save_link = 'download' in save_link, click = function(node) {
+      var event = new MouseEvent('click');
+      node.dispatchEvent(event);
+    }, is_safari = /Version\/[\d.]+.*Safari/.test(navigator.userAgent), webkit_req_fs = view.webkitRequestFileSystem, req_fs = view.requestFileSystem || webkit_req_fs || view.mozRequestFileSystem, throw_outside = function(ex) {
+      (view.setImmediate || view.setTimeout)(function() {
+        throw ex;
+      }, 0);
+    }, force_saveable_type = 'application/octet-stream', fs_min_size = 0, arbitrary_revoke_timeout = 1000 * 40, revoke = function(file) {
+      var revoker = function() {
+        if (typeof file === 'string') {
+          get_URL().revokeObjectURL(file);
+        } else {
+          file.remove();
+        }
+      };
+      setTimeout(revoker, arbitrary_revoke_timeout);
+    }, dispatch = function(filesaver, event_types, event) {
+      var i, listener;
+      event_types = [].concat(event_types);
+      i = event_types.length;
+      while (i--) {
+        listener = filesaver['on' + event_types[i]];
+        if (typeof listener === 'function') {
+          try {
+            listener.call(filesaver, event || filesaver);
+          } catch (ex) {
+            throw_outside(ex);
+          }
+        }
+      }
+    }, auto_bom = function(blob) {
+      if (/^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(blob.type)) {
+        return new Blob(['﻿', blob], {type:blob.type});
+      }
+      return blob;
+    }, FileSaver = function(blob, name, no_auto_bom) {
+      if (!no_auto_bom) {
+        blob = auto_bom(blob);
+      }
+      var filesaver = this, type = blob.type, blob_changed = false, object_url, target_view, dispatch_all = function() {
+        dispatch(filesaver, 'writestart progress write writeend'.split(' '));
+      }, fs_error = function() {
+        var reader, new_tab;
+        if (target_view && is_safari && typeof FileReader !== 'undefined') {
+          reader = new FileReader;
+          reader.onloadend = function() {
+            var base64Data = reader.result;
+            target_view.location.href = 'data:attachment/file' + base64Data.slice(base64Data.search(/[,;]/));
+            filesaver.readyState = filesaver.DONE;
+            dispatch_all();
+          };
+          reader.readAsDataURL(blob);
+          filesaver.readyState = filesaver.INIT;
+          return;
+        }
+        if (blob_changed || !object_url) {
+          object_url = get_URL().createObjectURL(blob);
+        }
+        if (target_view) {
+          target_view.location.href = object_url;
+        } else {
+          new_tab = view.open(object_url, '_blank');
+          if (new_tab === undefined && is_safari) {
+            view.location.href = object_url;
+          }
+        }
+        filesaver.readyState = filesaver.DONE;
+        dispatch_all();
+        revoke(object_url);
+      }, abortable = function(func) {
+        return function() {
+          if (filesaver.readyState !== filesaver.DONE) {
+            return func.apply(this, arguments);
+          }
+        };
+      }, create_if_not_found = {create:true, exclusive:false}, slice;
+      filesaver.readyState = filesaver.INIT;
+      if (!name) {
+        name = 'download';
+      }
+      if (can_use_save_link) {
+        object_url = get_URL().createObjectURL(blob);
+        setTimeout(function() {
+          save_link.href = object_url;
+          save_link.download = name;
+          click(save_link);
+          dispatch_all();
+          revoke(object_url);
+          filesaver.readyState = filesaver.DONE;
+        });
+        return;
+      }
+      if (view.chrome && type && type !== force_saveable_type) {
+        slice = blob.slice || blob.webkitSlice;
+        blob = slice.call(blob, 0, blob.size, force_saveable_type);
+        blob_changed = true;
+      }
+      if (webkit_req_fs && name !== 'download') {
+        name += '.download';
+      }
+      if (type === force_saveable_type || webkit_req_fs) {
+        target_view = view;
+      }
+      if (!req_fs) {
+        fs_error();
+        return;
+      }
+      fs_min_size += blob.size;
+      req_fs(view.TEMPORARY, fs_min_size, abortable(function(fs) {
+        fs.root.getDirectory('saved', create_if_not_found, abortable(function(dir) {
+          var save = function() {
+            dir.getFile(name, create_if_not_found, abortable(function(file) {
+              file.createWriter(abortable(function(writer) {
+                writer.onwriteend = function(event) {
+                  target_view.location.href = file.toURL();
+                  filesaver.readyState = filesaver.DONE;
+                  dispatch(filesaver, 'writeend', event);
+                  revoke(file);
+                };
+                writer.onerror = function() {
+                  var error = writer.error;
+                  if (error.code !== error.ABORT_ERR) {
+                    fs_error();
+                  }
+                };
+                ['writestart', 'progress', 'write', 'abort'].forEach(function(event) {
+                  writer['on' + event] = filesaver['on' + event];
+                });
+                writer.write(blob);
+                filesaver.abort = function() {
+                  writer.abort();
+                  filesaver.readyState = filesaver.DONE;
+                };
+                filesaver.readyState = filesaver.WRITING;
+              }), fs_error);
+            }), fs_error);
+          };
+          dir.getFile(name, {create:false}, abortable(function(file) {
+            file.remove();
+            save();
+          }), abortable(function(ex) {
+            if (ex.code === ex.NOT_FOUND_ERR) {
+              save();
+            } else {
+              fs_error();
+            }
+          }));
+        }), fs_error);
+      }), fs_error);
+    }, FS_proto = FileSaver.prototype, saveAs = function(blob, name, no_auto_bom) {
+      return new FileSaver(blob, name, no_auto_bom);
+    };
+    if (typeof navigator !== 'undefined' && navigator.msSaveOrOpenBlob) {
+      return function(blob, name, no_auto_bom) {
+        if (!no_auto_bom) {
+          blob = auto_bom(blob);
+        }
+        return navigator.msSaveOrOpenBlob(blob, name || 'download');
+      };
+    }
+    FS_proto.abort = function() {
+      var filesaver = this;
+      filesaver.readyState = filesaver.DONE;
+      dispatch(filesaver, 'abort');
+    };
+    FS_proto.readyState = FS_proto.INIT = 0;
+    FS_proto.WRITING = 1;
+    FS_proto.DONE = 2;
+    FS_proto.error = FS_proto.onwritestart = FS_proto.onprogress = FS_proto.onwrite = FS_proto.onabort = FS_proto.onerror = FS_proto.onwriteend = null;
+    return saveAs;
+  }(typeof self !== 'undefined' && self || typeof window !== 'undefined' && window || this.content);
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports.saveAs = saveAs;
+  } else {
+    if (typeof define !== 'undefined' && define !== null && define.amd !== null) {
+      define([], function() {
+        return saveAs;
+      });
+    }
+  }
+  var saveTextAs = window.saveTextAs || function(textContent, fileName, charset) {
+    var blob, saveTxtWindow, doc, retValue;
+    fileName = fileName || 'download.txt';
+    charset = charset || 'utf-8';
+    textContent = (textContent || '').replace(/\r?\n/g, '\r\n');
+    if (saveAs && Blob) {
+      blob = new Blob([textContent], {type:'text/plain;charset\x3d' + charset});
+      saveAs(blob, fileName);
+      return true;
+    } else {
+      saveTxtWindow = window.frames.saveTxtWindow;
+      if (!saveTxtWindow) {
+        saveTxtWindow = document.createElement('iframe');
+        saveTxtWindow.id = 'saveTxtWindow';
+        saveTxtWindow.style.display = 'none';
+        document.body.insertBefore(saveTxtWindow, null);
+        saveTxtWindow = window.frames.saveTxtWindow;
+        if (!saveTxtWindow) {
+          saveTxtWindow = File.popup || window.open('', '_temp', 'width\x3d100,height\x3d100');
+          if (!saveTxtWindow) {
+            return false;
+          }
+        }
+      }
+      doc = saveTxtWindow.document;
+      doc.open('text/html', 'replace');
+      doc.charset = charset;
+      doc.write(textContent);
+      doc.close();
+      retValue = doc.execCommand('SaveAs', null, fileName);
+      saveTxtWindow.close();
+      return retValue;
+    }
+  };
+  File.saveAs = function(content, filename, charset, mimeType) {
+    var deferred;
+    if (this.requiresPopup()) {
+      return this.downloadBinaryAs(content, filename, charset || 'UTF-8', mimeType || 'text/plain');
+    } else {
+      deferred = new Ext.Deferred;
+      if (saveTextAs(content, filename, charset)) {
+        deferred.resolve();
+      } else {
+        deferred.reject();
+      }
+      return deferred.promise;
+    }
+  };
+  if (saveAs && Blob) {
+    File.saveBlobAs = function(textContent, fileName, charset, mimeType) {
+      var deferred = new Ext.Deferred, uint8 = new Uint8Array(textContent.length), len = uint8.length, bType = {type:mimeType || 'application/octet-stream'}, blob, i;
+      for (i = 0; i < len; i++) {
+        uint8[i] = textContent.charCodeAt(i);
+      }
+      blob = new Blob([uint8], bType);
+      saveAs(blob, fileName);
+      deferred.resolve();
+      return deferred.promise;
+    };
+  }
+});
+Ext.define('Ext.exporter.Base', {mixins:[Ext.mixin.Factoryable], alias:'exporter.base', config:{data:null, showSummary:true, title:null, author:'Sencha', fileName:'export.txt', charset:'UTF-8', mimeType:'text/plain', binary:false}, constructor:function(config) {
+  this.initConfig(config || {});
+  Ext.exporter.File.initializePopup(this.getBinary());
+  return this.callParent([config]);
+}, destroy:function() {
+  this.setData(Ext.destroy(this.getData()));
+  this.callParent();
+}, getContent:Ext.identityFn, saveAs:function() {
+  var me = this, deferred = new Ext.Deferred;
+  Ext.asap(me.delayedSave, me, [deferred]);
+  return deferred.promise;
+}, delayedSave:function(deferred) {
+  var me = this, fn = me.getBinary() ? 'saveBinaryAs' : 'saveAs', promise = Ext.exporter.File[fn](me.getContent(), me.getFileName(), me.getCharset(), me.getMimeType());
+  promise.then(function() {
+    deferred.resolve();
+  }, function(msg) {
+    deferred.reject(msg);
+  });
+}, getColumnCount:function(columns) {
+  var s = 0, i;
+  if (!columns) {
+    return s;
+  }
+  for (i = 0; i < columns.length; i++) {
+    if (!columns[i].columns) {
+      s += 1;
+    } else {
+      s += this.getColumnCount(columns[i].columns);
+    }
+  }
+  return s;
+}, applyData:function(data) {
+  if (!data || data.isDataTable) {
+    return data;
+  }
+  return new Ext.exporter.data.Table(data);
+}});
+Ext.define('Ext.exporter.file.ooxml.Base', {extend:Ext.exporter.file.Base, config:{tplAttributes:{$value:[], merge:function(newValue, oldValue) {
+  return [].concat(newValue, oldValue);
+}}, tplNonAttributes:{$value:['idPrefix', 'id', 'autoGenerateId', 'self', 'tplAttributes', 'tplNonAttributes'], merge:function(newValue, oldValue) {
+  return [].concat(newValue, oldValue);
+}}}, generateTplAttributes:false, processRenderData:function(data) {
+  var attr = this.getTplAttributes(), nonAttr = this.getTplNonAttributes(), keys = Ext.Object.getAllKeys(data), len = keys.length, str = '', i, key;
+  if (!this.generateTplAttributes) {
+    data.attributes = '';
+    return data;
+  }
+  for (i = 0; i < len; i++) {
+    key = keys[i];
+    if (attr && attr.length) {
+      if (Ext.Array.indexOf(attr, key) >= 0 && data[key] !== null) {
+        str += (str.length ? ' ' : '') + this.processTplAttribute(key, data[key]);
+      }
+    } else {
+      if (nonAttr && nonAttr.length) {
+        if (Ext.Array.indexOf(nonAttr, key) < 0 && data[key] !== null) {
+          str += (str.length ? ' ' : '') + this.processTplAttribute(key, data[key]);
+        }
+      }
+    }
+  }
+  data.attributes = str;
+  return data;
+}, processTplAttribute:function(attr, value) {
+  var v = value;
+  if (typeof value === 'boolean') {
+    v = Number(value);
+  } else {
+    if (typeof value === 'string') {
+      v = Ext.util.Base64._utf8_encode(Ext.util.Format.htmlEncode(value || ''));
+    }
+  }
+  return attr + '\x3d"' + v + '"';
+}});
+Ext.define('Ext.exporter.file.ooxml.Relationship', {extend:Ext.exporter.file.Base, isRelationship:true, config:{idPrefix:'rId', schema:'', target:'', parentFolder:null, path:null}, tpl:['\x3cRelationship Id\x3d"{id}" Type\x3d"{schema}" Target\x3d"{path}"/\x3e'], updateTarget:function(target) {
+  this.calculatePath();
+}, applyParentFolder:function(folder) {
+  folder = folder || '';
+  if (folder[folder.length - 1] === '/') {
+    folder = folder.slice(0, folder.length - 1);
+  }
+  return folder;
+}, updateParentFolder:function(folder) {
+  this.calculatePath();
+}, calculatePath:function() {
+  var from = String(this.getParentFolder() || ''), to = String(this.getTarget() || ''), fromParts = from.split('/'), toParts = to.split('/'), length = Math.min(fromParts.length, toParts.length), samePartsLength = length, path = '', outputParts = [], i;
+  for (i = 0; i < length; i++) {
+    if (fromParts[i] !== toParts[i]) {
+      samePartsLength = i;
+      break;
+    }
+  }
+  if (samePartsLength === 0) {
+    path = to;
+  } else {
+    for (i = samePartsLength; i < fromParts.length; i++) {
+      outputParts.push('..');
+    }
+    outputParts = outputParts.concat(toParts.slice(samePartsLength));
+    path = outputParts.join('/');
+  }
+  this.setPath(path);
+}});
+Ext.define('Ext.exporter.file.ooxml.ContentType', {extend:Ext.exporter.file.Base, isContentType:true, config:{tag:'Override', partName:'', contentType:'', extension:''}, tpl:['\x3c{tag}', '\x3ctpl if\x3d"extension"\x3e Extension\x3d"{extension}"\x3c/tpl\x3e', '\x3ctpl if\x3d"partName"\x3e PartName\x3d"{partName}"\x3c/tpl\x3e', '\x3ctpl if\x3d"contentType"\x3e ContentType\x3d"{contentType}"\x3c/tpl\x3e', '/\x3e']});
+Ext.define('Ext.exporter.file.ooxml.Xml', {extend:Ext.exporter.file.ooxml.Base, config:{folder:null, fileName:null, path:null, relationship:null, contentType:null}, cachedConfig:{fileNameTemplate:'{fileName}.xml'}, tplNonAttributes:['path', 'relationship', 'contentType', 'fileName', 'folder', 'fileNameTemplate'], destroy:function() {
+  this.setRelationship(null);
+  this.setContentType(null);
+  this.callParent();
+}, applyFolder:function(folder) {
+  folder = folder || '';
+  if (folder[folder.length - 1] !== '/') {
+    folder += '/';
+  }
+  return folder;
+}, updateFolder:function() {
+  this.generatePath();
+}, updateFileName:function() {
+  this.generatePath();
+}, getFileNameFromTemplate:function() {
+  var tpl = Ext.XTemplate.getTpl(this, '_fileNameTemplate');
+  return tpl ? tpl.apply(this.getConfig()) : '';
+}, generatePath:function() {
+  this.setPath((this.getFolder() || '') + this.getFileNameFromTemplate());
+}, updatePath:function(path) {
+  var relationship = this.getRelationship(), type = this.getContentType();
+  if (relationship) {
+    relationship.setTarget(path);
+  }
+  if (type) {
+    type.setPartName(path);
+  }
+}, applyRelationship:function(data) {
+  if (!data || data.isRelationship) {
+    return data;
+  }
+  return new Ext.exporter.file.ooxml.Relationship(data);
+}, updateRelationship:function(data, oldData) {
+  Ext.destroy(oldData);
+}, applyContentType:function(data) {
+  if (!data || data.isContentType) {
+    return data;
+  }
+  return new Ext.exporter.file.ooxml.ContentType(data);
+}, updateContentType:function(data, oldData) {
+  Ext.destroy(oldData);
+}, collectFiles:Ext.emptyFn});
+Ext.define('Ext.exporter.file.ooxml.Relationships', {extend:Ext.exporter.file.ooxml.Xml, isRelationships:true, currentIndex:1, config:{parentFolder:null, items:[]}, contentType:{contentType:'application/vnd.openxmlformats-package.relationships+xml'}, fileNameTemplate:'{fileName}.rels', tpl:['\x3c?xml version\x3d"1.0" encoding\x3d"UTF-8" standalone\x3d"yes"?\x3e', '\x3cRelationships xmlns\x3d"http://schemas.openxmlformats.org/package/2006/relationships"\x3e', '\x3ctpl if\x3d"items"\x3e\x3ctpl for\x3d"items.getRange()"\x3e{[values.render()]}\x3c/tpl\x3e\x3c/tpl\x3e', 
+'\x3c/Relationships\x3e'], collectFiles:function(files) {
+  var items = this.getItems(), length = items.length, folder = this.getParentFolder(), i;
+  if (length) {
+    for (i = 0; i < length; i++) {
+      items.getAt(i).setParentFolder(folder);
+    }
+    files[this.getPath()] = this.render();
+  }
+}, applyFolder:function(folder, oldFolder) {
+  folder = this.callParent([folder, oldFolder]);
+  return folder + '_rels/';
+}, applyItems:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.file.ooxml.Relationship');
+}, updateItems:function(collection, oldCollection) {
+  var me = this;
+  if (oldCollection) {
+    oldCollection.un({add:me.updateIds, remove:me.updateIds, scope:me});
+  }
+  if (collection) {
+    collection.on({add:me.updateIds, remove:me.updateIds, scope:me});
+  }
+}, updateIds:function(items) {
+  var i, len, item;
+  if (!items) {
+    return;
+  }
+  len = items.length;
+  for (i = 0; i < len; i++) {
+    item = items.getAt(i);
+    item.setId('rId' + (i + 1));
+  }
+}, addRelationship:function(config) {
+  return this.getItems().add(config || {});
+}, removeRelationship:function(config) {
+  return this.getItems().remove(config);
+}});
+Ext.define('Ext.exporter.file.ooxml.XmlRels', {extend:Ext.exporter.file.ooxml.Xml, config:{index:null, name:null, relationships:{contentType:{contentType:'application/vnd.openxmlformats-package.relationships+xml'}}}, cachedConfig:{nameTemplate:'{name}'}, tplNonAttributes:['index', 'relationships', 'nameTemplate'], contentType:{}, relationship:{}, fileNameTemplate:'{fileName}{index}.xml', destroy:function() {
+  this.setRelationships(null);
+  this.callParent();
+}, updateFolder:function(folder, oldFolder) {
+  var rels = this.getRelationships();
+  if (rels) {
+    rels.setFolder(folder);
+  }
+  this.callParent([folder, oldFolder]);
+}, applyRelationships:function(data) {
+  if (!data || data.isRelationships) {
+    return data;
+  }
+  return new Ext.exporter.file.ooxml.Relationships(data);
+}, updateRelationships:function(data, oldData) {
+  Ext.destroy(oldData);
+}, updateIndex:function() {
+  this.generatePath();
+}, generateName:function() {
+  var tpl = Ext.XTemplate.getTpl(this, '_nameTemplate');
+  this.setName(tpl ? tpl.apply(this.getConfig()) : '');
+}, collectFiles:function(files) {
+  this.collectRelationshipsFiles(files);
+  files[this.getPath()] = this.render();
+}, collectRelationshipsFiles:function(files) {
+  var rels = this.getRelationships(), name = this.getFileName();
+  if (rels) {
+    rels.setFileName(name ? this.getFileNameFromTemplate() : '');
+    rels.setParentFolder(this.getFolder());
+    rels.collectFiles(files);
+  }
+}, collectContentTypes:function(types) {
+  types.push(this.getContentType());
+}});
+Ext.define('Ext.exporter.file.zip.File', {extend:Ext.Base, config:{path:'', data:null, dateTime:null, folder:false}, constructor:function(config) {
+  var me = this;
+  me.initConfig(config);
+  if (!me.getDateTime()) {
+    me.setDateTime(new Date);
+  }
+  return me.callParent([config]);
+}, getId:function() {
+  return this.getPath();
+}, crc32:function(input, crc) {
+  var table = this.self.crcTable, x = 0, y = 0, b = 0, isArray, i, iTop;
+  if (typeof input === 'undefined' || !input.length) {
+    return 0;
+  }
+  isArray = typeof input !== 'string';
+  if (typeof crc === 'undefined') {
+    crc = 0;
+  }
+  crc = crc ^ -1;
+  for (i = 0, iTop = input.length; i < iTop; i++) {
+    b = isArray ? input[i] : input.charCodeAt(i);
+    y = (crc ^ b) & 255;
+    x = table[y];
+    crc = crc >>> 8 ^ x;
+  }
+  return crc ^ -1;
+}, getHeader:function(offset) {
+  var data = this.getData(), path = this.getPath(), utfName = Ext.util.Base64._utf8_encode(path), useUTF8 = utfName !== path, dateTime = this.getDateTime(), extraFields = '', unicodePathExtraField = '', decToHex = Ext.util.Format.decToHex, header = '', dosTime, dosDate, fileHeader, dirHeader;
+  dosTime = dateTime.getHours();
+  dosTime = dosTime << 6;
+  dosTime = dosTime | dateTime.getMinutes();
+  dosTime = dosTime << 5;
+  dosTime = dosTime | dateTime.getSeconds() / 2;
+  dosDate = dateTime.getFullYear() - 1980;
+  dosDate = dosDate << 4;
+  dosDate = dosDate | dateTime.getMonth() + 1;
+  dosDate = dosDate << 5;
+  dosDate = dosDate | dateTime.getDate();
+  if (useUTF8) {
+    unicodePathExtraField = decToHex(1, 1) + decToHex(this.crc32(utfName), 4) + utfName;
+    extraFields += 'up' + decToHex(unicodePathExtraField.length, 2) + unicodePathExtraField;
+  }
+  header += '\n\x00';
+  header += useUTF8 ? '\x00\b' : '\x00\x00';
+  header += '\x00\x00';
+  header += decToHex(dosTime, 2);
+  header += decToHex(dosDate, 2);
+  header += decToHex(data ? this.crc32(data) : 0, 4);
+  header += decToHex(data ? data.length : 0, 4);
+  header += decToHex(data ? data.length : 0, 4);
+  header += decToHex(utfName.length, 2);
+  header += decToHex(extraFields.length, 2);
+  fileHeader = 'PK' + header + utfName + extraFields;
+  dirHeader = 'PK' + '\x00' + header + '\x00\x00' + '\x00\x00' + '\x00\x00' + (this.getFolder() === true ? '\x00\x00\x00' : '\x00\x00\x00\x00') + decToHex(offset, 4) + utfName + extraFields;
+  return {fileHeader:fileHeader, dirHeader:dirHeader, data:data || ''};
+}}, function(File) {
+  var table = [], c, n, k;
+  for (n = 0; n < 256; n++) {
+    c = n;
+    for (k = 0; k < 8; k++) {
+      c = c & 1 ? 3.988292384E9 ^ c >>> 1 : c >>> 1;
+    }
+    table[n] = c;
+  }
+  File.crcTable = table;
+});
+Ext.define('Ext.exporter.file.zip.Folder', {extend:Ext.exporter.file.zip.File, folder:true});
+Ext.define('Ext.exporter.file.zip.Archive', {extend:Ext.exporter.file.Base, config:{folders:[], files:[]}, destroy:function() {
+  this.setFolders(null);
+  this.setFiles(null);
+  this.callParent();
+}, applyFolders:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.file.zip.Folder');
+}, applyFiles:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.file.zip.File');
+}, updateFiles:function(collection, oldCollection) {
+  var me = this;
+  if (oldCollection) {
+    oldCollection.un({add:me.onFileAdd, remove:me.onFileRemove, scope:me});
+  }
+  if (collection) {
+    collection.on({add:me.onFileAdd, remove:me.onFileRemove, scope:me});
+    me.onFileAdd(collection, {items:collection.getRange()});
+  }
+}, onFileAdd:function(collection, details) {
+  var folders = this.getFolders(), items = details.items, length = items.length, i, item, folder;
+  for (i = 0; i < length; i++) {
+    item = items[i];
+    folder = this.getParentFolder(item.getPath());
+    if (folder) {
+      folders.add({path:folder});
+    }
+  }
+}, onFileRemove:function(collection, details) {
+  Ext.destroy(details.items);
+}, getParentFolder:function(path) {
+  var lastSlash;
+  if (path.slice(-1) === '/') {
+    path = path.substring(0, path.length - 1);
+  }
+  lastSlash = path.lastIndexOf('/');
+  return lastSlash > 0 ? path.substring(0, lastSlash + 1) : '';
+}, addFile:function(config) {
+  return this.getFiles().add(config || {});
+}, removeFile:function(config) {
+  return this.getFiles().remove(config);
+}, getContent:function() {
+  var fileData = '', dirData = '', localDirLength = 0, centralDirLength = 0, decToHex = Ext.util.Format.decToHex, files = [], len, dirEnd, i, file, header;
+  Ext.Array.insert(files, 0, this._folders.items);
+  Ext.Array.insert(files, files.length, this._files.items);
+  len = files.length;
+  for (i = 0; i < len; i++) {
+    file = files[i];
+    header = file.getHeader(localDirLength);
+    localDirLength += header.fileHeader.length + header.data.length;
+    centralDirLength += header.dirHeader.length;
+    fileData += header.fileHeader + header.data;
+    dirData += header.dirHeader;
+  }
+  dirEnd = 'PK' + '\x00\x00' + '\x00\x00' + decToHex(len, 2) + decToHex(len, 2) + decToHex(centralDirLength, 4) + decToHex(localDirLength, 4) + '\x00\x00';
+  fileData += dirData + dirEnd;
+  return fileData;
+}});
+Ext.define('Ext.exporter.file.ooxml.excel.Sheet', {extend:Ext.exporter.file.ooxml.XmlRels, config:{workbook:null}, folder:'sheet', fileName:'sheet', nameTemplate:'Sheet{index}', fileNameTemplate:'{fileName}{index}.xml', nameLengthLimit:31, nameRegex:/[\/*?:\[\]]/gi, destroy:function() {
+  this.callParent();
+  this.setWorkbook(null);
+}, updateIndex:function() {
+  if (this._name == null) {
+    this.generateName();
+  }
+  this.callParent(arguments);
+}, applyName:function(value) {
+  var limit = this.nameLengthLimit, name = Ext.String.trim(String(value || '').replace(this.nameRegex, ''));
+  if (name.length > limit + 3) {
+    name = Ext.String.ellipsis(name, limit);
+  } else {
+    name = name.substr(0, limit);
+  }
+  return Ext.util.Format.htmlEncode(name);
+}, updateName:function(name) {
+  var me = this, wb = me.getWorkbook(), generate = false, sheets;
+  if (!me.isNaming && !me.isConfiguring) {
+    if (wb) {
+      sheets = wb.getSheets();
+      generate = !!sheets.findBy(function(item) {
+        return item !== me && item.getName() === name;
+      });
+    }
+    generate = generate || Ext.isEmpty(name);
+    if (generate) {
+      me.isNaming = true;
+      me.generateName();
+      me.isNaming = false;
+    }
+  }
+}});
+Ext.define('Ext.exporter.file.ooxml.excel.Column', {extend:Ext.exporter.file.ooxml.Base, config:{min:1, max:1, width:10, autoFitWidth:false, hidden:false, styleId:null}, tpl:['\x3ccol ', 'min\x3d"{min}" ', 'max\x3d"{max}" ', 'width\x3d"{width}"', '\x3ctpl if\x3d"styleId"\x3e style\x3d"{styleId}"\x3c/tpl\x3e', '\x3ctpl if\x3d"hidden"\x3e hidden\x3d"1"\x3c/tpl\x3e', '\x3ctpl if\x3d"autoFitWidth"\x3e bestFit\x3d"1"\x3c/tpl\x3e', '\x3ctpl if\x3d"width !\x3d 10"\x3e customWidth\x3d"1"\x3c/tpl\x3e', '/\x3e']});
+Ext.define('Ext.exporter.file.ooxml.excel.Cell', {extend:Ext.exporter.file.Base, isCell:true, config:{row:null, dataType:null, showPhonetic:null, index:null, styleId:null, mergeAcross:null, mergeDown:null, value:null, serializeDateToNumber:true}, isMergedCell:false, tpl:['\x3cc r\x3d"{ref}"', '\x3ctpl if\x3d"value !\x3d null"\x3e t\x3d"{dataType}"\x3c/tpl\x3e', '\x3ctpl if\x3d"showPhonetic"\x3e ph\x3d"1"\x3c/tpl\x3e', '\x3ctpl if\x3d"styleId"\x3e s\x3d"{styleId}"\x3c/tpl\x3e', '\x3ctpl if\x3d"value \x3d\x3d null"\x3e/\x3e\x3ctpl else\x3e\x3e\x3cv\x3e{value}\x3c/v\x3e\x3c/c\x3e\x3c/tpl\x3e'], 
+constructor:function(config) {
+  var cfg = config;
+  if (config == null || Ext.isDate(config) || Ext.isPrimitive(config)) {
+    cfg = {value:config};
+  }
+  return this.callParent([cfg]);
+}, destroy:function() {
+  this.setRow(null);
+  this.callParent();
+}, getRef:function() {
+  return this.getNotation(this._index) + this._row._index;
+}, getRenderData:function() {
+  var me = this, data = {}, ws = me._row && me._row._worksheet, wb = ws && ws._workbook;
+  data.dataType = me._dataType;
+  data.value = me._value;
+  data.showPhonetic = me._showPhonetic;
+  data.styleId = me._styleId;
+  if (this.isMergedCell && ws) {
+    ws.setMergedCellsNo(ws._mergedCellsNo + 1);
+  }
+  if (data.dataType === 's' && wb) {
+    data.value = wb._sharedStrings.addString(data.value);
+  }
+  data.ref = this.getRef();
+  return data;
+}, applyValue:function(v) {
+  var me = this, dt;
+  if (v != null) {
+    if (typeof v === 'number') {
+      dt = 'n';
+    } else {
+      if (typeof v === 'string') {
+        dt = 's';
+        v = Ext.util.Format.stripTags(v);
+      } else {
+        if (v instanceof Date) {
+          if (me.getSerializeDateToNumber()) {
+            dt = 'n';
+            v = me.dateValue(v);
+          } else {
+            dt = 'd';
+            v = Ext.Date.format(v, 'Y-m-d\\TH:i:s.u');
+          }
+        } else {
+          dt = 'b';
+        }
+      }
+    }
+    me.setDataType(dt);
+  }
+  return v;
+}, updateMergeAcross:function(v) {
+  this.isMergedCell = v || this._mergeDown;
+}, updateMergeDown:function(v) {
+  this.isMergedCell = v || this._mergeAcross;
+}, getMergedCellRef:function() {
+  var me = this, currIndex = me._index, rowIndex = me._row._index, mAcross = me._mergeAcross, mDown = me._mergeDown, s = me.getNotation(currIndex) + rowIndex + ':';
+  if (mAcross) {
+    currIndex += mAcross;
+  }
+  if (mDown) {
+    rowIndex += mDown;
+  }
+  s += me.getNotation(currIndex) + rowIndex;
+  return s;
+}, getNotation:function(index) {
+  var code = 65, length = 26, getChar = String.fromCharCode, r, n;
+  if (index <= 0) {
+    index = 1;
+  }
+  n = Math.floor(index / length);
+  r = index % length;
+  if (n === 0 || index === length) {
+    return getChar(code + index - 1);
+  } else {
+    if (r === 0) {
+      return this.getNotation(n - 1) + 'Z';
+    } else {
+      if (n < length) {
+        return getChar(code + n - 1) + getChar(code + r - 1);
+      } else {
+        return this.getNotation(n) + getChar(code + r - 1);
+      }
+    }
+  }
+}, dateValue:function(d) {
+  return 25569 + (d.getTime() - d.getTimezoneOffset() * 60 * 1000) / (1000 * 60 * 60 * 24);
+}});
+Ext.define('Ext.exporter.file.ooxml.excel.Row', {extend:Ext.exporter.file.Base, config:{collapsed:null, hidden:null, height:null, outlineLevel:null, showPhonetic:null, index:null, styleId:null, worksheet:null, cells:[], cachedCells:null}, tpl:['\x3crow', '\x3ctpl if\x3d"index"\x3e r\x3d"{index}"\x3c/tpl\x3e', '\x3ctpl if\x3d"collapsed"\x3e collapsed\x3d"{collapsed}"\x3c/tpl\x3e', '\x3ctpl if\x3d"hidden"\x3e hidden\x3d"1"\x3c/tpl\x3e', '\x3ctpl if\x3d"height"\x3e ht\x3d"{height}" customHeight\x3d"1"\x3c/tpl\x3e', 
+'\x3ctpl if\x3d"outlineLevel"\x3e outlineLevel\x3d"{outlineLevel}"\x3c/tpl\x3e', '\x3ctpl if\x3d"styleId"\x3e s\x3d"{styleId}" customFormat\x3d"1"\x3c/tpl\x3e', '\x3ctpl if\x3d"cachedCells"\x3e', '\x3e{cachedCells}\x3c/row\x3e', '\x3ctpl elseif\x3d"cells \x26\x26 cells.length"\x3e', '\x3e\x3ctpl for\x3d"cells.items"\x3e{[values.render()]}\x3c/tpl\x3e\x3c/row\x3e', '\x3ctpl else\x3e', '/\x3e', '\x3c/tpl\x3e'], lastCellIndex:1, constructor:function(config) {
+  var cfg = config;
+  if (Ext.isArray(config)) {
+    cfg = {cells:config};
+  }
+  return this.callParent([cfg]);
+}, destroy:function() {
+  this.setWorksheet(null);
+  this.callParent();
+}, applyCells:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.file.ooxml.excel.Cell');
+}, updateCells:function(collection, oldCollection) {
+  var me = this;
+  if (oldCollection) {
+    collection.un({add:me.onCellAdd, remove:me.onCellRemove, scope:me});
+  }
+  if (collection) {
+    collection.on({add:me.onCellAdd, remove:me.onCellRemove, scope:me});
+    me.onCellAdd(collection, {items:collection.getRange()});
+  }
+}, onCellAdd:function(collection, details) {
+  var items = details.items, length = items.length, i, item, index;
+  for (i = 0; i < length; i++) {
+    item = items[i];
+    item.setRow(this);
+    index = item._index;
+    if (!index) {
+      item.setIndex(this.lastCellIndex++);
+    } else {
+      this.lastCellIndex = Math.max(collection.length, index) + 1;
+    }
+  }
+}, onCellRemove:function(collection, details) {
+  Ext.destroy(details.items);
+  this.updateCellIndexes();
+}, addCell:function(config) {
+  if (!this._cells) {
+    this.setCells([]);
+  }
+  return this._cells.add(config || {});
+}, getCell:function(id) {
+  return this._cells ? this._cells.get(id) : null;
+}, beginCellRendering:function() {
+  var me = this;
+  me.tempCells = [];
+  me.startCaching = true;
+  me.lastCellIndex = 1;
+  if (!me.cachedCell) {
+    me.cachedCell = new Ext.exporter.file.ooxml.excel.Cell({row:me});
+    me.cachedCellConfig = me.cachedCell.getConfig();
+    me.cachedCellConfig.id = null;
+  }
+}, endCellRendering:function() {
+  var me = this;
+  me.setCachedCells(me.tempCells.join(''));
+  me.tempCells = null;
+  me.startCaching = false;
+  me.lastCellIndex = 1;
+}, renderCells:function(cells) {
+  var me = this, ret = {first:null, last:null, row:'', merged:''}, len = cells.length, mergedCells = [], i, cell, config, cache, index;
+  me.beginCellRendering();
+  cache = me.cachedCell;
+  for (i = 0; i < len; i++) {
+    cell = cells[i] || {};
+    if (typeof cell === 'object' && !(cell instanceof Date)) {
+      config = cell;
+    } else {
+      config = {value:cell};
+    }
+    Ext.applyIf(config, me.cachedCellConfig);
+    cache.setValue(config.value);
+    cache.setShowPhonetic(config.showPhonetic);
+    cache.setStyleId(config.styleId);
+    cache.setMergeAcross(config.mergeAcross);
+    cache.setMergeDown(config.mergeDown);
+    cache.setIndex(config.index);
+    index = cache.getIndex();
+    if (!index) {
+      cache.setIndex(me.lastCellIndex++);
+    } else {
+      me.lastCellIndex = Math.max(me.lastCellIndex, index) + 1;
+    }
+    if (i === 0) {
+      ret.first = ret.last = cache.getRef();
+    } else {
+      if (i === len - 1) {
+        ret.last = cache.getRef();
+      }
+    }
+    me.tempCells.push(cache.render());
+    if (cache.isMergedCell) {
+      mergedCells.push('\x3cmergeCell ref\x3d"' + cache.getMergedCellRef() + '"/\x3e');
+    }
+  }
+  me.endCellRendering();
+  ret.row = me.render();
+  ret.merged = mergedCells.join('');
+  return ret;
+}});
+Ext.define('Ext.exporter.file.ooxml.excel.Location', {extend:Ext.exporter.file.ooxml.Base, config:{ref:null, firstHeaderRow:null, firstDataRow:null, firstDataCol:null, rowPageCount:null, colPageCount:null}, generateTplAttributes:true, tpl:['\x3clocation {attributes}/\x3e']});
+Ext.define('Ext.exporter.file.ooxml.excel.FieldItem', {extend:Ext.exporter.file.ooxml.Base, config:{c:null, d:null, e:null, f:null, h:null, m:null, n:null, s:null, sd:null, t:null, x:null}, generateTplAttributes:true, tpl:['\x3citem {attributes}/\x3e']});
+Ext.define('Ext.exporter.file.ooxml.excel.PivotAreaReference', {extend:Ext.exporter.file.ooxml.Base, config:{avgSubtotal:null, byPosition:null, count:null, countASubtotal:null, countSubtotal:null, defaultSubtotal:null, field:null, maxSubtotal:null, minSubtotal:null, productSubtotal:null, relative:null, selected:null, stdDevPSubtotal:null, stdDevSubtotal:null, sumSubtotal:null, varPSubtotal:null, varSubtotal:null, items:[]}, tplNonAttributes:['items'], generateTplAttributes:true, tpl:['\x3creference {attributes}\x3e', 
+'\x3ctpl if\x3d"items"\x3e\x3ctpl for\x3d"items"\x3e\x3cx v\x3d"{.}"/\x3e\x3c/tpl\x3e\x3c/tpl\x3e', '\x3c/reference\x3e'], getCount:function() {
+  return this.getItems().length;
+}, applyItems:function(items) {
+  return items !== null ? Ext.Array.from(items) : null;
+}});
+Ext.define('Ext.exporter.file.ooxml.excel.PivotArea', {extend:Ext.exporter.file.ooxml.Base, config:{axis:null, cacheIndex:null, collapsedLevelsAreSubtotals:null, dataOnly:null, field:null, fieldPosition:null, grandCol:null, grandRow:null, labelOnly:null, offset:null, outline:null, type:null, references:null}, tplNonAttributes:['references'], generateTplAttributes:true, tpl:['\x3cpivotArea {attributes}\x3e', '\x3ctpl if\x3d"references"\x3e', '    \x3creferences count\x3d"{references.length}"\x3e', 
+'        \x3ctpl for\x3d"references.getRange()"\x3e{[values.render()]}\x3c/tpl\x3e', '    \x3c/references\x3e', '\x3c/tpl\x3e', '\x3c/pivotArea\x3e'], applyReferences:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.file.ooxml.excel.PivotAreaReference');
+}});
+Ext.define('Ext.exporter.file.ooxml.excel.AutoSortScope', {extend:Ext.exporter.file.ooxml.Base, config:{pivotArea:{}}, tpl:['\x3cautoSortScope\x3e{[values.pivotArea.render()]}\x3c/autoSortScope\x3e'], destroy:function() {
+  this.setPivotArea(null);
+  this.callParent();
+}, applyPivotArea:function(data) {
+  if (!data || data.isInstance) {
+    return data;
+  }
+  return new Ext.exporter.file.ooxml.excel.PivotArea(data);
+}, updatePivotArea:function(data, oldData) {
+  Ext.destroy(oldData);
+}});
+Ext.define('Ext.exporter.file.ooxml.excel.PivotField', {extend:Ext.exporter.file.ooxml.Base, config:{allDrilled:null, autoShow:null, avgSubtotal:null, axis:null, compact:null, countASubtotal:null, countSubtotal:null, dataField:null, dataSourceSort:null, defaultAttributeDrillState:null, defaultSubtotal:null, dragOff:null, dragToCol:null, dragToData:null, dragToPage:null, dragToRow:null, hiddenLevel:null, hideNewItems:null, includeNewItemsInFilter:null, insertBlankRow:null, insertPageBreak:null, itemPageCount:null, 
+maxSubtotal:null, measureFilter:null, minSubtotal:null, multipleItemSelectionAllowed:null, nonAutoSortDefault:null, numFmtId:null, outline:null, productSubtotal:null, rankBy:null, serverField:null, showAll:null, showDropDowns:null, showPropAsCaption:null, showPropCell:null, showPropTip:null, sortType:null, stdDevPSubtotal:null, stdDevSubtotal:null, subtotalCaption:null, subtotalTop:null, sumSubtotal:null, topAutoShow:null, uniqueMemberProperty:null, varPSubtotal:null, varSubtotal:null, items:null, 
+autoSortScope:null}, tplNonAttributes:['items', 'autoSortScope'], generateTplAttributes:true, tpl:['\x3ctpl if\x3d"items || autoSortScope"\x3e', '\x3cpivotField {attributes}\x3e', '\x3ctpl if\x3d"items"\x3e\x3citems count\x3d"{items.length}"\x3e\x3ctpl for\x3d"items.getRange()"\x3e{[values.render()]}\x3c/tpl\x3e\x3c/items\x3e\x3c/tpl\x3e', '\x3ctpl if\x3d"autoSortScope"\x3e{[values.autoSortScope.render()]}\x3c/tpl\x3e', '\x3c/pivotField\x3e', '\x3ctpl else\x3e', '\x3cpivotField {attributes} /\x3e', 
+'\x3c/tpl\x3e'], destroy:function() {
+  this.setAutoSortScope(null);
+  this.callParent();
+}, applyItems:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.file.ooxml.excel.FieldItem');
+}, applyAutoSortScope:function(data) {
+  if (!data || data.isInstance) {
+    return data;
+  }
+  return new Ext.exporter.file.ooxml.excel.AutoSortScope(data);
+}, updateAutoSortScope:function(data, oldData) {
+  Ext.destroy(oldData);
+}});
+Ext.define('Ext.exporter.file.ooxml.excel.Field', {extend:Ext.exporter.file.ooxml.Base, config:{x:null}, tpl:['\x3cfield x\x3d"{x}"/\x3e']});
+Ext.define('Ext.exporter.file.ooxml.excel.Item', {extend:Ext.exporter.file.ooxml.Base, config:{i:null, r:null, t:null, x:null}, tpl:['\x3ctpl if\x3d"x"\x3e\x3ci{attr}\x3e{x}\x3c/i\x3e\x3ctpl else\x3e\x3ci{attr}/\x3e\x3c/tpl\x3e'], getRenderData:function() {
+  var data = this.callParent(), len = data.x ? data.x.length : 0, str = '', attr = '', i;
+  for (i = 0; i < len; i++) {
+    if (data.x[i] > 0) {
+      str += '\x3cx v\x3d"' + data.x[i] + '"/\x3e';
+    } else {
+      str += '\x3cx/\x3e';
+    }
+  }
+  data.x = str;
+  if (data.t) {
+    attr += ' t\x3d"' + data.t + '"';
+  }
+  if (data.r > 0) {
+    attr += ' r\x3d"' + data.r + '"';
+  }
+  if (data.i > 0) {
+    attr += ' i\x3d"' + data.i + '"';
+  }
+  data.attr = attr;
+  return data;
+}, applyX:function(data) {
+  return data != null ? Ext.Array.from(data) : null;
+}});
+Ext.define('Ext.exporter.file.ooxml.excel.DataField', {extend:Ext.exporter.file.ooxml.Base, config:{baseField:null, baseItem:null, fld:null, name:null, numFmtId:null, showDataAs:null, subtotal:null}, generateTplAttributes:true, tpl:['\x3cdataField {attributes}/\x3e']});
+Ext.define('Ext.exporter.file.ooxml.excel.Record', {extend:Ext.exporter.file.ooxml.Base, config:{items:null}, tplNonAttributes:['items', 'stritems'], tpl:['\x3ctpl if\x3d"stritems"\x3e', '\x3cr\x3e', '{stritems}', '\x3c/r\x3e', '\x3ctpl else\x3e', '\x3cr/\x3e', '\x3c/tpl\x3e'], numberTpl:'\x3cn v\x3d"{0}"/\x3e', booleanTpl:'\x3cb v\x3d"{0}"/\x3e', stringTpl:'\x3cs v\x3d"{0}"/\x3e', dateTpl:'\x3cd v\x3d"{0}"/\x3e', constructor:function(config) {
+  var cfg;
+  if (Ext.isArray(config) || Ext.isDate(config) || Ext.isPrimitive(config)) {
+    cfg = {items:config};
+  } else {
+    cfg = config;
+  }
+  return this.callParent([cfg]);
+}, getRenderData:function() {
+  var me = this, data = me.callParent(), items = data.items, str = '', types = [], i, len, v, tpl;
+  if (items) {
+    len = items.length;
+    for (i = 0; i < len; i++) {
+      v = items[i];
+      if (v == null || v === '') {
+      } else {
+        if (typeof v === 'string') {
+          tpl = me.stringTpl;
+          v = Ext.util.Base64._utf8_encode(Ext.util.Format.htmlEncode(v));
+          types.push('s');
+        } else {
+          if (typeof v === 'boolean') {
+            tpl = me.booleanTpl;
+            types.push('b');
+          } else {
+            if (typeof v === 'number') {
+              tpl = me.numberTpl;
+              types.push('n');
+            } else {
+              if (v instanceof Date) {
+                tpl = me.dateTpl;
+                v = Ext.Date.format(v, 'Y-m-d\\TH:i:s.u');
+                types.push('d');
+              }
+            }
+          }
+        }
+        str += Ext.String.format(tpl, v);
+      }
+    }
+  }
+  data.stritems = str;
+  return data;
+}, applyItems:function(items) {
+  return items !== null ? Ext.Array.from(items) : null;
+}});
+Ext.define('Ext.exporter.file.ooxml.excel.PivotCacheRecords', {extend:Ext.exporter.file.ooxml.XmlRels, config:{items:[]}, folder:'/xl/pivotCache/', fileName:'pivotCacheRecords', contentType:{contentType:'application/vnd.openxmlformats-officedocument.spreadsheetml.pivotCacheRecords+xml'}, relationship:{schema:'http://schemas.openxmlformats.org/officeDocument/2006/relationships/pivotCacheRecords'}, tpl:['\x3c?xml version\x3d"1.0" encoding\x3d"UTF-8" standalone\x3d"yes"?\x3e', '\x3cpivotCacheRecords xmlns\x3d"http://schemas.openxmlformats.org/spreadsheetml/2006/main" ', 
+'xmlns:r\x3d"http://schemas.openxmlformats.org/officeDocument/2006/relationships" count\x3d"{items.length}"\x3e', '\x3ctpl for\x3d"items.getRange()"\x3e{[values.render()]}\x3c/tpl\x3e', '\x3c/pivotCacheRecords\x3e'], applyItems:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.file.ooxml.excel.Record');
+}});
+Ext.define('Ext.exporter.file.ooxml.excel.WorksheetSource', {extend:Ext.exporter.file.ooxml.Base, config:{id:null, name:null, ref:null, sheet:null}, autoGenerateId:false, tplAttributes:['id', 'name', 'ref', 'sheet'], generateTplAttributes:true, tpl:['\x3cworksheetSource {attributes} /\x3e']});
+Ext.define('Ext.exporter.file.ooxml.excel.CacheSource', {extend:Ext.exporter.file.ooxml.Base, config:{type:'worksheet', worksheetSource:{}}, tplNonAttributes:['worksheetSource'], generateTplAttributes:true, tpl:['\x3ccacheSource {attributes}\x3e', '\x3ctpl if\x3d"type \x3d\x3d \'worksheet\'"\x3e', '{[values.worksheetSource.render()]}', '\x3c/tpl\x3e', '\x3c/cacheSource\x3e'], destroy:function() {
+  this.setWorksheetSource(null);
+  this.callParent();
+}, applyWorksheetSource:function(data) {
+  if (!data || data.isInstance) {
+    return data;
+  }
+  return new Ext.exporter.file.ooxml.excel.WorksheetSource(data);
+}, updateWorksheetSource:function(data, oldData) {
+  Ext.destroy(oldData);
+}});
+Ext.define('Ext.exporter.file.ooxml.excel.SharedItems', {extend:Ext.exporter.file.ooxml.Base, config:{containsBlank:null, containsDate:null, containsInteger:null, containsMixedTypes:null, containsNonDate:null, containsNumber:null, containsSemiMixedTypes:null, containsString:null, longText:null, maxDate:null, maxValue:null, minDate:null, minValue:null, items:null}, tplNonAttributes:['items', 'stritems'], generateTplAttributes:true, tpl:['\x3ctpl if\x3d"stritems"\x3e', '\x3csharedItems {attributes}\x3e', 
+'{stritems}', '\x3c/sharedItems\x3e', '\x3ctpl else\x3e', '\x3csharedItems {attributes}/\x3e', '\x3c/tpl\x3e'], numberTpl:'\x3cn v\x3d"{0}"/\x3e', booleanTpl:'\x3cb v\x3d"{0}"/\x3e', stringTpl:'\x3cs v\x3d"{0}"/\x3e', dateTpl:'\x3cd v\x3d"{0}"/\x3e', getRenderData:function() {
+  var me = this, data = me.callParent(), items = data.items, str = '', hasBlank = false, hasBool = false, hasNumber = false, hasDate = false, hasString = false, hasFloat = false, count = 0, types = [], minValue = null, maxValue = null, i, len, v, tpl;
+  if (items) {
+    len = items.length;
+    for (i = 0; i < len; i++) {
+      v = items[i];
+      if (v == null || v === '') {
+        hasBlank = true;
+      } else {
+        count++;
+        if (typeof v === 'string') {
+          hasString = true;
+          tpl = me.stringTpl;
+          v = Ext.util.Base64._utf8_encode(Ext.util.Format.htmlEncode(v));
+          types.push('s');
+        } else {
+          if (typeof v === 'boolean') {
+            hasBool = true;
+            tpl = me.booleanTpl;
+            types.push('b');
+          } else {
+            if (typeof v === 'number') {
+              hasNumber = true;
+              tpl = me.numberTpl;
+              minValue = Math.min(minValue, v);
+              maxValue = Math.max(maxValue, v);
+              if (String(v).indexOf('.') >= 0) {
+                hasFloat = true;
+              }
+              types.push('n');
+            } else {
+              if (v instanceof Date) {
+                hasDate = true;
+                tpl = me.dateTpl;
+                v = Ext.Date.format(v, 'Y-m-d\\TH:i:s.u');
+                types.push('d');
+              }
+            }
+          }
+        }
+        str += Ext.String.format(tpl, v);
+      }
+    }
+  }
+  if (count > 0) {
+    data.count = count;
+  }
+  data.stritems = str;
+  if (hasDate) {
+    data.containsSemiMixedTypes = hasString;
+    data.containsDate = true;
+    data.stritems = '';
+  }
+  if (hasNumber) {
+    data.containsSemiMixedTypes = hasString;
+    data.containsNumber = true;
+    data.minValue = minValue;
+    data.maxValue = maxValue;
+    if (!hasFloat) {
+      data.containsInteger = true;
+    }
+  }
+  data.containsString = hasString;
+  len = Ext.Array.unique(types);
+  if (len > 0) {
+    data.containsMixedTypes = len > 1;
+  }
+  return data;
+}, applyItems:function(items) {
+  return items !== null ? Ext.Array.from(items) : null;
+}, updateMinValue:function(v) {
+  if (v != null) {
+    this.setContainsNumber(true);
+  }
+}, updateMaxValue:function(v) {
+  if (v != null) {
+    this.setContainsNumber(true);
+  }
+}, applyMinDate:function(v) {
+  if (v) {
+    v = Ext.Date.format(v, 'Y-m-d\\TH:i:s.u');
+  }
+  return v;
+}, updateMinDate:function(v) {
+  if (v != null) {
+    this.setContainsDate(true);
+  }
+}, applyMaxDate:function(v) {
+  if (v) {
+    v = Ext.Date.format(v, 'Y-m-d\\TH:i:s.u');
+  }
+  return v;
+}, updateMaxDate:function(v) {
+  if (v != null) {
+    this.setContainsDate(true);
+  }
+}});
+Ext.define('Ext.exporter.file.ooxml.excel.CacheField', {extend:Ext.exporter.file.ooxml.Base, config:{caption:null, databaseField:null, formula:null, hierarchy:null, level:null, mappingCount:null, memberPropertyField:null, name:null, numFmtId:null, propertyName:null, serverField:null, sqlType:null, uniqueList:null, sharedItems:{}, fieldGroup:null, mpMap:null}, tplNonAttributes:['sharedItems', 'fieldGroup', 'mpMap'], generateTplAttributes:true, tpl:['\x3ccacheField {attributes}\x3e', '\x3ctpl if\x3d"sharedItems"\x3e{[values.sharedItems.render()]}\x3c/tpl\x3e', 
+'\x3c/cacheField\x3e'], destroy:function() {
+  this.setSharedItems(null);
+  this.callParent();
+}, applySharedItems:function(data) {
+  if (!data || data.isInstance) {
+    return data;
+  }
+  return new Ext.exporter.file.ooxml.excel.SharedItems(data);
+}, updateSharedItems:function(data, oldData) {
+  Ext.destroy(oldData);
+}});
+Ext.define('Ext.exporter.file.ooxml.excel.PivotCache', {extend:Ext.exporter.file.ooxml.Base, config:{id:null, cacheId:null}, autoGenerateId:false, tpl:['\x3cpivotCache cacheId\x3d"{cacheId}" r:id\x3d"{id}"/\x3e']});
+Ext.define('Ext.exporter.file.ooxml.excel.PivotCacheDefinition', {extend:Ext.exporter.file.ooxml.XmlRels, config:{backgroundQuery:null, createdVersion:null, enableRefresh:null, invalid:null, minRefreshableVersion:null, missingItemsLimit:null, optimizeMemory:null, recordCount:null, refreshedBy:null, refreshedDateIso:null, refreshedVersion:null, refreshOnLoad:null, saveData:null, supportAdvancedDrill:null, supportSubquery:null, tupleCache:null, upgradeOnRefresh:null, cacheRecords:{}, cacheSource:{}, 
+cacheFields:null, pivotCache:{}}, folder:'/xl/pivotCache/', fileName:'pivotCacheDefinition', contentType:{contentType:'application/vnd.openxmlformats-officedocument.spreadsheetml.pivotCacheDefinition+xml'}, relationship:{schema:'http://schemas.openxmlformats.org/officeDocument/2006/relationships/pivotCacheDefinition'}, tplNonAttributes:['cacheRecords', 'cacheSource', 'cacheFields', 'pivotCache'], generateTplAttributes:true, tpl:['\x3c?xml version\x3d"1.0" encoding\x3d"UTF-8" standalone\x3d"yes"?\x3e', 
+'\x3cpivotCacheDefinition xmlns\x3d"http://schemas.openxmlformats.org/spreadsheetml/2006/main" ', 'xmlns:r\x3d"http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:id\x3d"{[values.relationship.getId()]}" {attributes}\x3e', '{[values.cacheSource.render()]}', '\x3ctpl if\x3d"cacheFields"\x3e\x3ccacheFields count\x3d"{cacheFields.length}"\x3e\x3ctpl for\x3d"cacheFields.getRange()"\x3e{[values.render()]}\x3c/tpl\x3e\x3c/cacheFields\x3e\x3c/tpl\x3e', '\x3c/pivotCacheDefinition\x3e'], 
+destroy:function() {
+  this.setCacheRecords(null);
+  this.setCacheSource(null);
+  this.setPivotCache(null);
+  this.callParent();
+}, getRenderData:function() {
+  var data = this.callParent(), records = this.getCacheRecords();
+  if (records) {
+    records = records.getItems();
+    data.recordCount = records.length;
+  }
+  return data;
+}, collectFiles:function(files) {
+  var records = this.getCacheRecords();
+  if (records) {
+    records.collectFiles(files);
+  }
+  this.callParent([files]);
+}, collectContentTypes:function(types) {
+  var records = this.getCacheRecords();
+  if (records) {
+    records.collectContentTypes(types);
+  }
+  this.callParent([types]);
+}, updateIndex:function(index, oldIndex) {
+  var cache = this.getCacheRecords();
+  if (cache) {
+    cache.setIndex(index);
+  }
+  this.callParent([index, oldIndex]);
+}, applyPivotCache:function(data) {
+  if (!data || data.isInstance) {
+    return data;
+  }
+  return new Ext.exporter.file.ooxml.excel.PivotCache(data);
+}, updatePivotCache:function(data, oldData) {
+  Ext.destroy(oldData);
+}, applyCacheRecords:function(data) {
+  if (!data || data.isInstance) {
+    return data;
+  }
+  return new Ext.exporter.file.ooxml.excel.PivotCacheRecords(data);
+}, updateCacheRecords:function(data, oldData) {
+  var rels = this.getRelationships(), rel;
+  if (oldData) {
+    rels.removeRelationship(oldData.getRelationship());
+  }
+  Ext.destroy(oldData);
+  if (data) {
+    rel = data.getRelationship();
+    rels.addRelationship(rel);
+    this.setId(rel.getId());
+  }
+}, applyCacheSource:function(data) {
+  if (!data || data.isInstance) {
+    return data;
+  }
+  return new Ext.exporter.file.ooxml.excel.CacheSource(data);
+}, updateCacheSource:function(data, oldData) {
+  Ext.destroy(oldData);
+}, applyCacheFields:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.file.ooxml.excel.CacheField');
+}});
+Ext.define('Ext.exporter.file.ooxml.excel.PivotTableStyleInfo', {extend:Ext.exporter.file.ooxml.Base, config:{name:'PivotStyleLight2', showColHeaders:true, showColStripes:null, showLastColumn:true, showRowHeaders:true, showRowStripes:null}, generateTplAttributes:true, tpl:['\x3cpivotTableStyleInfo {attributes}/\x3e']});
+Ext.define('Ext.exporter.file.ooxml.excel.PivotTable', {extend:Ext.exporter.file.ooxml.XmlRels, config:{applyAlignmentFormats:false, applyBorderFormats:false, applyFontFormats:false, applyNumberFormats:false, applyPatternFormats:false, applyWidthHeightFormats:true, asteriskTotals:null, autoFormatId:4096, cacheId:null, chartFormat:null, colGrandTotals:null, colHeaderCaption:null, compact:false, compactData:false, createdVersion:null, customListSort:null, dataCaption:'Values', dataOnRows:null, dataPosition:null, 
+disableFieldList:null, editData:null, enableDrill:null, enableFieldProperties:null, enableWizard:null, errorCaption:null, fieldListSortAscending:null, fieldPrintTitles:null, grandTotalCaption:null, gridDropZones:null, immersive:null, indent:null, itemPrintTitles:true, mdxSubqueries:null, mergeItem:null, minRefreshableVersion:null, missingCaption:null, multipleFieldFilters:false, name:null, outline:true, outlineData:null, pageOverThenDown:null, pageStyle:null, pageWrap:null, pivotTableStyle:null, 
+preserveFormatting:null, printDrill:null, published:null, rowGrandTotals:null, rowHeaderCaption:null, showCalcMbrs:null, showDataDropDown:null, showDataTips:null, showDrill:null, showDropZones:null, showEmptyCol:null, showEmptyRow:null, showError:null, showHeaders:null, showItems:null, showMemberPropertyTips:null, showMissing:null, showMultipleLabel:null, subtotalHiddenItems:null, tag:null, updatedVersion:null, useAutoFormatting:true, vacatedStyle:null, visualTotals:null, location:{}, pivotFields:null, 
+rowFields:null, rowItems:null, colFields:null, colItems:null, pageFields:null, dataFields:null, pivotTableStyleInfo:{}, worksheet:null, cacheDefinition:{}, viewLayoutType:'outline'}, folder:'/xl/pivotTables/', fileName:'pivotTable', nameTemplate:'PivotTable{index}', contentType:{contentType:'application/vnd.openxmlformats-officedocument.spreadsheetml.pivotTable+xml'}, relationship:{schema:'http://schemas.openxmlformats.org/officeDocument/2006/relationships/pivotTable'}, tplNonAttributes:['location', 
+'worksheet', 'cacheDefinition', 'pivotFields', 'rowFields', 'rowItems', 'colFields', 'colItems', 'pageFields', 'dataFields', 'pivotTableStyleInfo', 'viewLayoutType'], generateTplAttributes:true, tpl:['\x3c?xml version\x3d"1.0" encoding\x3d"UTF-8" standalone\x3d"yes"?\x3e', '\x3cpivotTableDefinition xmlns\x3d"http://schemas.openxmlformats.org/spreadsheetml/2006/main" {attributes}\x3e', '{[values.location.render()]}', '\x3ctpl if\x3d"pivotFields \x26\x26 pivotFields.length"\x3e\x3cpivotFields count\x3d"{pivotFields.length}"\x3e\x3ctpl for\x3d"pivotFields.getRange()"\x3e{[values.render()]}\x3c/tpl\x3e\x3c/pivotFields\x3e\x3c/tpl\x3e', 
+'\x3ctpl if\x3d"rowFields \x26\x26 rowFields.length"\x3e\x3crowFields count\x3d"{rowFields.length}"\x3e\x3ctpl for\x3d"rowFields.getRange()"\x3e{[values.render()]}\x3c/tpl\x3e\x3c/rowFields\x3e\x3c/tpl\x3e', '\x3ctpl if\x3d"rowItems \x26\x26 rowItems.length"\x3e\x3crowItems count\x3d"{rowItems.length}"\x3e\x3ctpl for\x3d"rowItems.getRange()"\x3e{[values.render()]}\x3c/tpl\x3e\x3c/rowItems\x3e\x3c/tpl\x3e', '\x3ctpl if\x3d"colFields \x26\x26 colFields.length"\x3e\x3ccolFields count\x3d"{colFields.length}"\x3e\x3ctpl for\x3d"colFields.getRange()"\x3e{[values.render()]}\x3c/tpl\x3e\x3c/colFields\x3e\x3c/tpl\x3e', 
+'\x3ctpl if\x3d"colItems \x26\x26 colItems.length"\x3e\x3ccolItems count\x3d"{colItems.length}"\x3e\x3ctpl for\x3d"colItems.getRange()"\x3e{[values.render()]}\x3c/tpl\x3e\x3c/colItems\x3e\x3c/tpl\x3e', '\x3ctpl if\x3d"pageFields \x26\x26 pageFields.length"\x3e\x3cpageFields count\x3d"{pageFields.length}"\x3e\x3ctpl for\x3d"pageFields.getRange()"\x3e{[values.render()]}\x3c/tpl\x3e\x3c/pageFields\x3e\x3c/tpl\x3e', '\x3ctpl if\x3d"dataFields \x26\x26 dataFields.length"\x3e\x3cdataFields count\x3d"{dataFields.length}"\x3e\x3ctpl for\x3d"dataFields.getRange()"\x3e{[values.render()]}\x3c/tpl\x3e\x3c/dataFields\x3e\x3c/tpl\x3e', 
+'\x3ctpl if\x3d"pivotTableStyleInfo"\x3e{[values.pivotTableStyleInfo.render()]}\x3c/tpl\x3e', '\x3c/pivotTableDefinition\x3e'], destroy:function() {
+  var me = this;
+  me.setWorksheet(null);
+  me.setLocation(null);
+  me.setCacheDefinition(null);
+  me.setPivotTableStyleInfo(null);
+  me.callParent();
+}, collectFiles:function(files) {
+  this.getCacheDefinition().collectFiles(files);
+  this.callParent([files]);
+}, collectContentTypes:function(types) {
+  this.getCacheDefinition().collectContentTypes(types);
+  this.callParent([types]);
+}, updateIndex:function(index, oldIndex) {
+  var me = this, cache = me.getCacheDefinition();
+  if (cache) {
+    cache.setIndex(index);
+  }
+  if (me._name == null) {
+    me.generateName();
+  }
+  me.callParent([index, oldIndex]);
+}, updateWorksheet:function(data, oldData) {
+  var def = this.getCacheDefinition(), wb, pc;
+  if (oldData && def && oldData.getWorkbook() && oldData.getWorkbook().getRelationships()) {
+    oldData.getWorkbook().getRelationships().removeRelationship(def.getRelationship());
+  }
+  if (data && def) {
+    wb = data.getWorkbook();
+    wb.getRelationships().addRelationship(def.getRelationship());
+    pc = def.getPivotCache();
+    wb.addPivotCache(pc);
+    this.setCacheId(pc.getCacheId());
+    pc.setId(def.getRelationship().getId());
+  }
+}, applyPivotTableStyleInfo:function(data) {
+  if (!data || data.isInstance) {
+    return data;
+  }
+  return new Ext.exporter.file.ooxml.excel.PivotTableStyleInfo(data);
+}, updatePivotTableStyleInfo:function(data, oldData) {
+  Ext.destroy(oldData);
+}, applyCacheDefinition:function(data) {
+  if (!data || data.isInstance) {
+    return data;
+  }
+  return new Ext.exporter.file.ooxml.excel.PivotCacheDefinition(data);
+}, updateCacheDefinition:function(data, oldData) {
+  var rels = this.getRelationships();
+  if (oldData) {
+    rels.removeRelationship(oldData.getRelationship());
+  }
+  Ext.destroy(oldData);
+  if (data) {
+    rels.addRelationship(data.getRelationship());
+  }
+}, updateViewLayoutType:function(value) {
+  var me = this;
+  if (value === 'compact') {
+    me.setOutline(true);
+    me.setOutlineData(true);
+    me.setCompact(null);
+    me.setCompactData(null);
+  } else {
+    if (value === 'outline') {
+      me.setOutline(true);
+      me.setOutlineData(true);
+      me.setCompact(false);
+      me.setCompactData(false);
+    } else {
+      me.setOutline(null);
+      me.setOutlineData(null);
+      me.setCompact(false);
+      me.setCompactData(false);
+    }
+  }
+  me.processPivotFields(me.getPivotFields().getRange());
+}, applyLocation:function(data) {
+  if (!data || data.isInstance) {
+    return data;
+  }
+  return new Ext.exporter.file.ooxml.excel.Location(data);
+}, updateLocation:function(data, oldData) {
+  Ext.destroy(oldData);
+}, applyPivotFields:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.file.ooxml.excel.PivotField');
+}, updatePivotFields:function(collection, oldCollection) {
+  var me = this;
+  if (oldCollection) {
+    oldCollection.un({add:me.onPivotFieldAdd, scope:me});
+  }
+  if (collection) {
+    collection.on({add:me.onPivotFieldAdd, scope:me});
+    this.processPivotFields(collection.getRange());
+  }
+}, onPivotFieldAdd:function(collection, details) {
+  this.processPivotFields(details.items);
+}, processPivotFields:function(items) {
+  var layout = this.getViewLayoutType(), length = items.length, i, item, compact, outline;
+  if (layout === 'compact') {
+    compact = null;
+    outline = null;
+  } else {
+    if (layout === 'outline') {
+      compact = false;
+      outline = null;
+    } else {
+      compact = false;
+      outline = false;
+    }
+  }
+  for (i = 0; i < length; i++) {
+    item = items[i];
+    item.setCompact(compact);
+    item.setOutline(outline);
+  }
+}, applyRowFields:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.file.ooxml.excel.Field');
+}, applyRowItems:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.file.ooxml.excel.Item');
+}, applyColFields:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.file.ooxml.excel.Field');
+}, applyColItems:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.file.ooxml.excel.Item');
+}, applyDataFields:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.file.ooxml.excel.DataField');
+}, applyAutoFormatId:function(value) {
+  return value >= 4096 && value <= 4117 ? value : null;
+}});
+Ext.define('Ext.exporter.file.ooxml.excel.Worksheet', {extend:Ext.exporter.file.ooxml.excel.Sheet, isWorksheet:true, config:{columns:null, rows:[], drawings:null, tables:null, mergeCells:null, mergedCellsNo:0, topLeftRef:null, bottomRightRef:null, cachedRows:'', cachedMergeCells:'', pivotTables:null}, folder:'/xl/worksheets/', contentType:{contentType:'application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml'}, relationship:{schema:'http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet'}, 
+tpl:['\x3c?xml version\x3d"1.0" encoding\x3d"UTF-8" standalone\x3d"yes"?\x3e', '\x3cworksheet xmlns\x3d"http://schemas.openxmlformats.org/spreadsheetml/2006/main" ', 'xmlns:r\x3d"http://schemas.openxmlformats.org/officeDocument/2006/relationships"\x3e', '\x3ctpl if\x3d"columns"\x3e', '\x3ccols\x3e', '\x3ctpl for\x3d"columns.items"\x3e{[values.render()]}\x3c/tpl\x3e', '\x3c/cols\x3e', '\x3c/tpl\x3e', '\x3ctpl if\x3d"cachedRows"\x3e', '\x3csheetData\x3e{cachedRows}\x3c/sheetData\x3e', '\x3ctpl if\x3d"cachedMergeCells"\x3e\x3cmergeCells\x3e{cachedMergeCells}\x3c/mergeCells\x3e\x3c/tpl\x3e', 
+'\x3ctpl elseif\x3d"rows"\x3e', '\x3csheetData\x3e\x3ctpl for\x3d"rows.items"\x3e{[values.render()]}\x3c/tpl\x3e\x3c/sheetData\x3e', '\x3ctpl if\x3d"values.self.getMergedCellsNo() \x26gt; 0"\x3e', '\x3cmergeCells\x3e', '\x3ctpl for\x3d"rows.items"\x3e', '\x3ctpl for\x3d"_cells.items"\x3e', '\x3ctpl if\x3d"isMergedCell"\x3e\x3cmergeCell ref\x3d"{[values.getMergedCellRef()]}"/\x3e\x3c/tpl\x3e', '\x3c/tpl\x3e', '\x3c/tpl\x3e', '\x3c/mergeCells\x3e', '\x3c/tpl\x3e', '\x3ctpl else\x3e', '\x3c/sheetData\x3e', 
+'\x3c/tpl\x3e', '\x3c/worksheet\x3e'], lastRowIndex:1, destroy:function() {
+  var me = this;
+  Ext.destroy(me.cachedRow);
+  me.cachedRow = me.cachedRowConfig = null;
+  me.callParent();
+}, getRenderData:function() {
+  var me = this, name = me.getName();
+  if (Ext.isEmpty(name)) {
+    me.generateName();
+  }
+  me.setMergedCellsNo(0);
+  return me.callParent();
+}, collectFiles:function(files) {
+  var pivot = this.getPivotTables(), length, i;
+  if (pivot) {
+    length = pivot.length;
+    for (i = 0; i < length; i++) {
+      pivot.getAt(i).collectFiles(files);
+    }
+  }
+  this.callParent([files]);
+}, collectContentTypes:function(types) {
+  var pivot = this.getPivotTables(), length, i;
+  if (pivot) {
+    length = pivot.length;
+    for (i = 0; i < length; i++) {
+      pivot.getAt(i).collectContentTypes(types);
+    }
+  }
+  this.callParent([types]);
+}, applyColumns:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.file.ooxml.excel.Column');
+}, applyRows:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.file.ooxml.excel.Row');
+}, updateRows:function(collection, oldCollection) {
+  var me = this;
+  if (oldCollection) {
+    oldCollection.un({add:me.onRowAdd, remove:me.onRowRemove, scope:me});
+  }
+  if (collection) {
+    collection.on({add:me.onRowAdd, remove:me.onRowRemove, scope:me});
+    me.onRowAdd(collection, {items:collection.getRange()});
+  }
+}, onRowAdd:function(collection, details) {
+  var items = details.items, length = items.length, i, item, index;
+  for (i = 0; i < length; i++) {
+    item = items[i];
+    item.setWorksheet(this);
+    index = item._index;
+    if (!index) {
+      item.setIndex(this.lastRowIndex++);
+    } else {
+      this.lastRowIndex = Math.max(collection.length, index) + 1;
+    }
+  }
+}, onRowRemove:function(collection, details) {
+  Ext.destroy(details.items);
+}, updateItemIndexes:function(items) {
+  var i, len, item;
+  if (!items) {
+    return;
+  }
+  len = items.length;
+  for (i = 0; i < len; i++) {
+    item = items.getAt(i);
+    if (!item.getIndex()) {
+      item.setIndex(i + 1);
+    }
+  }
+}, updateDrawings:function(data, oldData) {
+  var rels = this.getRelationships();
+  if (oldData && rels) {
+    rels.removeRelationship(oldData.getRelationship());
+  }
+  if (data && rels) {
+    rels.addRelationship(data.getRelationship());
+  }
+}, updateTables:function(data, oldData) {
+  var rels = this.getRelationships();
+  if (oldData && rels) {
+    rels.removeRelationship(oldData.getRelationship());
+  }
+  if (data && rels) {
+    rels.addRelationship(data.getRelationship());
+  }
+}, applyPivotTables:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.file.ooxml.excel.PivotTable');
+}, updatePivotTables:function(collection, oldCollection) {
+  var me = this;
+  if (oldCollection) {
+    oldCollection.un({add:me.onPivotTableAdd, remove:me.onPivotTableRemove, scope:me});
+  }
+  if (collection) {
+    collection.on({add:me.onPivotTableAdd, remove:me.onPivotTableRemove, scope:me});
+    this.processPivotTables(collection.getRange());
+  }
+}, onPivotTableAdd:function(collection, details) {
+  this.processPivotTables(details.items);
+}, processPivotTables:function(items) {
+  var rels = this.getRelationships(), length = items.length, i, item;
+  for (i = 0; i < length; i++) {
+    item = items[i];
+    rels.addRelationship(item.getRelationship());
+    item.setWorksheet(this);
+  }
+  this.updateItemIndexes(this.getPivotTables());
+}, onPivotTableRemove:function(collection, details) {
+  var rels = this.getRelationships(), length = details.items.length, i, item;
+  for (i = 0; i < length; i++) {
+    item = details.items[i];
+    rels.removeRelationship(item.getRelationship());
+    Ext.destroy(item);
+  }
+}, addColumn:function(config) {
+  if (!this._columns) {
+    this.setColumns([]);
+  }
+  return this._columns.add(config || {});
+}, addRow:function(config) {
+  if (!this._rows) {
+    this.setRows([]);
+  }
+  return this._rows.add(config || {});
+}, getRow:function(id) {
+  return this._rows ? this._rows.get(id) : null;
+}, addPivotTable:function(config) {
+  if (!this._pivotTables) {
+    this.setPivotTables([]);
+  }
+  return this._pivotTables.add(config || {});
+}, getPivotTable:function(id) {
+  return this._pivotTables ? this._pivotTables.get(id) : null;
+}, beginRowRendering:function() {
+  var me = this;
+  me.tempRows = [];
+  me.tempMergeCells = [];
+  me.startCaching = true;
+  me.setMergedCellsNo(0);
+  me.lastRowIndex = 1;
+  me.cachedIndex = 0;
+  if (!me.cachedRow) {
+    me.cachedRow = new Ext.exporter.file.ooxml.excel.Row({worksheet:me});
+    me.cachedRowConfig = me.cachedRow.getConfig();
+    me.cachedRowConfig.id = me.cachedRowConfig.cells = null;
+  }
+}, endRowRendering:function() {
+  var me = this;
+  me.setCachedRows(me.tempRows.join(''));
+  me.setCachedMergeCells(me.tempMergeCells.join(''));
+  me.tempRows = me.tempMergeCells = null;
+  me.startCaching = false;
+  me.lastRowIndex = 1;
+}, renderRows:function(rows) {
+  var items = Ext.Array.from(rows), len = items.length, i;
+  for (i = 0; i < len; i++) {
+    this.renderRow(items[i]);
+  }
+}, renderRow:function(row) {
+  var me = this, config, cache, index, cells, ret;
+  if (!me.startCaching) {
+    me.beginRowRendering();
+  }
+  cache = me.cachedRow;
+  if (Ext.isArray(row)) {
+    cells = row;
+    config = {};
+  } else {
+    config = row;
+    cells = Ext.Array.from(config.cells || []);
+  }
+  delete config.cells;
+  Ext.applyIf(config, me.cachedRowConfig);
+  cache.setCollapsed(config.collapsed);
+  cache.setHidden(config.hidden);
+  cache.setHeight(config.height);
+  cache.setOutlineLevel(config.outlineLevel);
+  cache.setShowPhonetic(config.showPhonetic);
+  cache.setStyleId(config.styleId);
+  cache.setIndex(config.index);
+  index = cache.getIndex();
+  if (!index) {
+    cache.setIndex(me.lastRowIndex++);
+  } else {
+    me.lastRowIndex = Math.max(me.lastRowIndex, index) + 1;
+  }
+  ret = cache.renderCells(cells);
+  me.tempRows.push(ret.row);
+  if (me.cachedIndex === 0) {
+    me._topLeftRef = ret.first;
+  }
+  me._bottomRightRef = ret.last;
+  me.tempMergeCells.push(ret.merged);
+  me.cachedIndex++;
+  ret.rowIndex = cache.getIndex();
+  return ret;
+}});
+Ext.define('Ext.exporter.file.ooxml.excel.Font', {extend:Ext.exporter.file.ooxml.Base, config:{size:10, fontName:'', family:null, charset:null, bold:false, italic:false, underline:false, outline:false, strikeThrough:false, color:null, verticalAlign:null}, mappings:{family:{Automatic:0, Roman:1, Swiss:2, Modern:3, Script:4, Decorative:5}}, tpl:['\x3cfont\x3e', '\x3ctpl if\x3d"size"\x3e\x3csz val\x3d"{size}"/\x3e\x3c/tpl\x3e', '\x3ctpl if\x3d"fontName"\x3e\x3cname val\x3d"{fontName}"/\x3e\x3c/tpl\x3e', 
+'\x3ctpl if\x3d"family"\x3e\x3cfamily val\x3d"{family}"/\x3e\x3c/tpl\x3e', '\x3ctpl if\x3d"charset"\x3e\x3ccharset val\x3d"{charset}"/\x3e\x3c/tpl\x3e', '\x3ctpl if\x3d"bold"\x3e\x3cb/\x3e\x3c/tpl\x3e', '\x3ctpl if\x3d"italic"\x3e\x3ci/\x3e\x3c/tpl\x3e', '\x3ctpl if\x3d"underline"\x3e\x3cu/\x3e\x3c/tpl\x3e', '\x3ctpl if\x3d"outline"\x3e\x3coutline/\x3e\x3c/tpl\x3e', '\x3ctpl if\x3d"strikeThrough"\x3e\x3cstrike/\x3e\x3c/tpl\x3e', '\x3ctpl if\x3d"color"\x3e\x3ccolor rgb\x3d"{color}"/\x3e\x3c/tpl\x3e', 
+'\x3ctpl if\x3d"verticalAlign"\x3e\x3cvertAlign val\x3d"{verticalAlign}"/\x3e\x3c/tpl\x3e', '\x3c/font\x3e'], autoGenerateKey:['size', 'fontName', 'family', 'charset', 'bold', 'italic', 'underline', 'outline', 'strikeThrough', 'color', 'verticalAlign'], constructor:function(config) {
+  var cfg = {}, keys = Ext.Object.getKeys(config || {}), len = keys.length, i;
+  if (config) {
+    for (i = 0; i < len; i++) {
+      cfg[Ext.String.uncapitalize(keys[i])] = config[keys[i]];
+    }
+  }
+  this.callParent([cfg]);
+}, applyFamily:function(value) {
+  if (typeof value === 'string') {
+    return this.mappings.family[value];
+  }
+  return value;
+}, applyBold:function(value) {
+  return !!value;
+}, applyItalic:function(value) {
+  return !!value;
+}, applyStrikeThrough:function(value) {
+  return !!value;
+}, applyUnderline:function(value) {
+  return !!value;
+}, applyOutline:function(value) {
+  return !!value;
+}, applyColor:function(value) {
+  var v;
+  if (!value) {
+    return value;
+  }
+  v = String(value);
+  return v.indexOf('#') >= 0 ? v.replace('#', '') : v;
+}, applyVerticalAlign:function(value) {
+  return Ext.util.Format.lowercase(value);
+}});
+Ext.define('Ext.exporter.file.ooxml.excel.NumberFormat', {extend:Ext.exporter.file.ooxml.Base, config:{isDate:false, numFmtId:null, formatCode:''}, tpl:['\x3cnumFmt numFmtId\x3d"{numFmtId}" formatCode\x3d"{formatCode:htmlEncode}"/\x3e'], spaceRe:/(,| )/g, getRenderData:function() {
+  var data = this.callParent(), fmt = data.formatCode;
+  fmt = fmt && data.isDate ? fmt.replace(this.spaceRe, '\\$1') : fmt;
+  data.formatCode = fmt;
+  return data;
+}, getKey:function() {
+  return this.getFormatCode();
+}});
+Ext.define('Ext.exporter.file.ooxml.excel.Fill', {extend:Ext.exporter.file.ooxml.Base, config:{patternType:'none', fgColor:null, bgColor:null}, tpl:['\x3cfill\x3e', '\x3ctpl if\x3d"fgColor || bgColor"\x3e', '\x3cpatternFill patternType\x3d"{patternType}"\x3e', '\x3ctpl if\x3d"fgColor"\x3e\x3cfgColor rgb\x3d"{fgColor}"/\x3e\x3c/tpl\x3e', '\x3ctpl if\x3d"bgColor"\x3e\x3cbgColor rgb\x3d"{bgColor}"/\x3e\x3c/tpl\x3e', '\x3c/patternFill\x3e', '\x3ctpl else\x3e', '\x3cpatternFill patternType\x3d"{patternType}"/\x3e', 
+'\x3c/tpl\x3e', '\x3c/fill\x3e'], autoGenerateKey:['patternType', 'fgColor', 'bgColor'], constructor:function(config) {
+  var cfg = Ext.clone(config);
+  if (config) {
+    cfg.patternType = cfg.patternType || config.pattern;
+    cfg.bgColor = cfg.bgColor || (cfg.patternType !== 'solid' ? config.color : null);
+    cfg.fgColor = cfg.fgColor || (cfg.patternType === 'solid' ? config.color : null);
+  }
+  this.callParent([cfg]);
+}, formatColor:function(value) {
+  var v;
+  if (!value) {
+    return value;
+  }
+  v = String(value);
+  return v.indexOf('#') >= 0 ? v.replace('#', '') : v;
+}, applyFgColor:function(value) {
+  return this.formatColor(value);
+}, applyBgColor:function(value) {
+  return this.formatColor(value);
+}, applyPatternType:function(value) {
+  var possible = ['none', 'solid', 'mediumGray', 'darkGray', 'lightGray', 'darkHorizontal', 'darkVertical', 'darkDown', 'darkUp', 'darkGrid', 'darkTrellis', 'lightHorizontal', 'lightVertical', 'lightDown', 'lightUp', 'lightGrid', 'lightTrellis', 'gray125', 'gray0625'], v = Ext.util.Format.uncapitalize(value);
+  return Ext.Array.indexOf(possible, v) >= 0 ? v : 'none';
+}});
+Ext.define('Ext.exporter.file.ooxml.excel.BorderPr', {extend:Ext.exporter.file.ooxml.Base, isBorderPr:true, config:{tag:'left', color:null, lineStyle:'none'}, mappings:{lineStyle:{'None':'none', 'Continuous':'thin', 'Dash':'dashed', 'Dot':'dotted', 'DashDot':'dashDot', 'DashDotDot':'dashDotDot', 'SlantDashDot':'slantDashDot', 'Double':'double'}}, tpl:['\x3ctpl if\x3d"color"\x3e', '\x3c{tag} style\x3d"{lineStyle}"\x3e\x3ccolor rgb\x3d"{color}"/\x3e\x3c/{tag}\x3e', '\x3ctpl else\x3e', '\x3c{tag} style\x3d"{lineStyle}"/\x3e', 
+'\x3c/tpl\x3e'], autoGenerateKey:['tag', 'color', 'lineStyle'], applyColor:function(value) {
+  var v;
+  if (!value) {
+    return value;
+  }
+  v = String(value);
+  return v.indexOf('#') >= 0 ? v.replace('#', '') : v;
+}, applyLineStyle:function(value) {
+  var possible = ['none', 'thin', 'medium', 'dashed', 'dotted', 'thick', 'double', 'hair', 'mediumDashed', 'dashDot', 'mediumDashDot', 'dashDotDot', 'mediumDashDotDot', 'slantDashDot'];
+  return Ext.Array.indexOf(possible, value) >= 0 ? value : this.mappings.lineStyle[value] || 'none';
+}});
+Ext.define('Ext.exporter.file.ooxml.excel.Border', {extend:Ext.exporter.file.ooxml.Base, config:{left:null, right:null, top:null, bottom:null}, tpl:['\x3cborder\x3e', '\x3ctpl if\x3d"left"\x3e{[values.left.render()]}\x3c/tpl\x3e', '\x3ctpl if\x3d"right"\x3e{[values.right.render()]}\x3c/tpl\x3e', '\x3ctpl if\x3d"top"\x3e{[values.top.render()]}\x3c/tpl\x3e', '\x3ctpl if\x3d"bottom"\x3e{[values.bottom.render()]}\x3c/tpl\x3e', '\x3c/border\x3e'], autoGenerateKey:['left', 'right', 'top', 'bottom'], destroy:function() {
+  this.setConfig({left:null, right:null, top:null, bottom:null});
+  this.callParent();
+}, applyLeft:function(border) {
+  if (border && !border.isBorderPr) {
+    return new Ext.exporter.file.ooxml.excel.BorderPr(border);
+  }
+  return border;
+}, applyTop:function(border) {
+  if (border && !border.isBorderPr) {
+    return new Ext.exporter.file.ooxml.excel.BorderPr(border);
+  }
+  return border;
+}, applyRight:function(border) {
+  if (border && !border.isBorderPr) {
+    return new Ext.exporter.file.ooxml.excel.BorderPr(border);
+  }
+  return border;
+}, applyBottom:function(border) {
+  if (border && !border.isBorderPr) {
+    return new Ext.exporter.file.ooxml.excel.BorderPr(border);
+  }
+  return border;
+}, updateLeft:function(border, oldData) {
+  Ext.destroy(oldData);
+  if (border) {
+    border.setTag('left');
+  }
+}, updateTop:function(border, oldData) {
+  Ext.destroy(oldData);
+  if (border) {
+    border.setTag('top');
+  }
+}, updateRight:function(border, oldData) {
+  Ext.destroy(oldData);
+  if (border) {
+    border.setTag('right');
+  }
+}, updateBottom:function(border, oldData) {
+  Ext.destroy(oldData);
+  if (border) {
+    border.setTag('bottom');
+  }
+}});
+Ext.define('Ext.exporter.file.ooxml.excel.CellAlignment', {extend:Ext.exporter.file.ooxml.Base, isCellAlignment:true, config:{horizontal:'general', vertical:'top', rotate:null, wrapText:false, indent:null, relativeIndent:null, justifyLastLine:false, shrinkToFit:false, readingOrder:null}, autoGenerateKey:['horizontal', 'vertical', 'rotate', 'wrapText', 'indent', 'relativeIndent', 'justifyLastLine', 'shrinkToFit', 'readingOrder'], mappings:{horizontal:{Automatic:'general', CenterAcrossSelection:'centerContinuous', 
+JustifyDistributed:'distributed'}, vertical:{Automatic:'top', JustifyDistributed:'distributed'}, readingOrder:{Context:0, LeftToRight:1, RightToLeft:2}}, tpl:['\x3calignment', '\x3ctpl if\x3d"horizontal"\x3e horizontal\x3d"{horizontal}"\x3c/tpl\x3e', '\x3ctpl if\x3d"vertical"\x3e vertical\x3d"{vertical}"\x3c/tpl\x3e', '\x3ctpl if\x3d"rotate"\x3e textRotation\x3d"{rotate}"\x3c/tpl\x3e', '\x3ctpl if\x3d"wrapText"\x3e wrapText\x3d"{wrapText}"\x3c/tpl\x3e', '\x3ctpl if\x3d"indent"\x3e indent\x3d"{indent}"\x3c/tpl\x3e', 
+'\x3ctpl if\x3d"relativeIndent"\x3e relativeIndent\x3d"{relativeIndent}"\x3c/tpl\x3e', '\x3ctpl if\x3d"justifyLastLine"\x3e justifyLastLine\x3d"{justifyLastLine}"\x3c/tpl\x3e', '\x3ctpl if\x3d"shrinkToFit"\x3e shrinkToFit\x3d"{shrinkToFit}"\x3c/tpl\x3e', '\x3ctpl if\x3d"readingOrder"\x3e readingOrder\x3d"{readingOrder}"\x3c/tpl\x3e', '/\x3e'], constructor:function(config) {
+  var cfg = {}, keys = Ext.Object.getKeys(config || {}), len = keys.length, i;
+  if (config) {
+    for (i = 0; i < len; i++) {
+      cfg[Ext.String.uncapitalize(keys[i])] = config[keys[i]];
+    }
+  }
+  this.callParent([cfg]);
+}, applyHorizontal:function(value) {
+  var possible = ['general', 'left', 'center', 'right', 'fill', 'justify', 'centerContinuous', 'distributed'], v = Ext.util.Format.uncapitalize(value);
+  return Ext.Array.indexOf(possible, v) >= 0 ? v : this.mappings.horizontal[value] || 'general';
+}, applyVertical:function(value) {
+  var possible = ['top', 'center', 'bottom', 'justify', 'distributed'], v = Ext.util.Format.uncapitalize(value);
+  return Ext.Array.indexOf(possible, v) >= 0 ? v : this.mappings.vertical[value] || 'top';
+}, applyReadingOrder:function(value) {
+  if (typeof value === 'string') {
+    return this.mappings.readingOrder[value] || 0;
+  }
+  return value;
+}});
+Ext.define('Ext.exporter.file.ooxml.excel.CellStyleXf', {extend:Ext.exporter.file.ooxml.Base, config:{numFmtId:0, fontId:0, fillId:0, borderId:0, alignment:null}, autoGenerateKey:['numFmtId', 'fontId', 'fillId', 'borderId', 'alignment'], tpl:['\x3cxf numFmtId\x3d"{numFmtId}" fontId\x3d"{fontId}" fillId\x3d"{fillId}" borderId\x3d"{borderId}"', '\x3ctpl if\x3d"numFmtId"\x3e applyNumberFormat\x3d"1"\x3c/tpl\x3e', '\x3ctpl if\x3d"fillId"\x3e applyFill\x3d"1"\x3c/tpl\x3e', '\x3ctpl if\x3d"borderId"\x3e applyBorder\x3d"1"\x3c/tpl\x3e', 
+'\x3ctpl if\x3d"fontId"\x3e applyFont\x3d"1"\x3c/tpl\x3e', '\x3ctpl if\x3d"alignment"\x3e', ' applyAlignment\x3d"1"\x3e{[values.alignment.render()]}\x3c/xf\x3e', '\x3ctpl else\x3e', '/\x3e', '\x3c/tpl\x3e'], applyAlignment:function(align) {
+  if (align && !align.isCellAlignment) {
+    return new Ext.exporter.file.ooxml.excel.CellAlignment(align);
+  }
+  return align;
+}});
+Ext.define('Ext.exporter.file.ooxml.excel.CellXf', {extend:Ext.exporter.file.ooxml.excel.CellStyleXf, config:{xfId:0}, tpl:['\x3cxf numFmtId\x3d"{numFmtId}" fontId\x3d"{fontId}" fillId\x3d"{fillId}" borderId\x3d"{borderId}"', '    xfId\x3d"{xfId}"', '\x3ctpl if\x3d"numFmtId"\x3e applyNumberFormat\x3d"1"\x3c/tpl\x3e', '\x3ctpl if\x3d"fillId"\x3e applyFill\x3d"1"\x3c/tpl\x3e', '\x3ctpl if\x3d"borderId"\x3e applyBorder\x3d"1"\x3c/tpl\x3e', '\x3ctpl if\x3d"fontId"\x3e applyFont\x3d"1"\x3c/tpl\x3e', '\x3ctpl if\x3d"alignment"\x3e', 
+' applyAlignment\x3d"1"\x3e{[values.alignment.render()]}\x3c/xf\x3e', '\x3ctpl else\x3e', '/\x3e', '\x3c/tpl\x3e'], autoGenerateKey:['xfId']});
+Ext.define('Ext.exporter.file.ooxml.excel.Stylesheet', {extend:Ext.exporter.file.ooxml.Xml, isStylesheet:true, config:{fonts:[{fontName:'Arial', size:10, family:2}], numberFormats:null, fills:[{patternType:'none'}, {patternType:'gray125'}], borders:[{left:{}, top:{}, right:{}, bottom:{}}], cellStyleXfs:[{}], cellXfs:[{}]}, contentType:{contentType:'application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml'}, relationship:{schema:'http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles'}, 
+folder:'/xl/', fileName:'styles', tpl:['\x3c?xml version\x3d"1.0" encoding\x3d"UTF-8" standalone\x3d"yes"?\x3e', '\x3cstyleSheet xmlns\x3d"http://schemas.openxmlformats.org/spreadsheetml/2006/main"\x3e', '\x3ctpl if\x3d"numberFormats"\x3e\x3cnumFmts count\x3d"{numberFormats.length}"\x3e\x3ctpl for\x3d"numberFormats.items"\x3e{[values.render()]}\x3c/tpl\x3e\x3c/numFmts\x3e\x3c/tpl\x3e', '\x3ctpl if\x3d"fonts"\x3e\x3cfonts count\x3d"{fonts.length}"\x3e\x3ctpl for\x3d"fonts.items"\x3e{[values.render()]}\x3c/tpl\x3e\x3c/fonts\x3e\x3c/tpl\x3e', 
+'\x3ctpl if\x3d"fills"\x3e\x3cfills count\x3d"{fills.length}"\x3e\x3ctpl for\x3d"fills.items"\x3e{[values.render()]}\x3c/tpl\x3e\x3c/fills\x3e\x3c/tpl\x3e', '\x3ctpl if\x3d"borders"\x3e\x3cborders count\x3d"{borders.length}"\x3e\x3ctpl for\x3d"borders.items"\x3e{[values.render()]}\x3c/tpl\x3e\x3c/borders\x3e\x3c/tpl\x3e', '\x3ctpl if\x3d"cellStyleXfs"\x3e\x3ccellStyleXfs count\x3d"{cellStyleXfs.length}"\x3e\x3ctpl for\x3d"cellStyleXfs.items"\x3e{[values.render()]}\x3c/tpl\x3e\x3c/cellStyleXfs\x3e\x3c/tpl\x3e', 
+'\x3ctpl if\x3d"cellXfs"\x3e\x3ccellXfs count\x3d"{cellXfs.length}"\x3e\x3ctpl for\x3d"cellXfs.items"\x3e{[values.render()]}\x3c/tpl\x3e\x3c/cellXfs\x3e\x3c/tpl\x3e', '\x3ctableStyles count\x3d"0" defaultTableStyle\x3d"TableStyleMedium9" defaultPivotStyle\x3d"PivotStyleMedium7"/\x3e', '\x3c/styleSheet\x3e'], lastNumberFormatId:164, datePatterns:{'General Date':'[$-F800]dddd, mmmm dd, yyyy', 'Long Date':'[$-F800]dddd, mmmm dd, yyyy', 'Medium Date':'mm/dd/yy;@', 'Short Date':'m/d/yy;@', 'Long Time':'h:mm:ss;@', 
+'Medium Time':'[$-409]h:mm AM/PM;@', 'Short Time':'h:mm;@'}, numberPatterns:{'General Number':1, 'Fixed':2, 'Standard':2, 'Percent':10, 'Scientific':11, 'Currency':'"$"#,##0.00', 'Euro Currency':'"€"#,##0.00'}, booleanPatterns:{'Yes/No':'"Yes";-;"No"', 'True/False':'"True";-;"False"', 'On/Off':'"On";-;"Off"'}, applyFonts:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.file.ooxml.excel.Font');
+}, applyNumberFormats:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.file.ooxml.excel.NumberFormat');
+}, applyFills:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.file.ooxml.excel.Fill');
+}, applyBorders:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.file.ooxml.excel.Border');
+}, applyCellXfs:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.file.ooxml.excel.CellXf');
+}, applyCellStyleXfs:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.file.ooxml.excel.CellStyleXf');
+}, addFont:function(config) {
+  var col = this._fonts, ret, font;
+  if (!col) {
+    this.setFonts([]);
+    col = this._fonts;
+  }
+  font = new Ext.exporter.file.ooxml.excel.Font(config);
+  ret = col.indexOfKey(font.getKey());
+  if (ret >= 0) {
+    font.destroy();
+  } else {
+    col.add(font);
+    ret = col.indexOf(font);
+  }
+  return ret;
+}, addNumberFormat:function(config) {
+  var col = this._numberFormats, ret, temp;
+  if (!col) {
+    this.setNumberFormats([]);
+    col = this._numberFormats;
+  }
+  temp = new Ext.exporter.file.ooxml.excel.NumberFormat(config);
+  ret = col.get(temp.getKey());
+  if (!ret) {
+    ret = temp;
+    col.add(ret);
+    ret.setNumFmtId(this.lastNumberFormatId++);
+  }
+  return ret.getNumFmtId();
+}, addFill:function(config) {
+  var col = this._fills, ret, fill;
+  if (!col) {
+    this.setFills([]);
+    col = this._fills;
+  }
+  fill = new Ext.exporter.file.ooxml.excel.Fill(config);
+  ret = col.indexOfKey(fill.getKey());
+  if (ret >= 0) {
+    fill.destroy();
+  } else {
+    col.add(fill);
+    ret = col.indexOf(fill);
+  }
+  return ret;
+}, addBorder:function(config) {
+  var col = this._borders, ret, border;
+  if (!col) {
+    this.setBorders([]);
+    col = this._borders;
+  }
+  border = new Ext.exporter.file.ooxml.excel.Border(config);
+  ret = col.indexOfKey(border.getKey());
+  if (ret >= 0) {
+    border.destroy();
+  } else {
+    col.add(border);
+    ret = col.indexOf(border);
+  }
+  return ret;
+}, addCellXf:function(config) {
+  var col = this._cellXfs, ret, style;
+  if (!col) {
+    this.setCellXfs([]);
+    col = this._cellXfs;
+  }
+  style = new Ext.exporter.file.ooxml.excel.CellXf(config);
+  ret = col.indexOfKey(style.getKey());
+  if (ret >= 0) {
+    style.destroy();
+  } else {
+    col.add(style);
+    ret = col.indexOf(style);
+  }
+  return ret;
+}, addCellStyleXf:function(config) {
+  var col = this._cellStyleXfs, ret, style;
+  if (!col) {
+    this.setCellStyleXfs([]);
+    col = this._cellStyleXfs;
+  }
+  style = new Ext.exporter.file.ooxml.excel.CellStyleXf(config);
+  ret = col.indexOfKey(style.getKey());
+  if (ret >= 0) {
+    style.destroy();
+  } else {
+    col.add(style);
+    ret = col.indexOf(style);
+  }
+  return ret;
+}, getStyleParams:function(style) {
+  var me = this, s = style && style.isStyle ? style : new Ext.exporter.file.Style(style), cfg = s.getConfig(), numFmtId = 0, fontId = 0, fillId = 0, borderId = 0, xfId = 0;
+  cfg.parentId = style ? style.parentId : null;
+  if (cfg.font) {
+    fontId = me.addFont(cfg.font);
+  }
+  if (cfg.format) {
+    numFmtId = me.getNumberFormatId(cfg.format);
+  }
+  if (cfg.interior) {
+    fillId = me.addFill(cfg.interior);
+  }
+  if (cfg.borders) {
+    borderId = me.getBorderId(cfg.borders);
+  }
+  if (cfg.parentId) {
+    xfId = cfg.parentId;
+  }
+  return {numFmtId:numFmtId, fontId:fontId, fillId:fillId, borderId:borderId, xfId:xfId, alignment:cfg.alignment || null};
+}, addStyle:function(style) {
+  return this.addCellStyleXf(this.getStyleParams(style));
+}, addCellStyle:function(style, parentStyleId) {
+  var styles = this.getCellXfs(), parentStyle, newStyle;
+  if (styles) {
+    parentStyle = styles.getAt(parentStyleId);
+    if (parentStyle) {
+      newStyle = parentStyle.getConfig();
+    }
+  }
+  return this.addCellXf(Ext.merge(newStyle || {}, this.getStyleParams(style)));
+}, getNumberFormatId:function(f) {
+  var me = this, isDate = !!me.datePatterns[f], id, code;
+  if (f === 'General') {
+    return 0;
+  }
+  code = me.datePatterns[f] || me.booleanPatterns[f] || me.numberPatterns[f];
+  if (Ext.isNumeric(code)) {
+    id = code;
+  } else {
+    if (!code) {
+      code = f;
+    }
+  }
+  return id || me.addNumberFormat({isDate:isDate, formatCode:code});
+}, getBorderId:function(borders) {
+  var cfg = {}, len = borders.length, i, b, key;
+  for (i = 0; i < len; i++) {
+    b = borders[i];
+    key = Ext.util.Format.lowercase(b.position);
+    delete b.position;
+    cfg[key] = b;
+  }
+  return this.addBorder(cfg);
+}});
+Ext.define('Ext.exporter.file.ooxml.excel.SharedStrings', {extend:Ext.exporter.file.ooxml.Xml, isSharedStrings:true, config:{strings:[]}, contentType:{contentType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml'}, relationship:{schema:'http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings'}, folder:'/xl/', fileName:'sharedStrings', tpl:['\x3c?xml version\x3d"1.0" encoding\x3d"UTF-8" standalone\x3d"yes"?\x3e', '\x3csst xmlns\x3d"http://schemas.openxmlformats.org/spreadsheetml/2006/main" count\x3d"{strings.length}" uniqueCount\x3d"{strings.length}"\x3e', 
+'\x3ctpl for\x3d"strings.getRange()"\x3e\x3csi\x3e\x3ct\x3e{.:this.utf8}\x3c/t\x3e\x3c/si\x3e\x3c/tpl\x3e', '\x3c/sst\x3e', {utf8:function(v) {
+  return Ext.util.Base64._utf8_encode(v);
+}}], destroy:function() {
+  this.setStrings(null);
+  this.callParent();
+}, applyStrings:function(data, dataCollection) {
+  var col;
+  if (data) {
+    col = new Ext.util.Collection({keyFn:Ext.identityFn});
+    col.add(data);
+  }
+  Ext.destroy(dataCollection);
+  return col;
+}, addString:function(value) {
+  var v = Ext.util.Format.htmlEncode(value), s = this.getStrings(), index;
+  if (!s) {
+    this.setStrings([]);
+    s = this.getStrings();
+  }
+  index = s.indexOfKey(v);
+  if (index < 0) {
+    s.add(v);
+    index = s.length - 1;
+  }
+  return index;
+}});
+Ext.define('Ext.exporter.file.ooxml.theme.Base', {extend:Ext.exporter.file.ooxml.XmlRels, alias:'ooxmltheme.base', mixins:[Ext.mixin.Factoryable], folder:'/theme/', fileName:'theme', contentType:{contentType:'application/vnd.openxmlformats-officedocument.theme+xml'}, relationship:{schema:'http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme'}});
+Ext.define('Ext.exporter.file.ooxml.theme.Office', {extend:Ext.exporter.file.ooxml.theme.Base, alias:'ooxmltheme.office', tpl:['\x3c?xml version\x3d"1.0" encoding\x3d"UTF-8" standalone\x3d"yes"?\x3e', '\x3ca:theme xmlns:a\x3d"http://schemas.openxmlformats.org/drawingml/2006/main" name\x3d"Office Theme"\x3e', '\x3ca:themeElements\x3e', '\x3ca:clrScheme name\x3d"Office"\x3e', '\x3ca:dk1\x3e', '\x3ca:sysClr val\x3d"windowText" lastClr\x3d"000000"/\x3e', '\x3c/a:dk1\x3e', '\x3ca:lt1\x3e', '\x3ca:sysClr val\x3d"window" lastClr\x3d"FFFFFF"/\x3e', 
+'\x3c/a:lt1\x3e', '\x3ca:dk2\x3e', '\x3ca:srgbClr val\x3d"44546A"/\x3e', '\x3c/a:dk2\x3e', '\x3ca:lt2\x3e', '\x3ca:srgbClr val\x3d"E7E6E6"/\x3e', '\x3c/a:lt2\x3e', '\x3ca:accent1\x3e', '\x3ca:srgbClr val\x3d"4472C4"/\x3e', '\x3c/a:accent1\x3e', '\x3ca:accent2\x3e', '\x3ca:srgbClr val\x3d"ED7D31"/\x3e', '\x3c/a:accent2\x3e', '\x3ca:accent3\x3e', '\x3ca:srgbClr val\x3d"A5A5A5"/\x3e', '\x3c/a:accent3\x3e', '\x3ca:accent4\x3e', '\x3ca:srgbClr val\x3d"FFC000"/\x3e', '\x3c/a:accent4\x3e', '\x3ca:accent5\x3e', 
+'\x3ca:srgbClr val\x3d"5B9BD5"/\x3e', '\x3c/a:accent5\x3e', '\x3ca:accent6\x3e', '\x3ca:srgbClr val\x3d"70AD47"/\x3e', '\x3c/a:accent6\x3e', '\x3ca:hlink\x3e', '\x3ca:srgbClr val\x3d"0563C1"/\x3e', '\x3c/a:hlink\x3e', '\x3ca:folHlink\x3e', '\x3ca:srgbClr val\x3d"954F72"/\x3e', '\x3c/a:folHlink\x3e', '\x3c/a:clrScheme\x3e', '\x3ca:fontScheme name\x3d"Office"\x3e', '\x3ca:majorFont\x3e', '\x3ca:latin typeface\x3d"Calibri Light" panose\x3d"020F0302020204030204"/\x3e', '\x3ca:ea typeface\x3d""/\x3e', 
+'\x3ca:cs typeface\x3d""/\x3e', '\x3ca:font script\x3d"Jpan" typeface\x3d"Yu Gothic Light"/\x3e', '\x3ca:font script\x3d"Hang" typeface\x3d"{[this.utf8(\'맑은 고딕\')]}"/\x3e', '\x3ca:font script\x3d"Hans" typeface\x3d"DengXian Light"/\x3e', '\x3ca:font script\x3d"Hant" typeface\x3d"{[this.utf8(\'新細明體\')]}"/\x3e', '\x3ca:font script\x3d"Arab" typeface\x3d"Times New Roman"/\x3e', '\x3ca:font script\x3d"Hebr" typeface\x3d"Times New Roman"/\x3e', '\x3ca:font script\x3d"Thai" typeface\x3d"Tahoma"/\x3e', 
+'\x3ca:font script\x3d"Ethi" typeface\x3d"Nyala"/\x3e', '\x3ca:font script\x3d"Beng" typeface\x3d"Vrinda"/\x3e', '\x3ca:font script\x3d"Gujr" typeface\x3d"Shruti"/\x3e', '\x3ca:font script\x3d"Khmr" typeface\x3d"MoolBoran"/\x3e', '\x3ca:font script\x3d"Knda" typeface\x3d"Tunga"/\x3e', '\x3ca:font script\x3d"Guru" typeface\x3d"Raavi"/\x3e', '\x3ca:font script\x3d"Cans" typeface\x3d"Euphemia"/\x3e', '\x3ca:font script\x3d"Cher" typeface\x3d"Plantagenet Cherokee"/\x3e', '\x3ca:font script\x3d"Yiii" typeface\x3d"Microsoft Yi Baiti"/\x3e', 
+'\x3ca:font script\x3d"Tibt" typeface\x3d"Microsoft Himalaya"/\x3e', '\x3ca:font script\x3d"Thaa" typeface\x3d"MV Boli"/\x3e', '\x3ca:font script\x3d"Deva" typeface\x3d"Mangal"/\x3e', '\x3ca:font script\x3d"Telu" typeface\x3d"Gautami"/\x3e', '\x3ca:font script\x3d"Taml" typeface\x3d"Latha"/\x3e', '\x3ca:font script\x3d"Syrc" typeface\x3d"Estrangelo Edessa"/\x3e', '\x3ca:font script\x3d"Orya" typeface\x3d"Kalinga"/\x3e', '\x3ca:font script\x3d"Mlym" typeface\x3d"Kartika"/\x3e', '\x3ca:font script\x3d"Laoo" typeface\x3d"DokChampa"/\x3e', 
+'\x3ca:font script\x3d"Sinh" typeface\x3d"Iskoola Pota"/\x3e', '\x3ca:font script\x3d"Mong" typeface\x3d"Mongolian Baiti"/\x3e', '\x3ca:font script\x3d"Viet" typeface\x3d"Times New Roman"/\x3e', '\x3ca:font script\x3d"Uigh" typeface\x3d"Microsoft Uighur"/\x3e', '\x3ca:font script\x3d"Geor" typeface\x3d"Sylfaen"/\x3e', '\x3c/a:majorFont\x3e', '\x3ca:minorFont\x3e', '\x3ca:latin typeface\x3d"Calibri" panose\x3d"020F0502020204030204"/\x3e', '\x3ca:ea typeface\x3d""/\x3e', '\x3ca:cs typeface\x3d""/\x3e', 
+'\x3ca:font script\x3d"Jpan" typeface\x3d"Yu Gothic"/\x3e', '\x3ca:font script\x3d"Hang" typeface\x3d"{[this.utf8(\'맑은 고딕\')]}"/\x3e', '\x3ca:font script\x3d"Hans" typeface\x3d"DengXian"/\x3e', '\x3ca:font script\x3d"Hant" typeface\x3d"{[this.utf8(\'新細明體\')]}"/\x3e', '\x3ca:font script\x3d"Arab" typeface\x3d"Arial"/\x3e', '\x3ca:font script\x3d"Hebr" typeface\x3d"Arial"/\x3e', '\x3ca:font script\x3d"Thai" typeface\x3d"Tahoma"/\x3e', '\x3ca:font script\x3d"Ethi" typeface\x3d"Nyala"/\x3e', '\x3ca:font script\x3d"Beng" typeface\x3d"Vrinda"/\x3e', 
+'\x3ca:font script\x3d"Gujr" typeface\x3d"Shruti"/\x3e', '\x3ca:font script\x3d"Khmr" typeface\x3d"DaunPenh"/\x3e', '\x3ca:font script\x3d"Knda" typeface\x3d"Tunga"/\x3e', '\x3ca:font script\x3d"Guru" typeface\x3d"Raavi"/\x3e', '\x3ca:font script\x3d"Cans" typeface\x3d"Euphemia"/\x3e', '\x3ca:font script\x3d"Cher" typeface\x3d"Plantagenet Cherokee"/\x3e', '\x3ca:font script\x3d"Yiii" typeface\x3d"Microsoft Yi Baiti"/\x3e', '\x3ca:font script\x3d"Tibt" typeface\x3d"Microsoft Himalaya"/\x3e', '\x3ca:font script\x3d"Thaa" typeface\x3d"MV Boli"/\x3e', 
+'\x3ca:font script\x3d"Deva" typeface\x3d"Mangal"/\x3e', '\x3ca:font script\x3d"Telu" typeface\x3d"Gautami"/\x3e', '\x3ca:font script\x3d"Taml" typeface\x3d"Latha"/\x3e', '\x3ca:font script\x3d"Syrc" typeface\x3d"Estrangelo Edessa"/\x3e', '\x3ca:font script\x3d"Orya" typeface\x3d"Kalinga"/\x3e', '\x3ca:font script\x3d"Mlym" typeface\x3d"Kartika"/\x3e', '\x3ca:font script\x3d"Laoo" typeface\x3d"DokChampa"/\x3e', '\x3ca:font script\x3d"Sinh" typeface\x3d"Iskoola Pota"/\x3e', '\x3ca:font script\x3d"Mong" typeface\x3d"Mongolian Baiti"/\x3e', 
+'\x3ca:font script\x3d"Viet" typeface\x3d"Arial"/\x3e', '\x3ca:font script\x3d"Uigh" typeface\x3d"Microsoft Uighur"/\x3e', '\x3ca:font script\x3d"Geor" typeface\x3d"Sylfaen"/\x3e', '\x3c/a:minorFont\x3e', '\x3c/a:fontScheme\x3e', '\x3ca:fmtScheme name\x3d"Office"\x3e', '\x3ca:fillStyleLst\x3e', '\x3ca:solidFill\x3e', '\x3ca:schemeClr val\x3d"phClr"/\x3e', '\x3c/a:solidFill\x3e', '\x3ca:gradFill rotWithShape\x3d"1"\x3e', '\x3ca:gsLst\x3e', '\x3ca:gs pos\x3d"0"\x3e', '\x3ca:schemeClr val\x3d"phClr"\x3e', 
+'\x3ca:lumMod val\x3d"110000"/\x3e', '\x3ca:satMod val\x3d"105000"/\x3e', '\x3ca:tint val\x3d"67000"/\x3e', '\x3c/a:schemeClr\x3e', '\x3c/a:gs\x3e', '\x3ca:gs pos\x3d"50000"\x3e', '\x3ca:schemeClr val\x3d"phClr"\x3e', '\x3ca:lumMod val\x3d"105000"/\x3e', '\x3ca:satMod val\x3d"103000"/\x3e', '\x3ca:tint val\x3d"73000"/\x3e', '\x3c/a:schemeClr\x3e', '\x3c/a:gs\x3e', '\x3ca:gs pos\x3d"100000"\x3e', '\x3ca:schemeClr val\x3d"phClr"\x3e', '\x3ca:lumMod val\x3d"105000"/\x3e', '\x3ca:satMod val\x3d"109000"/\x3e', 
+'\x3ca:tint val\x3d"81000"/\x3e', '\x3c/a:schemeClr\x3e', '\x3c/a:gs\x3e', '\x3c/a:gsLst\x3e', '\x3ca:lin ang\x3d"5400000" scaled\x3d"0"/\x3e', '\x3c/a:gradFill\x3e', '\x3ca:gradFill rotWithShape\x3d"1"\x3e', '\x3ca:gsLst\x3e', '\x3ca:gs pos\x3d"0"\x3e', '\x3ca:schemeClr val\x3d"phClr"\x3e', '\x3ca:satMod val\x3d"103000"/\x3e', '\x3ca:lumMod val\x3d"102000"/\x3e', '\x3ca:tint val\x3d"94000"/\x3e', '\x3c/a:schemeClr\x3e', '\x3c/a:gs\x3e', '\x3ca:gs pos\x3d"50000"\x3e', '\x3ca:schemeClr val\x3d"phClr"\x3e', 
+'\x3ca:satMod val\x3d"110000"/\x3e', '\x3ca:lumMod val\x3d"100000"/\x3e', '\x3ca:shade val\x3d"100000"/\x3e', '\x3c/a:schemeClr\x3e', '\x3c/a:gs\x3e', '\x3ca:gs pos\x3d"100000"\x3e', '\x3ca:schemeClr val\x3d"phClr"\x3e', '\x3ca:lumMod val\x3d"99000"/\x3e', '\x3ca:satMod val\x3d"120000"/\x3e', '\x3ca:shade val\x3d"78000"/\x3e', '\x3c/a:schemeClr\x3e', '\x3c/a:gs\x3e', '\x3c/a:gsLst\x3e', '\x3ca:lin ang\x3d"5400000" scaled\x3d"0"/\x3e', '\x3c/a:gradFill\x3e', '\x3c/a:fillStyleLst\x3e', '\x3ca:lnStyleLst\x3e', 
+'\x3ca:ln w\x3d"6350" cap\x3d"flat" cmpd\x3d"sng" algn\x3d"ctr"\x3e', '\x3ca:solidFill\x3e', '\x3ca:schemeClr val\x3d"phClr"/\x3e', '\x3c/a:solidFill\x3e', '\x3ca:prstDash val\x3d"solid"/\x3e', '\x3ca:miter lim\x3d"800000"/\x3e', '\x3c/a:ln\x3e', '\x3ca:ln w\x3d"12700" cap\x3d"flat" cmpd\x3d"sng" algn\x3d"ctr"\x3e', '\x3ca:solidFill\x3e', '\x3ca:schemeClr val\x3d"phClr"/\x3e', '\x3c/a:solidFill\x3e', '\x3ca:prstDash val\x3d"solid"/\x3e', '\x3ca:miter lim\x3d"800000"/\x3e', '\x3c/a:ln\x3e', '\x3ca:ln w\x3d"19050" cap\x3d"flat" cmpd\x3d"sng" algn\x3d"ctr"\x3e', 
+'\x3ca:solidFill\x3e', '\x3ca:schemeClr val\x3d"phClr"/\x3e', '\x3c/a:solidFill\x3e', '\x3ca:prstDash val\x3d"solid"/\x3e', '\x3ca:miter lim\x3d"800000"/\x3e', '\x3c/a:ln\x3e', '\x3c/a:lnStyleLst\x3e', '\x3ca:effectStyleLst\x3e', '\x3ca:effectStyle\x3e', '\x3ca:effectLst/\x3e', '\x3c/a:effectStyle\x3e', '\x3ca:effectStyle\x3e', '\x3ca:effectLst/\x3e', '\x3c/a:effectStyle\x3e', '\x3ca:effectStyle\x3e', '\x3ca:effectLst\x3e', '\x3ca:outerShdw blurRad\x3d"57150" dist\x3d"19050" dir\x3d"5400000" algn\x3d"ctr" rotWithShape\x3d"0"\x3e', 
+'\x3ca:srgbClr val\x3d"000000"\x3e', '\x3ca:alpha val\x3d"63000"/\x3e', '\x3c/a:srgbClr\x3e', '\x3c/a:outerShdw\x3e', '\x3c/a:effectLst\x3e', '\x3c/a:effectStyle\x3e', '\x3c/a:effectStyleLst\x3e', '\x3ca:bgFillStyleLst\x3e', '\x3ca:solidFill\x3e', '\x3ca:schemeClr val\x3d"phClr"/\x3e', '\x3c/a:solidFill\x3e', '\x3ca:solidFill\x3e', '\x3ca:schemeClr val\x3d"phClr"\x3e', '\x3ca:tint val\x3d"95000"/\x3e', '\x3ca:satMod val\x3d"170000"/\x3e', '\x3c/a:schemeClr\x3e', '\x3c/a:solidFill\x3e', '\x3ca:gradFill rotWithShape\x3d"1"\x3e', 
+'\x3ca:gsLst\x3e', '\x3ca:gs pos\x3d"0"\x3e', '\x3ca:schemeClr val\x3d"phClr"\x3e', '\x3ca:tint val\x3d"93000"/\x3e', '\x3ca:satMod val\x3d"150000"/\x3e', '\x3ca:shade val\x3d"98000"/\x3e', '\x3ca:lumMod val\x3d"102000"/\x3e', '\x3c/a:schemeClr\x3e', '\x3c/a:gs\x3e', '\x3ca:gs pos\x3d"50000"\x3e', '\x3ca:schemeClr val\x3d"phClr"\x3e', '\x3ca:tint val\x3d"98000"/\x3e', '\x3ca:satMod val\x3d"130000"/\x3e', '\x3ca:shade val\x3d"90000"/\x3e', '\x3ca:lumMod val\x3d"103000"/\x3e', '\x3c/a:schemeClr\x3e', 
+'\x3c/a:gs\x3e', '\x3ca:gs pos\x3d"100000"\x3e', '\x3ca:schemeClr val\x3d"phClr"\x3e', '\x3ca:shade val\x3d"63000"/\x3e', '\x3ca:satMod val\x3d"120000"/\x3e', '\x3c/a:schemeClr\x3e', '\x3c/a:gs\x3e', '\x3c/a:gsLst\x3e', '\x3ca:lin ang\x3d"5400000" scaled\x3d"0"/\x3e', '\x3c/a:gradFill\x3e', '\x3c/a:bgFillStyleLst\x3e', '\x3c/a:fmtScheme\x3e', '\x3c/a:themeElements\x3e', '\x3ca:objectDefaults/\x3e', '\x3ca:extraClrSchemeLst/\x3e', '\x3c/a:theme\x3e', {utf8:function(v) {
+  return Ext.util.Base64._utf8_encode(v || '');
+}}]});
+Ext.define('Ext.exporter.file.ooxml.excel.Workbook', {extend:Ext.exporter.file.ooxml.XmlRels, isWorkbook:true, currentSheetIndex:1, currentPivotCacheIndex:0, config:{stylesheet:{}, sharedStrings:{}, sheets:[], pivotCaches:null, theme:{type:'office', folder:'/xl/theme/', index:1}}, contentType:{contentType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml'}, relationship:{schema:'http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument'}, folder:'/xl/', 
+fileName:'workbook', tpl:['\x3c?xml version\x3d"1.0" encoding\x3d"UTF-8" standalone\x3d"yes"?\x3e', '\x3cworkbook xmlns\x3d"http://schemas.openxmlformats.org/spreadsheetml/2006/main" ', 'xmlns:r\x3d"http://schemas.openxmlformats.org/officeDocument/2006/relationships"\x3e', '\x3ctpl if\x3d"sheets"\x3e', '\x3csheets\x3e', '\x3ctpl if\x3d"sheets"\x3e\x3ctpl for\x3d"sheets.items"\x3e\x3csheet name\x3d"{[this.utf8(values.getName())]}" sheetId\x3d"{[xindex]}" state\x3d"visible" r:id\x3d"{[values.getRelationship().getId()]}"/\x3e\x3c/tpl\x3e\x3c/tpl\x3e', 
+'\x3c/sheets\x3e', '\x3c/tpl\x3e', '\x3ctpl if\x3d"pivotCaches"\x3e', '\x3cpivotCaches\x3e', '\x3ctpl for\x3d"pivotCaches.getRange()"\x3e{[values.render()]}\x3c/tpl\x3e', '\x3c/pivotCaches\x3e', '\x3c/tpl\x3e', '\x3c/workbook\x3e', {utf8:function(v) {
+  return Ext.util.Base64._utf8_encode(v || '');
+}}], destroy:function() {
+  var me = this;
+  me.setStylesheet(null);
+  me.setSharedStrings(null);
+  me.setTheme(null);
+  me.callParent();
+}, collectFiles:function(files) {
+  var me = this, style = me._stylesheet, strings = me._sharedStrings, theme = me._theme, ws, i, length;
+  ws = me._sheets;
+  length = ws.length;
+  for (i = 0; i < length; i++) {
+    ws.items[i].collectFiles(files);
+  }
+  files[me._path] = me.render();
+  files[style._path] = style.render();
+  files[strings._path] = strings.render();
+  files[theme._path] = theme.render();
+  me.collectRelationshipsFiles(files);
+}, collectContentTypes:function(types) {
+  var me = this, ws, i, length;
+  types.push(me.getStylesheet().getContentType());
+  types.push(me.getSharedStrings().getContentType());
+  types.push(me.getTheme().getContentType());
+  ws = me.getSheets();
+  length = ws.length;
+  for (i = 0; i < length; i++) {
+    ws.getAt(i).collectContentTypes(types);
+  }
+  me.callParent([types]);
+}, applyStylesheet:function(data) {
+  if (!data || data.isStylesheet) {
+    return data;
+  }
+  return new Ext.exporter.file.ooxml.excel.Stylesheet;
+}, updateStylesheet:function(data, oldData) {
+  var rels = this.getRelationships();
+  if (oldData && rels) {
+    rels.removeRelationship(oldData.getRelationship());
+  }
+  if (data && rels) {
+    rels.addRelationship(data.getRelationship());
+  }
+  Ext.destroy(oldData);
+}, applySharedStrings:function(data) {
+  if (!data || data.isSharedStrings) {
+    return data;
+  }
+  return new Ext.exporter.file.ooxml.excel.SharedStrings;
+}, updateSharedStrings:function(data, oldData) {
+  var rels = this.getRelationships();
+  if (oldData && rels) {
+    rels.removeRelationship(oldData.getRelationship());
+  }
+  if (data) {
+    rels.addRelationship(data.getRelationship());
+  }
+  Ext.destroy(oldData);
+}, applyPivotCaches:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.file.ooxml.excel.PivotCache');
+}, updatePivotCaches:function(collection, oldCollection) {
+  var me = this;
+  if (oldCollection) {
+    oldCollection.un({add:me.onPivotCacheAdd, scope:me});
+  }
+  if (collection) {
+    collection.on({add:me.onPivotCacheAdd, scope:me});
+  }
+}, onPivotCacheAdd:function(collection, details) {
+  var length = details.items.length, i, item;
+  for (i = 0; i < length; i++) {
+    item = details.items[i];
+    item.setCacheId(this.currentPivotCacheIndex++);
+  }
+}, applySheets:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.file.ooxml.excel.Sheet');
+}, updateSheets:function(collection, oldCollection) {
+  var me = this;
+  if (oldCollection) {
+    oldCollection.un({add:me.onSheetAdd, remove:me.onSheetRemove, scope:me});
+  }
+  if (collection) {
+    collection.on({add:me.onSheetAdd, remove:me.onSheetRemove, scope:me});
+  }
+}, applyTheme:function(value) {
+  var cfg = {type:'office'};
+  if (value) {
+    if (typeof value === 'string') {
+      cfg.type = value;
+    } else {
+      Ext.apply(cfg, value);
+    }
+    value = Ext.Factory.ooxmltheme(value);
+  }
+  return value;
+}, updateTheme:function(data, oldData) {
+  var rels = this.getRelationships();
+  if (oldData && rels) {
+    rels.removeRelationship(oldData.getRelationship());
+  }
+  if (data && rels) {
+    rels.addRelationship(data.getRelationship());
+  }
+  Ext.destroy(oldData);
+}, onSheetAdd:function(collection, details) {
+  var rels = this.getRelationships(), length = details.items.length, i, item;
+  for (i = 0; i < length; i++) {
+    item = details.items[i];
+    item.setIndex(this.currentSheetIndex++);
+    item.setWorkbook(this);
+    rels.addRelationship(item.getRelationship());
+  }
+}, onSheetRemove:function(collection, details) {
+  var rels = this.getRelationships(), length = details.items.length, i, item;
+  for (i = 0; i < length; i++) {
+    item = details.items[i];
+    rels.removeRelationship(item.getRelationship());
+    Ext.destroy(item);
+  }
+}, addWorksheet:function(config) {
+  var ws = Ext.Array.from(config || {}), length = ws.length, i, w;
+  for (i = 0; i < length; i++) {
+    w = ws[i];
+    if (w && !w.isWorksheet) {
+      w.workbook = this;
+      ws[i] = new Ext.exporter.file.ooxml.excel.Worksheet(w);
+    }
+  }
+  return this.getSheets().add(ws);
+}, removeWorksheet:function(config) {
+  return this.getSheets().remove(config);
+}, addPivotCache:function(config) {
+  if (!this.getPivotCaches()) {
+    this.setPivotCaches([]);
+  }
+  return this.getPivotCaches().add(config || {});
+}, removePivotCache:function(config) {
+  return this.getPivotCaches().remove(config);
+}, addStyle:function(config) {
+  return this.getStylesheet().addStyle(config);
+}, addCellStyle:function(config) {
+  return this.getStylesheet().addCellStyle(config);
+}});
+Ext.define('Ext.exporter.file.ooxml.ContentTypes', {extend:Ext.exporter.file.ooxml.Xml, isContentTypes:true, config:{contentTypes:[{tag:'Default', contentType:'application/vnd.openxmlformats-package.relationships+xml', extension:'rels'}, {tag:'Default', contentType:'application/xml', extension:'xml'}]}, tpl:['\x3c?xml version\x3d"1.0" encoding\x3d"UTF-8" standalone\x3d"yes"?\x3e', '\x3cTypes xmlns\x3d"http://schemas.openxmlformats.org/package/2006/content-types"\x3e', '\x3ctpl if\x3d"contentTypes"\x3e\x3ctpl for\x3d"contentTypes.getRange()"\x3e{[values.render()]}\x3c/tpl\x3e\x3c/tpl\x3e', 
+'\x3c/Types\x3e'], folder:'/', fileName:'[Content_Types]', applyContentTypes:function(data, dataCollection) {
+  return this.checkCollection(data, dataCollection, 'Ext.exporter.file.ooxml.ContentType');
+}, addContentType:function(config) {
+  return this.getContentTypes().add(config || {});
+}});
+Ext.define('Ext.exporter.file.ooxml.CoreProperties', {extend:Ext.exporter.file.ooxml.Xml, isCoreProperties:true, config:{title:'Workbook', author:'Sencha', subject:''}, contentType:{contentType:'application/vnd.openxmlformats-package.core-properties+xml', partName:'/docProps/core.xml'}, relationship:{schema:'http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties', target:'docProps/core.xml'}, path:'/docProps/core.xml', tpl:['\x3ccoreProperties xmlns\x3d"http://schemas.openxmlformats.org/package/2006/metadata/core-properties" ', 
+'xmlns:dcterms\x3d"http://purl.org/dc/terms/" ', 'xmlns:dc\x3d"http://purl.org/dc/elements/1.1/" ', 'xmlns:xsi\x3d"http://www.w3.org/2001/XMLSchema-instance"\x3e', '   \x3cdc:creator\x3e{author:this.utf8}\x3c/dc:creator\x3e', '   \x3cdc:title\x3e{title:this.utf8}\x3c/dc:title\x3e', '   \x3cdc:subject\x3e{subject:this.utf8}\x3c/dc:subject\x3e', '\x3c/coreProperties\x3e', {utf8:function(v) {
+  return Ext.util.Base64._utf8_encode(v || '');
+}}]});
+Ext.define('Ext.exporter.file.ooxml.Excel', {extend:Ext.exporter.file.ooxml.XmlRels, config:{properties:null, workbook:{}}, folder:'/', fileName:null, tpl:[], constructor:function(config) {
+  var ret = this.callParent([config]);
+  if (!this.getWorkbook()) {
+    this.setWorkbook({});
+  }
+  return ret;
+}, destroy:function() {
+  var me = this;
+  me.setWorkbook(null);
+  me.setProperties(null);
+  me.setRelationships(null);
+  me.callParent();
+}, render:function() {
+  var files = {}, paths, path, content, i, len, zip;
+  this.collectFiles(files);
+  paths = Ext.Object.getKeys(files);
+  len = paths.length;
+  if (!len) {
+    return;
+  }
+  zip = new Ext.exporter.file.zip.Archive;
+  for (i = 0; i < len; i++) {
+    path = paths[i];
+    content = files[path];
+    path = path.substr(1);
+    if (path.indexOf('.xml') !== -1 || path.indexOf('.rel') !== -1) {
+      zip.addFile({path:path, data:content});
+    }
+  }
+  content = zip.getContent();
+  zip = Ext.destroy(zip);
+  return content;
+}, collectFiles:function(files) {
+  var contentTypes = new Ext.exporter.file.ooxml.ContentTypes, wb = this.getWorkbook(), props = this.getProperties(), types = [];
+  wb.collectFiles(files);
+  if (props) {
+    contentTypes.addContentType(props.getContentType());
+    files[props.getPath()] = props.render();
+  }
+  wb.collectContentTypes(types);
+  contentTypes.addContentType(types);
+  files[contentTypes.getPath()] = contentTypes.render();
+  Ext.destroy(contentTypes);
+  this.collectRelationshipsFiles(files);
+}, applyProperties:function(data) {
+  if (!data || data.isCoreProperties) {
+    return data;
+  }
+  return new Ext.exporter.file.ooxml.CoreProperties(data);
+}, updateProperties:function(data, oldData) {
+  var rels = this.getRelationships();
+  if (oldData) {
+    rels.removeRelationship(oldData.getRelationship());
+    oldData.destroy();
+  }
+  if (data) {
+    rels.addRelationship(data.getRelationship());
+  }
+}, applyWorkbook:function(data) {
+  if (!data || data.isWorkbook) {
+    return data;
+  }
+  return new Ext.exporter.file.ooxml.excel.Workbook(data);
+}, updateWorkbook:function(data, oldData) {
+  var rels = this.getRelationships();
+  if (oldData) {
+    rels.removeRelationship(oldData.getRelationship());
+    oldData.destroy();
+  }
+  if (data) {
+    rels.addRelationship(data.getRelationship());
+  }
+}, addWorksheet:function(config) {
+  return this.getWorkbook().addWorksheet(config);
+}, addStyle:function(config) {
+  return this.getWorkbook().getStylesheet().addStyle(config);
+}, addCellStyle:function(config, parentStyleId) {
+  return this.getWorkbook().getStylesheet().addCellStyle(config, parentStyleId);
+}});
+Ext.define('Ext.exporter.excel.Xlsx', {extend:Ext.exporter.Base, alternateClassName:'Ext.exporter.Excel', alias:['exporter.excel07', 'exporter.xlsx', 'exporter.excel'], config:{defaultStyle:{alignment:{vertical:'Top'}, font:{fontName:'Arial', family:'Swiss', size:11, color:'#000000'}}, titleStyle:{alignment:{horizontal:'Center', vertical:'Center'}, font:{fontName:'Arial', family:'Swiss', size:18, color:'#1F497D'}}, groupHeaderStyle:{borders:[{position:'Bottom', lineStyle:'Continuous', weight:1, color:'#4F81BD'}]}, 
+groupFooterStyle:{borders:[{position:'Top', lineStyle:'Continuous', weight:1, color:'#4F81BD'}]}, tableHeaderStyle:{alignment:{horizontal:'Center', vertical:'Center'}, borders:[{position:'Bottom', lineStyle:'Continuous', weight:1, color:'#4F81BD'}], font:{fontName:'Arial', family:'Swiss', size:11, color:'#1F497D'}}}, fileName:'export.xlsx', charset:'ascii', mimeType:'application/zip', binary:true, titleRowHeight:22.5, headerRowHeight:20.25, destroy:function() {
+  var me = this;
+  me.excel = me.worksheet = Ext.destroy(me.excel, me.worksheet);
+  me.callParent();
+}, getContent:function() {
+  var me = this, config = this.getConfig(), data = config.data, colMerge, ws;
+  me.excel = new Ext.exporter.file.ooxml.Excel({properties:{title:config.title, author:config.author}});
+  me.worksheet = ws = me.excel.addWorksheet({name:config.title});
+  me.tableHeaderStyleId = me.excel.addCellStyle(config.tableHeaderStyle);
+  colMerge = data ? data.getColumnCount() : 1;
+  ws.beginRowRendering();
+  me.addTitle(config, colMerge);
+  if (data) {
+    ws.renderRows(me.buildHeader());
+    ws.renderRows(me.buildRows(data, colMerge, -1));
+  }
+  ws.endRowRendering();
+  me.columnStylesNormal = me.columnStylesNormalId = me.columnStylesFooter = null;
+  me.columnStylesFooterId = me.headerStyles = me.footerStyles = null;
+  return me.excel.render();
+}, addTitle:function(config, colMerge) {
+  if (!Ext.isEmpty(config.title)) {
+    this.worksheet.renderRow({height:this.titleRowHeight, cells:[{mergeAcross:colMerge - 1, value:config.title, styleId:this.excel.addCellStyle(config.titleStyle)}]});
+  }
+}, buildRows:function(group, colMerge, level) {
+  var me = this, showSummary = me._showSummary, rows = [], groups, row, styleH, styleF, cells, i, j, k, gLen, sLen, cLen, oneLine, text, items, cell, temp, style;
+  if (!group) {
+    return rows;
+  }
+  groups = group._groups;
+  text = group._text;
+  oneLine = !groups && !group._rows;
+  if (showSummary !== false && !Ext.isEmpty(text) && !oneLine) {
+    styleH = me.getGroupHeaderStyleByLevel(level);
+    rows.push({styleId:styleH, cells:[{mergeAcross:colMerge - 1, value:text, styleId:styleH}]});
+  }
+  if (groups) {
+    gLen = groups.length;
+    for (i = 0; i < gLen; i++) {
+      Ext.Array.insert(rows, rows.length, me.buildRows(groups.items[i], colMerge, level + 1));
+    }
+  }
+  if (group._rows) {
+    items = group._rows.items;
+    sLen = items.length;
+    if (showSummary === false) {
+      styleH = me.getGroupHeaderStyleByLevel(level);
+      rows.push({cells:[{mergeAcross:colMerge - 1, value:group._text, styleId:styleH}]});
+    }
+    for (k = 0; k < sLen; k++) {
+      temp = items[k];
+      row = {id:temp._id, cells:[]};
+      cells = temp._cells;
+      cLen = cells.length;
+      for (j = 0; j < cLen; j++) {
+        cell = cells.items[j];
+        style = me.columnStylesNormalId[j];
+        row.cells.push({id:cell._id, value:cell._value, styleId:me.getCellStyleId(cell._style, style)});
+      }
+      rows.push(row);
+    }
+  }
+  items = group._summaries && group._summaries.items;
+  if (items && (showSummary || oneLine)) {
+    styleF = me.getGroupFooterStyleByLevel(level);
+    sLen = items.length;
+    for (k = 0; k < sLen; k++) {
+      temp = items[k];
+      row = {id:temp._id, cells:[]};
+      cells = temp._cells;
+      cLen = cells.length;
+      for (j = 0; j < cLen; j++) {
+        cell = cells.items[j];
+        style = oneLine ? me.columnStylesNormalId[j] : j === 0 ? styleF : me.columnStylesFooterId[j];
+        row.cells.push({id:cell._id, value:cell._value, styleId:me.getCellStyleId(cell._style, style)});
+      }
+      rows.push(row);
+    }
+  }
+  group.destroy();
+  return rows;
+}, getGroupHeaderStyleByLevel:function(level) {
+  var me = this, key = 'l' + level, styles = me.headerStyles;
+  if (!styles) {
+    me.headerStyles = styles = {};
+  }
+  if (!styles.hasOwnProperty(key)) {
+    styles[key] = me.excel.addCellStyle(Ext.applyIf({alignment:{Indent:level > 0 ? level : 0}}, me._groupHeaderStyle));
+  }
+  return styles[key];
+}, getGroupFooterStyleByLevel:function(level) {
+  var me = this, key = 'l' + level, styles = me.footerStyles;
+  if (!styles) {
+    me.footerStyles = styles = {};
+  }
+  if (!styles.hasOwnProperty(key)) {
+    styles[key] = me.excel.addCellStyle(Ext.applyIf({alignment:{Indent:level > 0 ? level : 0}}, me.columnStylesFooter[0]));
+  }
+  return styles[key];
+}, buildHeader:function() {
+  var me = this, ret = {}, data = me.getData(), rows = [], keys, row, i, j, len, lenCells, style, arr, fStyle, col, colCfg, cell;
+  me.buildHeaderRows(data.getColumns(), ret);
+  keys = Ext.Object.getKeys(ret);
+  len = keys.length;
+  for (i = 0; i < len; i++) {
+    row = {height:me.headerRowHeight, styleId:me.tableHeaderStyleId, cells:[]};
+    arr = ret[keys[i]];
+    lenCells = arr.length;
+    for (j = 0; j < lenCells; j++) {
+      cell = arr[j];
+      cell.styleId = me.tableHeaderStyleId;
+      row.cells.push(cell);
+    }
+    rows.push(row);
+  }
+  arr = data.getBottomColumns();
+  lenCells = arr.length;
+  me.columnStylesNormal = [];
+  me.columnStylesNormalId = [];
+  me.columnStylesFooter = [];
+  me.columnStylesFooterId = [];
+  fStyle = me.getGroupFooterStyle();
+  for (j = 0; j < lenCells; j++) {
+    col = arr[j];
+    colCfg = {style:col.getStyle(), width:col.getWidth()};
+    style = Ext.applyIf({parentId:0}, fStyle);
+    style = Ext.merge(style, colCfg.style);
+    me.columnStylesFooter.push(style);
+    me.columnStylesFooterId.push(me.excel.addCellStyle(style));
+    style = Ext.applyIf({parentId:0}, colCfg.style);
+    me.columnStylesNormal.push(style);
+    colCfg.styleId = me.excel.addCellStyle(style);
+    me.columnStylesNormalId.push(colCfg.styleId);
+    colCfg.min = colCfg.max = j + 1;
+    colCfg.style = null;
+    if (colCfg.width) {
+      colCfg.width = colCfg.width / 10;
+    }
+    me.worksheet.addColumn(colCfg);
+  }
+  return rows;
+}, getCellStyleId:function(style, parentStyleId) {
+  return style ? this.excel.addCellStyle(style, parentStyleId) : parentStyleId;
+}, buildHeaderRows:function(columns, result) {
+  var col, cols, i, len, name;
+  if (!columns) {
+    return;
+  }
+  len = columns.length;
+  for (i = 0; i < len; i++) {
+    col = columns.items[i].getConfig();
+    col.value = col.text;
+    cols = col.columns;
+    delete col.columns;
+    delete col.table;
+    name = 's' + col.level;
+    result[name] = result[name] || [];
+    result[name].push(col);
+    this.buildHeaderRows(cols, result);
+  }
+}});
+Ext.define('Ext.exporter.Plugin', {extend:Ext.plugin.Abstract, alias:['plugin.exporterplugin'], init:function(cmp) {
+  var me = this;
+  cmp.saveDocumentAs = Ext.bind(me.saveDocumentAs, me);
+  cmp.getDocumentData = Ext.bind(me.getDocumentData, me);
+  me.cmp = cmp;
+  return me.callParent([cmp]);
+}, destroy:function() {
+  var me = this, cmp = me.cmp;
+  cmp.saveDocumentAs = cmp.getDocumentData = me.cmp = me.delayedSaveTimer = Ext.unasap(me.delayedSaveTimer);
+  me.callParent();
+}, saveDocumentAs:function(config) {
+  var cmp = this.cmp, deferred = new Ext.Deferred, exporter = this.getExporter(config);
+  cmp.fireEvent('beforedocumentsave', cmp, {config:config, exporter:exporter});
+  this.delayedSaveTimer = Ext.asap(this.delayedSave, this, [exporter, config, deferred]);
+  return deferred.promise;
+}, delayedSave:function(exporter, config, deferred) {
+  var cmp = this.cmp;
+  if (this.disabled || !cmp) {
+    Ext.destroy(exporter);
+    deferred.reject();
+    return;
+  }
+  this.setExporterData(exporter, config);
+  exporter.saveAs().then(function() {
+    deferred.resolve(config);
+  }, function(msg) {
+    deferred.reject(msg);
+  }).always(function() {
+    var canFire = cmp && !cmp.destroyed;
+    if (canFire) {
+      cmp.fireEvent('documentsave', cmp, {config:config, exporter:exporter});
+    }
+    Ext.destroy(exporter);
+    if (canFire) {
+      cmp.fireEvent('exportfinished', cmp, {config:config});
+    }
+  });
+}, getDocumentData:function(config) {
+  var exporter, ret;
+  if (this.disabled) {
+    return;
+  }
+  exporter = this.getExporter(config);
+  this.setExporterData(exporter, config);
+  ret = exporter.getContent();
+  Ext.destroy(exporter);
+  return ret;
+}, getExporter:function(config) {
+  var cfg = Ext.apply({type:'excel'}, config);
+  return Ext.Factory.exporter(cfg);
+}, setExporterData:function(exporter, config) {
+  var cmp = this.cmp;
+  exporter.setData(this.prepareData(config));
+  cmp.fireEvent('dataready', cmp, {config:config, exporter:exporter});
+}, getExportStyle:function(style, config) {
+  var type = config && config.type, types, def, index;
+  if (Ext.isArray(style)) {
+    types = Ext.Array.pluck(style, 'type');
+    index = Ext.Array.indexOf(types, undefined);
+    if (index >= 0) {
+      def = style[index];
+    }
+    index = Ext.Array.indexOf(types, type);
+    return index >= 0 ? style[index] : def;
+  } else {
+    return style;
+  }
+}, prepareData:Ext.emptyFn});
+Ext.define('Ext.grid.plugin.BaseExporter', {extend:Ext.exporter.Plugin, prepareData:function(config) {
+  var me = this, store = me.cmp.getStore(), table = new Ext.exporter.data.Table, result, columns;
+  result = me.getColumnHeaders(config, me.getGridColumns());
+  table.setColumns(result.headers);
+  if (!store || store && store.destroyed) {
+    return table;
+  }
+  if (store && store.isBufferedStore) {
+    Ext.raise("BufferedStore can't be exported because it doesn't have all data available");
+  }
+  columns = me.prepareDataIndexColumns(config, result.dataIndexes);
+  if (store.isTreeStore) {
+    me.extractNodeData(config, table, columns, store.getRoot());
+  } else {
+    if (config && config.includeGroups && store.isGrouped()) {
+      me.extractData(config, table, columns, store.getGroups());
+      me.extractSummaryRow(config, table, columns, store);
+    } else {
+      me.extractRows(config, table, columns, store);
+    }
+  }
+  return table;
+}, getColumnHeaders:function(config, columns) {
+  var cols = [], dataIndexes = [], len = columns.length, i, result;
+  for (i = 0; i < len; i++) {
+    result = this.getColumnHeader(config, columns[i]);
+    if (result) {
+      cols.push(result.header);
+      Ext.Array.insert(dataIndexes, dataIndexes.length, result.dataIndexes);
+    }
+  }
+  return {headers:cols, dataIndexes:dataIndexes};
+}, getGridColumns:function() {
+  return [];
+}, getColumnHeader:Ext.emptyFn, prepareDataIndexColumns:function(config, dataIndexes) {
+  var len = dataIndexes.length, columns = [], i;
+  for (i = 0; i < len; i++) {
+    columns.push(this.prepareDataIndexColumn(config, dataIndexes[i]));
+  }
+  return columns;
+}, prepareDataIndexColumn:function(config, column) {
+  return {column:column, fn:Ext.emptyFn};
+}, extractData:function(config, group, columns, collection) {
+  var i, len, children, storeGroup, tableGroup;
+  if (!collection) {
+    return;
+  }
+  len = collection.getCount();
+  for (i = 0; i < len; i++) {
+    storeGroup = collection.getAt(i);
+    children = storeGroup.getGroups();
+    tableGroup = group.addGroup({text:storeGroup.getGroupKey()});
+    if (children) {
+      this.extractData(config, tableGroup, columns, children);
+    } else {
+      this.extractRows(config, tableGroup, columns, storeGroup);
+    }
+  }
+}, extractNodeData:function(config, group, columns, node) {
+  var me = this, store = me.cmp.getStore(), lenCols = columns.length, i, j, record, row, cell, column, children, len;
+  if (node && node.hasChildNodes()) {
+    children = node.childNodes;
+    len = children.length;
+    for (i = 0; i < len; i++) {
+      record = children[i];
+      row = {cells:[]};
+      for (j = 0; j < lenCols; j++) {
+        column = columns[j];
+        cell = me.getCell(store, record, column) || {value:null};
+        if (column.column.isTreeColumn && cell) {
+          cell.style = Ext.merge(cell.style || {}, {alignment:{indent:record.getDepth() - 1}});
+        }
+        row.cells.push(cell);
+      }
+      group.addRow(row);
+      if (record.hasChildNodes()) {
+        me.extractNodeData(config, group, columns, record);
+      }
+    }
+  }
+}, extractRows:function(config, group, columns, collection) {
+  var cmp = this.cmp, store = cmp.getStore(), len = collection.getCount(), lenCols = columns.length, rows = [], i, j, record, row, cell;
+  for (i = 0; i < len; i++) {
+    record = collection.getAt(i);
+    row = {cells:[]};
+    for (j = 0; j < lenCols; j++) {
+      cell = this.getCell(store, record, columns[j]);
+      row.cells.push(cell || {value:null});
+    }
+    rows.push(row);
+  }
+  group.setRows(rows);
+  this.extractSummaryRow(config, group, columns, collection);
+}, extractSummaryRow:function(config, group, columns, collection) {
+  var lenCols = columns.length, i, record, row, cell;
+  if (config.includeSummary) {
+    row = {cells:[]};
+    record = this.getSummaryRecord(collection, columns);
+    for (i = 0; i < lenCols; i++) {
+      cell = this.getSummaryCell(collection, record, columns[i]);
+      row.cells.push(cell || {value:null});
+    }
+    group.setSummaries(row);
+  }
+}, getCell:Ext.emptyFn, getSummaryCell:Ext.emptyFn, getSummaryRecord:function(collection, columns) {
+  var len = columns.length, summaryRecord = collection.getSummaryRecord(), record = new Ext.data.Model({id:'summary-record'}), i, colDef, records;
+  record.beginEdit();
+  record.set(summaryRecord.getData());
+  for (i = 0; i < len; i++) {
+    colDef = columns[i];
+    if (colDef.summary) {
+      records = collection.isStore ? collection.data.items.slice() : collection.items.slice();
+      record.set(colDef.summaryIndex, colDef.summary.calculate(records, colDef.summaryIndex, 'data', 0, records.length));
+    } else {
+      if (colDef.summaryType) {
+        record.set(colDef.summaryIndex, this.getSummary(collection, colDef.summaryType, colDef.summaryIndex));
+      }
+    }
+  }
+  record.endEdit();
+  record.commit(true);
+  return record;
+}, getSummary:function(item, type, field) {
+  var isStore = item.isStore;
+  if (type) {
+    if (Ext.isFunction(type)) {
+      if (isStore) {
+        return item.aggregate(type, null, false, [field]);
+      } else {
+        return item.aggregate(field, type);
+      }
+    }
+    switch(type) {
+      case 'count':
+        return item.count();
+      case 'min':
+        return item.min(field);
+      case 'max':
+        return item.max(field);
+      case 'sum':
+        return item.sum(field);
+      case 'average':
+        return item.average(field);
+      default:
+        return null;
+    }
+  }
+}});
+Ext.define('Ext.grid.plugin.Exporter', {alias:['plugin.gridexporter'], extend:Ext.grid.plugin.BaseExporter, getGridColumns:function() {
+  return this.cmp.getHeaderContainer().innerItems;
+}, getColumnHeader:function(config, column) {
+  var dataIndexes = [], obj, result, style;
+  obj = {text:column.getText(), width:column.getWidth()};
+  if (column.isHeaderGroup) {
+    result = this.getColumnHeaders(config, column.innerItems);
+    obj.columns = result.headers;
+    if (obj.columns.length === 0) {
+      obj = null;
+    } else {
+      Ext.Array.insert(dataIndexes, dataIndexes.length, result.dataIndexes);
+    }
+  } else {
+    if (!column.getHidden() && !column.getIgnoreExport()) {
+      style = this.getExportStyle(column.getExportStyle(), config);
+      obj.style = style;
+      obj.width = obj.width || column.getComputedWidth();
+      if (style) {
+        obj.width = style.width || obj.width;
+      }
+      dataIndexes.push(column);
+    } else {
+      obj = null;
+    }
+  }
+  if (obj) {
+    return {header:obj, dataIndexes:dataIndexes};
+  }
+}, prepareDataIndexColumn:function(config, column) {
+  var fn = Ext.identityFn, summaryFn = Ext.identityFn, style = this.getExportStyle(column.getExportStyle(), config);
+  if (!style || style && !style.format) {
+    fn = this.getSpecialFn({renderer:'renderer', exportRenderer:'exportRenderer', formatter:'formatter'}, column) || fn;
+    summaryFn = this.getSpecialFn({renderer:'summaryRenderer', exportRenderer:'exportSummaryRenderer', formatter:'summaryFormatter'}, column) || fn;
+  }
+  return {dataIndex:column.getDataIndex(), column:column, fn:fn, summary:column.getSummary(), summaryType:column.getSummaryType(), summaryIndex:column.getSummaryDataIndex() || column.getDataIndex(), summaryFn:summaryFn};
+}, getSpecialFn:function(names, column) {
+  var exportRenderer = column['get' + Ext.String.capitalize(names.exportRenderer)](), renderer = column['get' + Ext.String.capitalize(names.renderer)](), formatter = column['get' + Ext.String.capitalize(names.formatter)](), fn, scope, tempFn;
+  scope = column.getScope() || column.resolveListenerScope() || column;
+  tempFn = exportRenderer;
+  if (formatter && !tempFn) {
+    fn = formatter;
+  } else {
+    if (tempFn === true) {
+      tempFn = renderer;
+    }
+    if (typeof tempFn === 'string') {
+      fn = function() {
+        return Ext.callback(tempFn, scope, arguments, 0, column);
+      };
+    } else {
+      if (typeof tempFn === 'function') {
+        fn = function() {
+          return tempFn.apply(scope, arguments);
+        };
+      }
+    }
+  }
+  return fn;
+}, getCell:function(store, record, colDef) {
+  var dataIndex = colDef.dataIndex, v = record.get(dataIndex);
+  return {value:colDef.fn(v, record, dataIndex, null, colDef.column)};
+}, getSummaryCell:function(collection, record, colDef) {
+  var dataIndex = colDef.summaryIndex, v = record.get(dataIndex);
+  return {value:colDef.summaryFn(v, record, dataIndex, null, colDef.column)};
+}});
 Ext.define('Ext.pivot.Aggregators', {alternateClassName:['Mz.aggregate.Aggregators'], singleton:true, customText:'Custom', sumText:'Sum', avgText:'Avg', minText:'Min', maxText:'Max', countText:'Count', countNumbersText:'Count numbers', groupSumPercentageText:'Group sum percentage', groupCountPercentageText:'Group count percentage', varianceText:'Var', variancePText:'Varp', stdDevText:'StdDev', stdDevPText:'StdDevp', sum:function(records, measure, matrix, rowGroupKey, colGroupKey) {
   var length = records.length, total = matrix.calculateAsExcel ? null : 0, i, value;
   for (i = 0; i < length; i++) {
@@ -81656,10 +86035,10 @@ Ext.define('Util.Renderer', {alternateClassName:['RendererUtil', 'rendererUtil']
     $jscomp$restParams[$jscomp$restIndex - 0] = arguments[$jscomp$restIndex];
   }
   {
-    var renderers$36 = $jscomp$restParams;
+    var renderers$38 = $jscomp$restParams;
     return function(value, metaData, record, rowIndex, colIndex, store, view) {
-      for (var i = 0; i < renderers$36.length; i++) {
-        var renderer = renderers$36[i];
+      for (var i = 0; i < renderers$38.length; i++) {
+        var renderer = renderers$38[i];
         var rendererFn = RendererUtil[renderer];
         if (!rendererFn || typeof rendererFn != 'function') {
           console.warn('Skipping ' + renderer + " renderer function because it doesn't exist.");
@@ -81926,7 +86305,7 @@ Ext.define('Demo.ux.Code', {extend:Ext.Panel, alias:'widget.code', scrollable:tr
     this.setBodyStyle('background-color: white;');
     this.setHtml('\x3cdiv class\x3d"rendered-markdown" style\x3d"user-select: text; padding: 10px; background-color: white;"\x3e' + text + '\x3c/div\x3e');
   } else {
-    this.setBodyStyle('background-color: #2d2d2d;');
+    this.setBodyStyle('background-color: #272822;');
     this.setHtml('\x3cpre\x3e' + '\x3ccode style\x3d"user-select: text; width: 100%; height: 100%;" class\x3d"code-block language-' + lang + '"\x3e' + text + '\x3c/code\x3e' + '\x3c/pre\x3e');
   }
   this.highlight();
@@ -81952,16 +86331,6 @@ Ext.define('Demo.ux.Code', {extend:Ext.Panel, alias:'widget.code', scrollable:tr
   return str.split('').map(function(entity) {
     return htmlEntities[entity] || entity;
   }).join('');
-}, wrapDocLinks:function(code) {
-  var commentBlocks = Ext.dom.Query.select('.token.comment');
-  var regex = /(?:(?:https?|ftp):\/\/)?(?:\S+(?::\S*)?@)?(?:(?!10(?:\.\d{1,3}){3})(?!127(?:\.\d{1,3}){3})(?!169\.254(?:\.\d{1,3}){2})(?!192\.168(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\x{00a1}\-\x{ffff}0-9]+-?)*[a-z\x{00a1}\-\x{ffff}0-9]+)(?:\.(?:[a-z\x{00a1}\-\x{ffff}0-9]+-?)*[a-z\x{00a1}\-\x{ffff}0-9]+)*(?:\.(?:[a-z\x{00a1}\-\x{ffff}]{2,})))(?::\d{2,5})?(?:\/[^\s]*)?/ig;
-  commentBlocks.forEach(function(commentBlock) {
-    if (regex.test(commentBlock.textContent)) {
-      commentBlock.innerHTML = commentBlock.innerHTML.replace(regex, function(url, args) {
-        return '\x3ca class\x3d"docs-link" target\x3d"_blank" href\x3d"' + url + '"\x3e' + url + '\x3c/a\x3e';
-      });
-    }
-  });
 }, getFileExtension:function() {
   var path = this.getUrl();
   if (!path) {
@@ -82097,8 +86466,8 @@ Ext.define('Demo.view.compactlayout.CompactLayoutViewModel', {extend:Ext.app.Vie
   return Ext.Date.format(dt, 'Y');
 }}, {name:'value', type:'float', allowNull:true}, {name:'quantity', type:'float', allowNull:true}], proxy:{type:'ajax', limitParam:null, url:'app/view/compactlayout/data.json', reader:{type:'json'}}, autoLoad:true}}});
 Ext.define('Demo.view.compactlayout.CompactLayoutView', {extend:Ext.pivot.Grid, xtype:'compact-layout', controller:'compactlayout', viewModel:{type:'compact-layout-viewmodel'}, iconCls:'x-fa fa-table', category:'Pivot', title:'Compact Layout', description:'The compact layout is similar to the "Compact Form" layout in Excel.', striped:true, selectable:{cells:true}, bind:{store:'{salesdata}'}, startRowGroupsCollapsed:true, startColGroupsCollapsed:true, matrix:{type:'local', viewLayoutType:'compact', 
-aggregate:[{dataIndex:'value', header:'Total', aggregator:'sum', width:110}], leftAxis:[{dataIndex:'person', header:'Person', width:150}, {dataIndex:'company', header:'Company', sortable:false, width:150}, {dataIndex:'country', header:'Country', width:150}], topAxis:[{dataIndex:'date', header:'Year'}]}, listeners:{pivotgroupexpand:'onPivotGroupExpand', pivotgroupcollapse:'onPivotGroupCollapse'}, items:[{xtype:'toolbar', docked:'top', ui:'transparent', padding:'5 8', layout:{type:'hbox', align:'stretch'}, 
-defaults:{margin:'0 10 0 0', shadow:'true', ui:'action'}, items:[{text:'Expand all', handler:'expandAll'}, {text:'Collapse all', handler:'collapseAll'}]}]});
+aggregate:[{dataIndex:'value', header:'Total', aggregator:'sum', width:110}], leftAxis:[{dataIndex:'person', header:'Person', width:150}, {dataIndex:'company', header:'Company', sortable:false, width:150}, {dataIndex:'country', header:'Country', width:150}], topAxis:[{dataIndex:'date', header:'Year'}]}, listeners:{pivotgroupexpand:'onPivotGroupExpand', pivotgroupcollapse:'onPivotGroupCollapse'}, items:[{xtype:'toolbar', docked:'top', ui:'transparent', padding:'5 8', defaults:{margin:'0 10 0 0', shadow:'true', 
+ui:'action'}, items:[{text:'Expand all', handler:'expandAll'}, {text:'Collapse all', handler:'collapseAll'}]}]});
 Ext.define('Demo.view.configurator.ConfiguratorViewController', {extend:Ext.app.ViewController, alias:'controller.configurator', showConfigurator:function() {
   this.getView().showConfigurator();
 }, yearLabelRenderer:function(value) {
@@ -82116,7 +86485,7 @@ Ext.define('Demo.view.configurator.ConfiguratorViewModel', {extend:Ext.app.ViewM
 Ext.define('Demo.view.configurator.ConfiguratorView', {extend:Ext.pivot.Grid, xtype:'configurator-grid', controller:'configurator', viewModel:{type:'configurator-viewmodel'}, iconCls:'x-fa fa-table', category:'Pivot', title:'Configurator', description:'The configurator plugin lets the end user configure the pivot grid', striped:true, bind:{store:'{salesdata}'}, startRowGroupsCollapsed:true, startColGroupsCollapsed:true, plugins:{pivotconfigurator:{fields:[{dataIndex:'quantity', header:'Qty', aggregator:'min', 
 formatter:'number("0")', settings:{allowed:['aggregate'], style:{fontWeight:'bold'}, formatters:{0:'number("0")', '0%':'number("0%")'}}}, {dataIndex:'value', header:'Value', settings:{allowed:'aggregate', aggregators:['sum', 'avg', 'count'], style:{fontWeight:'bold'}, renderers:{'Colored 0,000.00':'coloredRenderer'}, formatters:{0:'number("0")', '0.00':'number("0.00")', '0,000.00':'number("0,000.00")', '0%':'number("0%")', '0.00%':'number("0.00%")'}}}, {dataIndex:'company', header:'Company', settings:{aggregators:['count']}}, 
 {dataIndex:'country', header:'Country', settings:{aggregators:['count']}}, {dataIndex:'person', header:'Person', settings:{aggregators:'count'}}, {dataIndex:'year', header:'Year', settings:{fixed:['topAxis']}}, {dataIndex:'month', header:'Month', labelRenderer:'monthLabelRenderer', settings:{aggregators:['count'], allowed:['leftAxis', 'topAxis']}}]}}, matrix:{type:'local', aggregate:[{dataIndex:'value', header:'Total', aggregator:'sum', width:110}], leftAxis:[{dataIndex:'person', header:'Person', 
-width:150}, {dataIndex:'company', header:'Company', sortable:false, width:150}, {dataIndex:'country', header:'Country', width:150}], topAxis:[{dataIndex:'date', header:'Year'}]}, items:[{xtype:'toolbar', docked:'top', ui:'transparent', padding:'5 8', layout:{type:'hbox', align:'stretch'}, defaults:{shadow:'true', ui:'action'}, items:[{text:'Configuration', handler:'showConfigurator'}]}]});
+width:150}, {dataIndex:'company', header:'Company', sortable:false, width:150}, {dataIndex:'country', header:'Country', width:150}], topAxis:[{dataIndex:'date', header:'Year'}]}, items:[{xtype:'toolbar', docked:'top', ui:'transparent', padding:'5 8', defaults:{shadow:'true', ui:'action'}, items:[{text:'Configuration', handler:'showConfigurator'}]}]});
 Ext.define('Demo.view.dragformtogrid.DragFormToGridViewModel', {extend:Ext.app.ViewModel, alias:'viewmodel.drag-form-to-grid-viewmodel', stores:{patient:{fields:['name', 'address', 'telephone'], autoLoad:true, proxy:{type:'ajax', url:'app/view/dragformtogrid/data.json', reader:{type:'json', rootProperty:'patients'}}}, hospital:{fields:['name', 'address', 'telephone', 'patients'], autoLoad:true, proxy:{type:'ajax', url:'app/view/dragformtogrid/data.json', reader:{type:'json', rootProperty:'hospitals'}}}}});
 Ext.define('Demo.view.dragformtogrid.DragFormToGridViewController', {extend:Ext.app.ViewController, alias:'controller.dragformtogrid', init:function() {
   this.registerDragZone();
@@ -82332,8 +86701,8 @@ Ext.define('Demo.view.exportgrid.ExportGridViewController', {extend:Ext.app.View
   try {
     var cfg = Ext.merge({category:'', title:'Grid Export Demo', fileName:'GridExport' + '.' + (btn.cfg.ext || btn.cfg.type)}, btn.cfg);
     this.getView().saveDocumentAs(cfg);
-  } catch (e$37) {
-    Log.error(e$37, arguments, this);
+  } catch (e$39) {
+    Log.error(e$39, arguments, this);
   }
 }, renderChange:function(value) {
   return this.renderSign(value, '0.00');
@@ -82523,7 +86892,7 @@ Ext.define('Demo.view.infinitescrolling.InfiniteScrollingViewController', {exten
 Ext.define('Demo.view.infinitescrolling.InfiniteScrollingViewModel', {extend:Ext.app.ViewModel, alias:'viewmodel.infinite-scrolling-viewmodel', data:{name:'Demo'}});
 Ext.define('Demo.view.infinitescrolling.InfiniteScrollingView', {extend:Ext.grid.Grid, xtype:'infinitescrolling', controller:'infinite-scrolling', viewModel:{type:'infinite-scrolling-viewmodel'}, category:'Rendering and Scrolling', title:'Infinite Scrolling', iconCls:'x-fa fa-infinity', description:'To add infinite scrolling to a grid use a virtual store. The virtual store creates and manage "active ranges" of records, which will monitor the scrolling in the grid, and refresh the view\'s rows from the page cache as needed. It will also pull new data into the page cache when scrolling of the view draws upon data near either end of the prefetched data.', 
 scrollable:true, store:{type:'infinitescrolling'}, columns:[{text:'First Name', width:150, dataIndex:'firstName'}, {text:'Last Name', width:150, dataIndex:'lastName'}, {text:'Title', flex:1, dataIndex:'title'}, {text:'Address', flex:1, dataIndex:'address'}, {text:'Company', flex:1, dataIndex:'company'}]});
-Ext.define('Demo.view.livedata.LiveDataStoreModel', {extend:Ext.data.Model, fields:[{name:'name'}, {name:'phone', type:'phonenumber'}, {name:'price', type:'float'}, {name:'priceChange', type:'float'}, {name:'priceChangePct', type:'float'}, {name:'priceLastChange', type:'date', dateReadFormat:'n/j'}, {name:'trend', calculate:function(data) {
+Ext.define('Demo.view.livedata.LiveDataStoreModel', {extend:Ext.data.Model, fields:[{name:'name'}, {name:'phone', type:'float'}, {name:'price', type:'float'}, {name:'priceChange', type:'float'}, {name:'priceChangePct', type:'float'}, {name:'priceLastChange', type:'date', dateReadFormat:'n/j'}, {name:'trend', calculate:function(data) {
   var trend = data['trend'] || (data['trend'] = []);
   trend.push(data.price);
   if (trend.length === 1) {
@@ -82826,12 +87195,12 @@ Ext.define('Demo.view.main.MainController', {extend:Ext.app.ViewController, alia
 }});
 Ext.define('Demo.view.main.MainModel', {extend:Ext.app.ViewModel, alias:'viewmodel.main', data:{name:'ExtJS Grid Examples', toolbar:true, source:true, filter:''}, stores:{nav:{groupField:'category', fields:['id', 'title', 'slug', 'iconCls', 'className', 'xtype', 'path', 'folder', 'file', 'extension', 'category', 'requires', 'searchable'], data:[], proxy:{type:'memory', reader:'json'}}, files:{groupField:'folder', storeId:'files', fields:['file'], data:[], proxy:{type:'memory', reader:'json'}}}});
 Ext.define('Demo.view.main.Main', {extend:Ext.Panel, xtype:'app-main', controller:'main', category:' Demo Code Structure', description:'The Main view that is used to organize and display the Demos', viewModel:{type:'main'}, items:[{docked:'top', xtype:'toolbar', title:'ExtJS Modern Grid Demos', bind:{hidden:'{toolbar}'}, items:[{text:'Prev Demo', docked:'left', iconCls:'x-fa fa-arrow-left', iconAlign:'left', handler:'prevDemo'}, {text:'Next Demo', docked:'right', iconCls:'x-fa fa-arrow-right', iconAlign:'right', 
-handler:'nextDemo'}]}, {xtype:'panel', docked:'left', title:'Demos', collapsible:'left', width:300, bind:{collapsed:'{navigation}'}, items:[{xtype:'grid', grouped:true, collapsible:true, collapseDefaults:{collapsed:true}, itemId:'navigation', width:300, height:'100%', hideHeaders:true, stateful:true, listeners:{select:'currentSelectionChange'}, selectable:{mode:'single'}, bind:{store:'{nav}'}, groupHeader:{xtype:'rowheader', name:'rowheader_name', tpl:'\x3cspan style\x3d"text-transform: uppercase;"\x3e{name}\x3c/span\x3e'}, 
-columns:[{dataIndex:'iconCls', width:70, align:'right', cell:{encodeHtml:false}, renderer:function(val) {
+handler:'nextDemo'}]}, {xtype:'panel', docked:'left', title:'Demos', collapsible:'left', width:300, items:[{xtype:'grid', grouped:true, collapsible:true, collapseDefaults:{collapsed:true}, itemId:'navigation', width:300, height:'100%', hideHeaders:true, stateful:true, listeners:{select:'currentSelectionChange'}, selectable:{mode:'single'}, bind:{store:'{nav}'}, groupHeader:{xtype:'rowheader', name:'rowheader_name', tpl:'\x3cspan style\x3d"text-transform: uppercase;"\x3e{name}\x3c/span\x3e'}, columns:[{dataIndex:'iconCls', 
+width:70, align:'right', cell:{encodeHtml:false}, renderer:function(val) {
   return '\x3cspan class\x3d"' + val + '"\x3e\x3c/span\x3e';
 }}, {dataIndex:'title', flex:1, renderer:Ext.util.Format.uppercase}]}]}, {xtype:'container', padding:20, flex:1, layout:{type:'vbox', pack:'stretch', align:'stretch'}, style:{backgroundColor:'#eee'}, items:[{dock:'top', xtype:'panel', bodyPadding:'0px 10px 5px 10px', margin:'0px 0px 20px 0px', flex:0, itemId:'descPanel'}, {xtype:'panel', itemId:'modernDemo', flex:1, layout:'fit', border:true, items:[]}]}, {xtype:'panel', width:400, resizable:{edges:'west'}, collapsible:{direction:'right'}, title:{text:'Source'}, 
-iconCls:'x-fa fa-code', tools:[{xtype:'button', ui:'plain', itemId:'clipboard', iconCls:'x-fa fa-clipboard', handler:'copyToClipboard', tooltip:'Copy to Clipboard'}], bind:{collapsed:'{source}'}, responsiveConfig:{tall:{width:'100%', height:'50%', collapsible:'bottom'}, wide:{width:400, height:'100%', collapsible:'right'}}, listeners:{beforecollapse:'onCollapse', beforeexpand:'onExpand'}, items:[{xtype:'tabpanel', itemId:'demoSource', height:'100%', style:'border:1px solid #4BA1DD', tabBar:{layout:{pack:'start', 
-overflow:'scroller'}}, items:[]}]}], responsiveConfig:{tall:{layout:{type:'box', vertical:true}}, wide:{layout:{type:'box', vertical:false}}}, bodyStyle:{backgroundColor:'#eee'}});
+iconCls:'x-fa fa-code', tools:[{xtype:'button', ui:'plain', itemId:'clipboard', iconCls:'x-fa fa-clipboard', handler:'copyToClipboard', tooltip:'Copy to Clipboard'}], responsiveConfig:{tall:{width:'100%', height:'50%', collapsible:'bottom'}, wide:{width:400, height:'100%', collapsible:'right'}}, listeners:{beforecollapse:'onCollapse', beforeexpand:'onExpand'}, items:[{xtype:'tabpanel', itemId:'demoSource', height:'100%', style:'border:1px solid #4BA1DD', tabBar:{scrollable:true, layout:{}}, items:[]}]}], 
+responsiveConfig:{tall:{layout:{type:'box', vertical:true}}, wide:{layout:{type:'box', vertical:false}}}, bodyStyle:{backgroundColor:'#eee'}});
 Ext.define('Demo.view.menugridrow.MenuGridRowStoreModel', {extend:Ext.data.Model, fields:[{name:'name'}, {name:'phone', type:'phonenumber'}, {name:'price', type:'float'}, {name:'priceChange', type:'float'}, {name:'priceChangePct', type:'float'}, {name:'priceLastChange', type:'date', dateReadFormat:'n/j'}, {name:'trend', calculate:function(data) {
   var trend = data['trend'] || (data['trend'] = []);
   trend.push(data.price);
@@ -83029,8 +87398,8 @@ Ext.define('Demo.view.outlinelayout.OutlineLayoutViewModel', {extend:Ext.app.Vie
   return Ext.Date.format(dt, 'Y');
 }}, {name:'value', type:'float', allowNull:true}, {name:'quantity', type:'float', allowNull:true}], proxy:{type:'ajax', limitParam:null, url:'app/view/outlinelayout/data.json', reader:{type:'json'}}, autoLoad:true}}});
 Ext.define('Demo.view.outlinelayout.OutlineLayoutView', {extend:Ext.pivot.Grid, xtype:'outline-layout', controller:'outlinelayout', viewModel:{type:'outline-layout-viewmodel'}, iconCls:'x-fa fa-table', category:'Pivot', title:'Outline Layout', description:'The outline layout is similar to the "Outline Form" layout in Excel.', striped:true, selectable:{cells:true}, bind:{store:'{salesdata}'}, startRowGroupsCollapsed:true, startColGroupsCollapsed:true, matrix:{type:'local', viewLayoutType:'outline', 
-aggregate:[{dataIndex:'value', header:'Total', aggregator:'sum', width:110}], leftAxis:[{dataIndex:'person', header:'Person', width:150}, {dataIndex:'company', header:'Company', sortable:false, width:150}, {dataIndex:'country', header:'Country', width:150}], topAxis:[{dataIndex:'date', header:'Year'}]}, listeners:{pivotgroupexpand:'onPivotGroupExpand', pivotgroupcollapse:'onPivotGroupCollapse'}, items:[{xtype:'toolbar', docked:'top', ui:'transparent', padding:'5 8', layout:{type:'hbox', align:'stretch'}, 
-defaults:{margin:'0 10 0 0', shadow:'true', ui:'action'}, items:[{text:'Expand all', handler:'expandAll'}, {text:'Collapse all', handler:'collapseAll'}]}]});
+aggregate:[{dataIndex:'value', header:'Total', aggregator:'sum', width:110}], leftAxis:[{dataIndex:'person', header:'Person', width:150}, {dataIndex:'company', header:'Company', sortable:false, width:150}, {dataIndex:'country', header:'Country', width:150}], topAxis:[{dataIndex:'date', header:'Year'}]}, listeners:{pivotgroupexpand:'onPivotGroupExpand', pivotgroupcollapse:'onPivotGroupCollapse'}, items:[{xtype:'toolbar', docked:'top', ui:'transparent', padding:'5 8', defaults:{margin:'0 10 0 0', shadow:'true', 
+ui:'action'}, items:[{text:'Expand all', handler:'expandAll'}, {text:'Collapse all', handler:'collapseAll'}]}]});
 Ext.define('Demo.view.overflowtip.OverflowTipStoreModel', {extend:Ext.data.Model, fields:[{name:'name'}, {name:'phone', type:'phonenumber'}, {name:'price', type:'float'}, {name:'priceChange', type:'float'}, {name:'priceChangePct', type:'float'}, {name:'priceLastChange', type:'date', dateReadFormat:'n/j'}, {name:'trend', calculate:function(data) {
   var trend = data['trend'] || (data['trend'] = []);
   trend.push(data.price);
@@ -83122,8 +87491,8 @@ variableHeights:true, bind:{store:'{companies}'}, columns:[{text:'Company', flex
 'color:{value:sign("red", "green")}"' + '\x3e{text}\x3c/span\x3e'});
 Ext.define('Demo.view.rowdragdrop.RowDragDropViewModel', {extend:Ext.app.ViewModel, alias:'viewmodel.row-drag-drop-viewmodel', stores:{plants:{fields:[{name:'common', type:'string'}, {name:'botanical', type:'string'}, {name:'light'}, {name:'price', type:'float'}, {name:'availDate', mapping:'availability', type:'date', dateFormat:'m/d/Y'}, {name:'indoor', type:'bool'}], autoLoad:true, proxy:{type:'ajax', url:'app/view/rowdragdrop/data.json', reader:{type:'json'}}}}});
 Ext.define('Demo.view.rowdragdrop.RowDragDropViewController', {extend:Ext.app.ViewController, alias:'controller.rowdragdrop'});
-Ext.define('Demo.view.rowdragdrop.RowDragDropViewView', {extend:Ext.grid.Grid, xtype:'row-drag-drop', controller:'rowdragdrop', viewModel:{type:'row-drag-drop-viewmodel'}, iconCls:'x-fa fa-hand-rock', category:'Drag and Drop', title:'Row Drag and Drop', description:'Reorder a single row or multiple rows with drag and drop.', bind:{store:'{plants}'}, plugins:{gridrowdragdrop:{dragText:'Drag and drop to reorganize'}}, columns:[{text:'Plant', width:110, dataIndex:'common'}, {text:'Light', width:110, 
-dataIndex:'light'}, {text:'Price', width:70, formatter:'usMoney', dataIndex:'price'}, {xtype:'datecolumn', text:'Available', format:'M d, Y', width:110, dataIndex:'availDate'}]});
+Ext.define('Demo.view.rowdragdrop.RowDragDropView', {extend:Ext.grid.Grid, xtype:'row-drag-drop', controller:'rowdragdrop', viewModel:{type:'row-drag-drop-viewmodel'}, iconCls:'x-fa fa-hand-rock', category:'Drag and Drop', title:'Row Drag and Drop', description:'Reorder a single row or multiple rows with drag and drop.', bind:{store:'{plants}'}, plugins:{gridrowdragdrop:{dragText:'Drag and drop to reorganize'}}, columns:[{text:'Plant', width:110, dataIndex:'common'}, {text:'Light', width:110, dataIndex:'light'}, 
+{text:'Price', width:70, formatter:'usMoney', dataIndex:'price'}, {xtype:'datecolumn', text:'Available', format:'M d, Y', width:110, dataIndex:'availDate'}]});
 Ext.define('Demo.view.rowediting.RowEditingViewController', {extend:Ext.app.ViewController, alias:'controller.rowediting'});
 Ext.define('Demo.view.rowediting.RowEditingViewModel', {extend:Ext.app.ViewModel, alias:'viewmodel.row-editing-viewmodel', data:{name:'Demo'}, stores:{plants:{fields:[{name:'common', type:'string'}, {name:'botanical', type:'string'}, {name:'light'}, {name:'price', type:'float'}, {name:'availDate', mapping:'availability', type:'date', dateFormat:'m/d/Y'}, {name:'indoor', type:'bool'}], autoLoad:true, proxy:{type:'ajax', url:'app/view/rowediting/data.json', reader:{type:'json'}}}}});
 Ext.define('Demo.view.rowediting.RowEditingView', {extend:Ext.grid.locked.Grid, xtype:'row-editing', controller:'rowediting', viewModel:{type:'row-editing-viewmodel'}, iconCls:'x-fa fa-edit', category:'Editing', title:'Row Editing', description:'Add a small floating dialog to be shown for the row to be edited. Each editable column will show a field for editing. There are configurable buttons to save or cancel the edit. Double tap a row to start row editing.', rowNumbers:true, markDirty:true, plugins:{rowedit:{autoConfirm:false}}, 
@@ -83404,8 +87773,8 @@ Ext.define('Demo.view.tabularlayout.TabularLayoutViewModel', {extend:Ext.app.Vie
   return Ext.Date.format(dt, 'Y');
 }}, {name:'value', type:'float', allowNull:true}, {name:'quantity', type:'float', allowNull:true}], proxy:{type:'ajax', limitParam:null, url:'app/view/tabularlayout/data.json', reader:{type:'json'}}, autoLoad:true}}});
 Ext.define('Demo.view.tabularlayout.TabularLayoutView', {extend:Ext.pivot.Grid, xtype:'tabular-layout', controller:'tabularlayout', viewModel:{type:'tabular-layout-viewmodel'}, iconCls:'x-fa fa-table', category:'Pivot', title:'Tabular Layout', description:'The tabular layout is similar to the "Tabular Form" layout in Excel.', striped:true, selectable:{cells:true}, bind:{store:'{salesdata}'}, startRowGroupsCollapsed:true, startColGroupsCollapsed:true, matrix:{type:'local', viewLayoutType:'tabular', 
-aggregate:[{dataIndex:'value', header:'Total', aggregator:'sum', width:110}], leftAxis:[{dataIndex:'person', header:'Person', width:150}, {dataIndex:'company', header:'Company', sortable:false, width:150}, {dataIndex:'country', header:'Country', width:150}], topAxis:[{dataIndex:'date', header:'Year'}]}, listeners:{pivotgroupexpand:'onPivotGroupExpand', pivotgroupcollapse:'onPivotGroupCollapse'}, items:[{xtype:'toolbar', docked:'top', ui:'transparent', padding:'5 8', layout:{type:'hbox', align:'stretch'}, 
-defaults:{margin:'0 10 0 0', shadow:'true', ui:'action'}, items:[{text:'Expand all', handler:'expandAll'}, {text:'Collapse all', handler:'collapseAll'}]}]});
+aggregate:[{dataIndex:'value', header:'Total', aggregator:'sum', width:110}], leftAxis:[{dataIndex:'person', header:'Person', width:150}, {dataIndex:'company', header:'Company', sortable:false, width:150}, {dataIndex:'country', header:'Country', width:150}], topAxis:[{dataIndex:'date', header:'Year'}]}, listeners:{pivotgroupexpand:'onPivotGroupExpand', pivotgroupcollapse:'onPivotGroupCollapse'}, items:[{xtype:'toolbar', docked:'top', ui:'transparent', padding:'5 8', defaults:{margin:'0 10 0 0', shadow:'true', 
+ui:'action'}, items:[{text:'Expand all', handler:'expandAll'}, {text:'Collapse all', handler:'collapseAll'}]}]});
 Ext.define('Demo.view.viewoptions.ViewOptionsStoreModel', {extend:Ext.data.Model, fields:[{name:'name'}, {name:'phone', type:'phonenumber'}, {name:'price', type:'float'}, {name:'priceChange', type:'float'}, {name:'priceChangePct', type:'float'}, {name:'priceLastChange', type:'date', dateReadFormat:'n/j'}, {name:'trend', calculate:function(data) {
   var trend = data['trend'] || (data['trend'] = []);
   trend.push(data.price);
@@ -83498,9 +87867,8 @@ Ext.define('Demo.view.widgetgrid.WidgetGridViewModel', {extend:Ext.app.ViewModel
 Ext.define('Demo.view.widgetgrid.WidgetGridView', {extend:Ext.grid.Grid, xtype:'widget-grid', controller:'widgetgrid', viewModel:{type:'widget-grid-viewmodel'}, category:'Widget Integration', title:'Widget Grid', iconCls:'x-fa fa-cubes', description:'Add widgets to grid cells.', store:{type:'widgetstore'}, columns:[{text:'Button', width:100, cell:{xtype:'widgetcell', forceWidth:true, widget:{xtype:'button', text:'button', ui:'action'}}}, {text:'Slider', width:100, cell:{xtype:'widgetcell', forceWidth:true, 
 widget:{xtype:'slider'}}}, {text:'Line', dataIndex:'sequence1', ignoreExport:true, cell:{xtype:'widgetcell', forceWidth:true, widget:{xtype:'sparklineline', tipTpl:'Value: {y:number("0.00")}'}}}, {text:'Bar', width:100, dataIndex:'sequence2', cell:{xtype:'widgetcell', forceWidth:true, widget:{xtype:'sparklinebar'}}}, {text:'Discrete', width:100, dataIndex:'sequence3', cell:{xtype:'widgetcell', forceWidth:true, widget:{xtype:'sparklinediscrete'}}}, {text:'Bullet', width:100, dataIndex:'sequence4', 
 cell:{xtype:'widgetcell', forceWidth:true, widget:{xtype:'sparklinebullet'}}}, {text:'Pie', width:60, dataIndex:'sequence5', cell:{xtype:'widgetcell', forceWidth:true, widget:{xtype:'sparklinepie'}}}, {text:'Box', width:100, dataIndex:'sequence6', cell:{xtype:'widgetcell', forceWidth:true, widget:{xtype:'sparklinebox'}}}, {text:'TriState', width:100, dataIndex:'sequence7', cell:{xtype:'widgetcell', forceWidth:true, widget:{xtype:'sparklinetristate'}}}]});
-Ext.define('Demo.view.xmldatagrid.XmlDataGridStoreModel', {extend:Ext.data.Model, fields:[{name:'common', type:'string'}, {name:'botanical', type:'string'}, {name:'light'}, {name:'price', type:'float'}, {name:'availDate', mapping:'availability', type:'date', dateFormat:'m/d/Y'}, {name:'indoor', type:'bool'}]});
 Ext.define('Demo.view.xmldatagrid.XmlDataGridViewController', {extend:Ext.app.ViewController, alias:'controller.xmldatagrid'});
-Ext.define('Demo.view.xmldatagrid.XmlDataGridViewModel', {extend:Ext.app.ViewModel, alias:'viewmodel.xml-data-grid-viewmodel', stores:{plants:{model:'Demo.view.xmldatagrid.XmlDataGridStoreModel', proxy:{type:'ajax', url:'app/view/xmldatagrid/data.xml', reader:{type:'xml', record:'plant'}}, autoLoad:true}}});
+Ext.define('Demo.view.xmldatagrid.XmlDataGridViewModel', {extend:Ext.app.ViewModel, alias:'viewmodel.xml-data-grid-viewmodel', stores:{plants:{fields:[{name:'common', type:'string'}, {name:'botanical', type:'string'}, {name:'light'}, {name:'price', type:'float'}, {name:'availDate', mapping:'availability', type:'date', dateFormat:'m/d/Y'}, {name:'indoor', type:'bool'}], proxy:{type:'ajax', url:'app/view/xmldatagrid/data.xml', reader:{type:'xml', record:'plant'}}, autoLoad:true}}});
 Ext.define('Demo.view.xmldatagrid.XmlDataGridView', {extend:Ext.grid.Grid, xtype:'xml-data-grid', controller:'xmldatagrid', viewModel:{type:'xml-data-grid-viewmodel'}, iconCls:'x-fa fa-table', category:'Rendering and Scrolling', title:'XML Data Grid', description:'Load xml data into the grid.', bind:{store:'{plants}'}, columns:[{text:'Common Name', flex:1, width:200, dataIndex:'common'}, {text:'Light', width:125, dataIndex:'light'}, {text:'Price', width:100, formatter:'usMoney', dataIndex:'price'}, 
 {xtype:'datecolumn', text:'Available', width:100, dataIndex:'availDate'}]});
 Ext.Panel.prototype.category = 'Misc.';

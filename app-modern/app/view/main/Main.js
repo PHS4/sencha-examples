@@ -49,9 +49,6 @@ Ext.define('Demo.view.main.Main', {
         title: 'Demos',
         collapsible: 'left',
         width: 300,
-        bind: {
-            collapsed: '{navigation}'
-        },
         items: [
             /**
              * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.Grid.html
@@ -177,9 +174,6 @@ Ext.define('Demo.view.main.Main', {
             handler: 'copyToClipboard',
             tooltip: 'Copy to Clipboard'
         }],
-        bind: {
-            collapsed: '{source}'
-        },
         responsiveConfig: {
             tall: {
                 width: '100%',
@@ -205,7 +199,7 @@ Ext.define('Demo.view.main.Main', {
                 tabBar: {
                     scrollable:true,
                     layout:{
-                        
+
                     }
                 },
                 items: []
