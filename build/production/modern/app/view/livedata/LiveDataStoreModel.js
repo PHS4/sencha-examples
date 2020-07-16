@@ -4,12 +4,13 @@
 Ext.define('Demo.view.livedata.LiveDataStoreModel', {
     extend: 'Ext.data.Model',
     requires: [
-        'Ext.data.proxy.Rest'
+        'Ext.data.proxy.Rest',
+        'Ext.Number'
     ],
     
     fields: [
         { name: 'name' },
-        { name: 'phone', type: 'phonenumber' },
+        { name: 'phone', type: 'float' },
         { name: 'price', type: 'float' },
         { name: 'priceChange', type: 'float' },
         { name: 'priceChangePct', type: 'float' },

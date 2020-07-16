@@ -9,8 +9,7 @@ Ext.define('Demo.view.configurator.ConfiguratorView', {
         'Demo.view.configurator.ConfiguratorViewController',
         'Demo.view.configurator.ConfiguratorViewModel',
         'Ext.pivot.plugin.Configurator',
-        'Ext.pivot.plugin.Configurator',
-        'Ext.pivot.Grid'
+        'Ext.pivot.plugin.Configurator'
 
     ],
 

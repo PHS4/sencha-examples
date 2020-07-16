@@ -6,8 +6,7 @@ Ext.define('Demo.view.compactlayout.CompactLayoutView', {
 
     requires: [
         'Demo.view.compactlayout.CompactLayoutViewController',
-        'Demo.view.compactlayout.CompactLayoutViewModel',
-        'Ext.pivot.Grid'
+        'Demo.view.compactlayout.CompactLayoutViewModel'
 
     ],
 

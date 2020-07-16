@@ -6,8 +6,7 @@ Ext.define('Demo.view.compactlayout.CompactLayoutView', {
 
     requires: [
         'Demo.view.compactlayout.CompactLayoutViewController',
-        'Demo.view.compactlayout.CompactLayoutViewModel',
-        'Ext.pivot.Grid'
+        'Demo.view.compactlayout.CompactLayoutViewModel'
 
     ],
 
@@ -93,10 +92,6 @@ Ext.define('Demo.view.compactlayout.CompactLayoutView', {
             docked: 'top',
             ui: 'transparent',
             padding: '5 8',
-            layout: {
-                type: 'hbox',
-                align: 'stretch'
-            },
             defaults: {
                 margin: '0 10 0 0',
                 shadow: 'true',

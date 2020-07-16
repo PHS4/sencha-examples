@@ -13,11 +13,9 @@ Ext.define('Demo.view.main.MainController', {
         }
         this.preConfiguredView();
 
-
         var vm = this.getViewModel();
 
         var store = vm.getStore('nav');
-
 
         store.setData(this.getFileInfo())
     },
@@ -32,8 +30,6 @@ Ext.define('Demo.view.main.MainController', {
         vm.set('navigation', (params.get('navigation') == 'false'));
         vm.set('description', (params.get('description') == 'false'));
        
-
-
     },
     currentSelectionChange: function (t, record, e) {
         /**
@@ -66,13 +62,10 @@ Ext.define('Demo.view.main.MainController', {
         var demoSource = this.getView().down('#demoSource');
         var descPanel = this.getView().down('#descPanel');
         var demo;
-        
-
-
+    
         /**
          * values extracted from the record
          */
-      
         var {
             className,
             requires,
@@ -218,8 +211,6 @@ Ext.define('Demo.view.main.MainController', {
         grid.setSelection(collection.first());
 
     },
-
-
     prevDemo: function () {
 
         var grid = this.getView().down('#navigation');
@@ -338,20 +329,8 @@ Ext.define('Demo.view.main.MainController', {
                 } else {
                    folder = folder + '/data.json'
                 }
-                // var requires = [
-                //     folder,
-                //     filePath,
-                //     /**
-                //      * Get the classes used by the current class then find the 
-                //      * file path for class to add so we know which files and where 
-                //      * to read them from when loading the source code tabs.
-                //      */
-                //     ...Ext.Loader.requiresMap[className].map(cls => Ext.Loader.getPath(cls))
-                // ];
-                // requires.push(filePath)
-
-                 requires.push(folder)
-              //  console.log(requires)
+              
+                requires.push(folder);
 
                 var record = {
                     id: index,

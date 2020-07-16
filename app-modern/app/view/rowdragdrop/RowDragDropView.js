@@ -1,12 +1,13 @@
 /**
  * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.Grid.html
  */
-Ext.define('Demo.view.rowdragdrop.RowDragDropViewView', {
+Ext.define('Demo.view.rowdragdrop.RowDragDropView', {
     extend: 'Ext.grid.Grid',
 
     requires: [
         'Demo.view.rowdragdrop.RowDragDropViewModel',
-        'Demo.view.rowdragdrop.RowDragDropViewController'
+        'Demo.view.rowdragdrop.RowDragDropViewController',
+        'Ext.grid.plugin.RowDragDrop'
 
     ],
 

@@ -5,8 +5,7 @@ Ext.define('Demo.view.outlinelayout.OutlineLayoutView', {
     extend: 'Ext.pivot.Grid',
     requires: [
         'Demo.view.outlinelayout.OutlineLayoutViewController',
-        'Demo.view.outlinelayout.OutlineLayoutViewModel',
-        'Ext.pivot.Grid'
+        'Demo.view.outlinelayout.OutlineLayoutViewModel'
     ],
 
     xtype: 'outline-layout',

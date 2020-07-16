@@ -7,8 +7,7 @@ Ext.define('Demo.view.xmldatagrid.XmlDataGridView', {
 
     requires: [
         'Demo.view.xmldatagrid.XmlDataGridViewController',
-        'Demo.view.xmldatagrid.XmlDataGridViewModel',
-        'Demo.view.xmldatagrid.XmlDataGridStoreModel'
+        'Demo.view.xmldatagrid.XmlDataGridViewModel'
     ],
 
     xtype: 'xml-data-grid',

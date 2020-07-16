@@ -10,7 +10,9 @@ Ext.define('Demo.view.main.Main', {
          */
         'Ext.panel.Resizer',
         'Demo.view.main.MainController',
-        'Demo.view.main.MainModel'
+        'Demo.view.main.MainModel',
+        'Ext.scroll.Scroller',
+        'Ext.Responsive'
     ],
 
     xtype: 'app-main',
@@ -58,14 +60,14 @@ Ext.define('Demo.view.main.Main', {
                 xtype: 'grid',
                 grouped: true,
                 collapsible: true,
-                collapseDefaults:{
-                    collapsed:true
+                collapseDefaults: {
+                    collapsed: true
                 },
                 itemId: 'navigation',
                 width: 300,
                 height: "100%",
                 hideHeaders: true,
-                stateful:true,
+                stateful: true,
                 listeners: {
                     select: 'currentSelectionChange'
                 },
@@ -79,8 +81,8 @@ Ext.define('Demo.view.main.Main', {
                     store: '{nav}'
                 },
                 groupHeader: {
-                    xtype:'rowheader',
-                    name:'rowheader_name',
+                    xtype: 'rowheader',
+                    name: 'rowheader_name',
                     tpl: `<span style="text-transform: uppercase;">{name}</span>`
                 },
                 columns: [
@@ -201,12 +203,10 @@ Ext.define('Demo.view.main.Main', {
                 height: '100%',
                 style: 'border:1px solid #4BA1DD',
                 tabBar: {
-
-                    layout: {
-                        pack: 'start',
-                        overflow: 'scroller',
+                    scrollable:true,
+                    layout:{
+                        
                     }
-
                 },
                 items: []
 
@@ -214,7 +214,6 @@ Ext.define('Demo.view.main.Main', {
 
         ]
     }],
-
     /**
      * https://docs.sencha.com/extjs/7.2.0/modern/Ext.mixin.Responsive.html#cfg-responsiveConfig
      */
@@ -226,7 +225,6 @@ Ext.define('Demo.view.main.Main', {
             }
         },
         wide: {
-
             layout: {
                 type: 'box',
                 vertical: false

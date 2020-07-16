@@ -5,8 +5,7 @@ Ext.define('Demo.view.tabularlayout.TabularLayoutView', {
     extend: 'Ext.pivot.Grid',
     requires: [
         'Demo.view.tabularlayout.TabularLayoutViewController',
-        'Demo.view.tabularlayout.TabularLayoutViewModel',
-        'Ext.pivot.Grid'
+        'Demo.view.tabularlayout.TabularLayoutViewModel'
     ],
 
     xtype: 'tabular-layout',
@@ -87,10 +86,6 @@ Ext.define('Demo.view.tabularlayout.TabularLayoutView', {
         docked: 'top',
         ui: 'transparent',
         padding: '5 8',
-        layout: {
-            type: 'hbox',
-            align: 'stretch'
-        },
         defaults: {
             margin: '0 10 0 0',
             shadow: 'true',

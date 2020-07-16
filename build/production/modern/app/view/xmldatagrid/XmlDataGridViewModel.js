@@ -11,7 +11,15 @@ Ext.define('Demo.view.xmldatagrid.XmlDataGridViewModel', {
     stores: {
         plants: {
 
-            model: 'Demo.view.xmldatagrid.XmlDataGridStoreModel',
+            fields: [
+                { name: 'common', type: 'string' },
+                { name: 'botanical', type: 'string' },
+                { name: 'light' },
+                { name: 'price', type: 'float' },
+                // dates can be automatically converted by specifying dateFormat
+                { name: 'availDate', mapping: 'availability', type: 'date', dateFormat: 'm/d/Y' },
+                { name: 'indoor', type: 'bool' }
+            ],
             proxy: {
                 type: 'ajax',
                 url: 'app/view/xmldatagrid/data.xml',

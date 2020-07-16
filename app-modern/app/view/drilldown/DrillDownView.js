@@ -8,8 +8,7 @@ Ext.define('Demo.view.drilldown.DrillDownView', {
     requires: [
         'Demo.view.drilldown.DrillDownViewController',
         'Demo.view.drilldown.DrillDownViewModel',
-        'Ext.pivot.plugin.DrillDown',
-        'Ext.pivot.Grid'
+        'Ext.pivot.plugin.DrillDown'
 
     ],
 

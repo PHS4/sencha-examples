@@ -5,8 +5,7 @@ Ext.define('Demo.view.tabularlayout.TabularLayoutView', {
     extend: 'Ext.pivot.Grid',
     requires: [
         'Demo.view.tabularlayout.TabularLayoutViewController',
-        'Demo.view.tabularlayout.TabularLayoutViewModel',
-        'Ext.pivot.Grid'
+        'Demo.view.tabularlayout.TabularLayoutViewModel'
     ],
 
     xtype: 'tabular-layout',

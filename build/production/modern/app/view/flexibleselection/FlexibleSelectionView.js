@@ -8,7 +8,9 @@ Ext.define('Demo.view.flexibleselection.FlexibleSelectionView', {
         'Demo.view.flexibleselection.FlexibleSelectionViewController',
         'Demo.view.flexibleselection.FlexibleSelectionViewModel',
         'Demo.view.flexibleselection.FlexibleSelectionStoreModel',
-        'Ext.util.Format'
+        'Ext.util.Format',
+        'Ext.grid.plugin.Clipboard',
+        'Ext.grid.selection.Replicator'
     ],
 
     xtype: 'flexibleselection',

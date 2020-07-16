@@ -7,7 +7,8 @@ Ext.define('Demo.view.slidingpager.SlidingPagerView', {
 
     requires: [
         'Demo.view.slidingpager.SlidingPagerViewController',
-        'Demo.view.slidingpager.SlidingPagerViewModel'
+        'Demo.view.slidingpager.SlidingPagerViewModel',
+        'Ext.grid.plugin.PagingToolbar'
     ],
 
     xtype: 'sliding-pager',

@@ -8,6 +8,7 @@ Ext.define('Demo.view.exportgrid.ExportGridView', {
         'Demo.view.exportgrid.ExportGridViewController',
         'Demo.view.exportgrid.ExportGridViewModel',
         'Demo.view.exportgrid.ExportGridStoreModel',
+        'Ext.grid.plugin.Exporter'
     ],
 
     xtype: 'export-grid',

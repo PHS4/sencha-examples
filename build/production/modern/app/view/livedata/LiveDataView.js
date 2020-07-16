@@ -9,6 +9,13 @@ Ext.define('Demo.view.livedata.LiveDataView', {
         'Demo.view.livedata.LiveDataViewModel',
         'Demo.view.livedata.LiveDataStore',
         'Demo.view.livedata.LiveDataStoreModel',
+        'Ext.grid.column.Text',
+        'Ext.grid.cell.Base',
+        'Ext.field.Slider',
+        'Ext.field.Text',
+        'Ext.Toolbar',
+        'Ext.Label',
+        'Ext.util.Format'
     ],
 
     xtype: 'advanced-live-livedatagrid',

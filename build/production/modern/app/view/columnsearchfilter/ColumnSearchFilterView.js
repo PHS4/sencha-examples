@@ -5,7 +5,8 @@ Ext.define('Demo.view.columnsearchfilter.ColumnSearchFilterView', {
     extend: 'Ext.grid.Grid',
     requires: [
         'Demo.view.columnsearchfilter.ColumnSearchFilterViewController',
-        'Demo.view.columnsearchfilter.ColumnSearchFilterViewModel'
+        'Demo.view.columnsearchfilter.ColumnSearchFilterViewModel',
+        'Ext.grid.filters.Plugin'
     ],
 
     xtype: 'column-search-filter',
