@@ -52,7 +52,7 @@ resources, etc. that are shared by both Classic and Modern build profiles.
 
     resources/          # Assets such as images, fonts, etc.
 
-See the [Sass readme](sass/Readme.md) for details on the "sass" folder.
+See the [Sass readme](sass/readme.md) for details on the "sass" folder.
 
 The following additional directories are used to isolate code and other files that are
 toolkit-specific:

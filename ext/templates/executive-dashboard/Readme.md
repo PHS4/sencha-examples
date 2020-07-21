@@ -48,5 +48,5 @@ is loaded.
 
 ## ExecDashboard/sass
 
-This folder contains the styling for the application's views. See ExecDashboard/sass/Readme.md
+This folder contains the styling for the application's views. See ExecDashboard/sass/readme.md
 for details.

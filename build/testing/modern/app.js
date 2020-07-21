@@ -87059,7 +87059,7 @@ Ext.define('Demo.view.main.MainController', {extend:Ext.app.ViewController, alia
   var categorySlug = $jscomp$destructuring$var0.categorySlug;
   var slug = $jscomp$destructuring$var0.slug;
   if (className === 'Demo.view.main.Main') {
-    demo = Ext.create({xtype:'code', url:'Readme.md'});
+    demo = Ext.create({xtype:'code', url:'readme.md'});
   } else {
     demo = Ext.create(className, {padding:0, bodyPadding:0, margin:0});
   }
