@@ -23,5 +23,7 @@ jobs:
           script: |
             cd /var/www/sencha.trozlabs.com/grids
             echo $PWD
+            git fetch --all
+            git status
             git reset --hard origin/master
             git status
