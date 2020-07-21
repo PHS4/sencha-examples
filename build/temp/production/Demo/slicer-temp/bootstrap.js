@@ -2305,11 +2305,6 @@ Ext.Microloader = Ext.Microloader || (function () {
                     } catch (e) {
                         return;
                     }
-
-                    // If cache retrieval didn't throw an exception but cache is still not valid, bail
-                    if (!_cache) {
-                        return;
-                    }
                 }
 
                 if (_cache.status === _cache.UPDATEREADY || _cache.status === _cache.OBSOLETE) {
