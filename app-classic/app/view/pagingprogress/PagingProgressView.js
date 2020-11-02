@@ -3,6 +3,8 @@ Ext.define('Demo.view.pagingprogress.PagingProgressView',{
     extend: 'Ext.grid.Panel',
 
     requires: [
+        'Ext.ux.ProgressBarPager',
+        
         'Demo.view.pagingprogress.PagingProgressViewController',
         'Demo.view.pagingprogress.PagingProgressViewModel',
         'Demo.view.pagingprogress.PagingProgressStore'

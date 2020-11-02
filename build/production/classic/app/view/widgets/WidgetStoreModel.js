@@ -1,9 +1,6 @@
 Ext.define('Demo.view.widgets.WidgetStoreModel', {
     extend: 'Ext.data.Model',
-    requires: [
-        'Ext.data.proxy.Rest'
-    ],
-    
+
     fields: [
         { name: 'name' },
         { name: 'progress', type: 'float' },

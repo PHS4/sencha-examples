@@ -5,8 +5,8 @@ Ext.define('Demo.view.speadsheetlocking.SpreadsheetLockingView',{
     extend: 'Ext.grid.Panel',
 
     requires: [
-        'Ext.grid.selection.SpreadsheetModel',
         'Ext.grid.plugin.Clipboard',
+        'Ext.grid.selection.*',
         
         'Demo.view.speadsheetlocking.SpreadsheetLockingViewController',
         'Demo.view.speadsheetlocking.SpreadsheetLockingViewModel',

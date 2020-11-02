@@ -1,5 +1,5 @@
 /**
- * Basically adding an override here that isn't relevant to aside 
+ * Basically adding an override here that isn't relevant aside 
  * from oroganizing the demos/examples in the navigation.
  */
 Ext.panel.Panel.prototype.category = 'Misc.';
@@ -15,6 +15,8 @@ Ext.application({
     name: 'Demo',
 
     requires: [
+        'Ext.window.Toast',
+
         'Common.*',
         // This will automatically load all classes in the Demo namespace
         // so that application classes do not need to require each other.

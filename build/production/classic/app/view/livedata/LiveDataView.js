@@ -5,6 +5,14 @@ Ext.define('Demo.view.livedata.LiveDataView',{
     extend: 'Ext.grid.Panel',
 
     requires: [
+        'Ext.ProgressBarWidget',
+        'Ext.sparkline.*',
+        'Ext.form.field.*',
+        'Ext.slider.Widget',
+        'Ext.grid.filters.*',
+        'Ext.grid.column.Action',
+        'Ext.grid.plugin.CellEditing',
+
         'Demo.view.livedata.LiveDataViewController',
         'Demo.view.livedata.LiveDataViewModel',
         'Demo.view.livedata.LiveDataStore',
@@ -21,7 +29,7 @@ Ext.define('Demo.view.livedata.LiveDataView',{
     title: 'Live Data Grid',
     iconCls: 'x-fa fa-clock',
     description: 'Live updates made to model instances reflected in Grid rows.',
-    
+
     store: {
         type: 'livedatastore'
     },

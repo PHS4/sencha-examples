@@ -5,6 +5,11 @@ Ext.define('Demo.view.dragndropgridtoform.DragnDropGridToFormView',{
     extend: 'Ext.panel.Panel',
 
     requires: [
+        'Ext.dd.*',
+        'Ext.grid.plugin.DragDrop',
+        // 'Ext.ux.dd.CellFieldDropZone',
+        // 'Ext.ux.dd.PanelFieldDragZone',
+
         'Demo.view.dragndropgridtoform.DragnDropGridToFormViewController',
         'Demo.view.dragndropgridtoform.DragnDropGridToFormViewModel',
         'Demo.view.dragndropgridtoform.DragnDropGridToFormStore',
@@ -38,9 +43,6 @@ Ext.define('Demo.view.dragndropgridtoform.DragnDropGridToFormView',{
             xtype: 'grid',
             title: 'Data Grid',
             
-            /**
-             * TODO:
-             */
             reference: 'grid',
             enableDragDrop: true,
 

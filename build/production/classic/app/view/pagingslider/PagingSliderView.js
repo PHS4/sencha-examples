@@ -3,6 +3,8 @@ Ext.define('Demo.view.pagingslider.PagingSliderView',{
     extend: 'Ext.grid.Panel',
 
     requires: [
+        'Ext.ux.SlidingPager',
+        
         'Demo.view.pagingslider.PagingSliderViewController',
         'Demo.view.pagingslider.PagingSliderViewModel',
         'Demo.view.pagingslider.PagingSliderStore',

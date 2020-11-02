@@ -5,4 +5,3 @@ TOOLKIT=$1
 DIR=$PWD/app-$TOOKKIT;
 
 osascript -e 'tell application "Terminal" to do script "cd '$PWD/app-$TOOLKIT' && sencha app refresh && sencha app watch;"'
-

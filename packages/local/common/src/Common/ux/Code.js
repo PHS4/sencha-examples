@@ -86,7 +86,7 @@ Ext.define('Common.ux.Code', {
         var lang = this.getLanguage();
         var text;
         
-        console.log('language:', lang);
+        // console.log('language:', lang);
 
         if (typeof this.value == 'object') {
             text = JSON.stringify(this.value, null, 4);
@@ -196,7 +196,7 @@ Ext.define('Common.ux.Code', {
     
     extToLanguage: function (ext) {
         ext = ext || this.getFileExtension();
-        console.log('extionsion:', ext);
+        // console.log('extionsion:', ext);
         switch (ext) {
             case 'xml':
                 return 'xml';

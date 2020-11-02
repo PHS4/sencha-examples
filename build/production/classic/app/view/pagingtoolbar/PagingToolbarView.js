@@ -3,6 +3,8 @@ Ext.define('Demo.view.pagingtoolbar.PagingToolbarView',{
     extend: 'Ext.grid.Panel',
 
     requires: [
+        'Ext.toolbar.Paging',
+
         'Demo.view.pagingtoolbar.PagingToolbarViewController',
         'Demo.view.pagingtoolbar.PagingToolbarViewModel',
         'Demo.view.pagingtoolbar.PagingToolbarStore'
@@ -13,7 +15,7 @@ Ext.define('Demo.view.pagingtoolbar.PagingToolbarView',{
     viewModel: {
         type: 'paging-toolbar-pagingtoolbargrid'
     },
-    
+
     iconCls: 'x-fa fa-table',
     title: 'Paging Toolbar',
     category: 'Rendering & Scrolling',

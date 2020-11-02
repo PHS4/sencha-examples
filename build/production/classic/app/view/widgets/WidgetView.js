@@ -5,13 +5,12 @@ Ext.define('Demo.view.widgets.WidgetView',{
     extend: 'Ext.grid.Panel',
 
     requires: [
-        'Ext.grid.filters.*',
-        'Ext.grid.column.Action',
+        'Ext.sparkline.*',
         'Ext.ProgressBarWidget',
         'Ext.slider.Widget',
-        'Ext.sparkline.*',
+        'Ext.grid.filters.*',
+        'Ext.grid.column.Action',
 
-        'Demo.view.widgets.WidgetView',
         'Demo.view.widgets.WidgetViewController',
         'Demo.view.widgets.WidgetViewModel',
         'Demo.view.widgets.WidgetStore',

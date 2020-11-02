@@ -250,6 +250,9 @@ Ext.define('Demo.view.main.MainController', {
         var prevRecord = vm.get('currentDemo');
         var prevIndex = store.find('id', prevRecord.get('id'));
         var nextIndex = addOne ? prevIndex + 1 : prevIndex -1;
+        
+        console.log('next:', nextIndex);
+        
         var nextRecord = store.getAt(nextIndex);
         
         var result = nextRecord ? nextRecord : (addOne ? store.first() : store.last());
@@ -273,15 +276,12 @@ Ext.define('Demo.view.main.MainController', {
         var range = document.createRange();
 
         range.selectNodeContents(node);
+
         selection.removeAllRanges();
         selection.addRange(range);
 
         document.execCommand("copy");
     },
-
-    /**
-     * Interaction Event Handlers:
-     */
 
     /**
      * Shows a toast for Copy/Paste events

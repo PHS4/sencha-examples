@@ -5,6 +5,9 @@ Ext.define('Demo.view.dragndroproworder.DragnDropRowOrderView',{
     extend: 'Ext.grid.Panel',
 
     requires: [
+        'Ext.dd.*',
+        'Ext.grid.plugin.DragDrop',
+        
         'Demo.view.dragndroproworder.DragnDropRowOrderViewController',
         'Demo.view.dragndroproworder.DragnDropRowOrderViewModel',
         'Demo.view.dragndroproworder.DragnDropRowOrderStore',

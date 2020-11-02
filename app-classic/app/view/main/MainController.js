@@ -6,6 +6,27 @@ Ext.define('Demo.view.main.MainController', {
     extend: 'Ext.app.ViewController',
     alias: 'controller.main',
 
+    listen: {
+        global: {
+            unmatchedroute: 'onUnmatchedRoute'
+        }
+    },
+
+    routes: {
+        '/': 'onUnmatchedRoute',
+        '/:category': 'routeCategory',
+        '/:category/:demo': 'routeDemo'
+    },
+
+    /**
+     * When the data in currentDemo changes call currentSelectionChange
+     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html#cfg-bindings
+     */
+    bindings: {
+        currentSelectionChange: '{currentDemo}'
+    },
+
+
     init: function () {
         // if user is coming to the app without a hash, 
         // then update the hash to trigger router.
@@ -17,15 +38,21 @@ Ext.define('Demo.view.main.MainController', {
         window.addEventListener('copy', this.onClipboardEvent.bind(this));
         window.addEventListener('paste', this.onClipboardEvent.bind(this));
     },
-    
+
+
     afterRender: function () {
-        
         var vm = this.getViewModel();
-        var store = vm.getStore('nav');        
-        
+        var store = vm.getStore('nav');
+
         store.setData(this.getFileInfo());
     },
 
+    /**
+     * when the app loads this method will look at url parameters to 
+     * determine if certain panels should be hidden or visible.
+     * Useful if embedding the demo app in a web page and space is 
+     * limited or to help focus the view on a specific section.
+     */
     preConfiguredView: function () {
         var vm = this.getViewModel();
         var params = new URLSearchParams(window.location.search || window.location.hash.split('?').pop());
@@ -37,22 +64,40 @@ Ext.define('Demo.view.main.MainController', {
         vm.set('description', (params.get('description') == 'false'));
     },
 
-    /*******************************
-     * BINDINGS:
-     *******************************/
-
-    /**
-     * When the data in currentDemo changes call currentSelectionChange
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html#cfg-bindings
-     */
-    bindings: {
-        currentSelectionChange: '{currentDemo}'
+    prevDemo: function () {
+        var vm = this.getViewModel();
+        var store = vm.getStore('nav');
+        var total = (store.count() - 1);
+        var currentIndex = vm.get('currentIndex') - 1;
+        // console.log('prev index:', currentIndex);
+        if (currentIndex <= 0) {
+            currentIndex = total;
+        }
+        var nextRecord = store.getAt(currentIndex);
+        // vm.set('currentIndex', currentIndex);
+        vm.set('currentDemo', nextRecord);
     },
-
+    
+    nextDemo: function () {
+        var vm = this.getViewModel();
+        var store = vm.getStore('nav');
+        var total = (store.count() - 1);
+        var currentIndex = vm.get('currentIndex') + 1;
+        // console.log('next index:', currentIndex);
+        if (currentIndex >= total) {
+            currentIndex = 0;
+        }
+        var nextRecord = store.getAt(currentIndex);
+        // vm.set('currentIndex', currentIndex);
+        vm.set('currentDemo', nextRecord);
+    },
 
     /**
      * Doesn't need to be called directly. If a selection is made via 
-     * any process this will get called by the binding event
+     * any process this will get called by the binding event.
+     * 
+     * @param {Ext.data.Model} record
+     * @returns {void}
      */
     currentSelectionChange: function (record) {
         
@@ -60,12 +105,11 @@ Ext.define('Demo.view.main.MainController', {
          * Don't proceed if the record is empty. This is 
          * for initial load most times.
          */
-        if (Ext.Object.isEmpty(record)) {
-            return;
-        }
+        if (Ext.Object.isEmpty(record)) return;
 
-        var demoContainer = this.getView().down('#classicDemo')
-        var demoSource = this.getView().down('#demoSource')
+
+        var demoContainer = this.getView().down('#classicDemo');
+        var demoSource = this.getView().down('#demoSource');
         var demo;
 
         /**
@@ -73,7 +117,7 @@ Ext.define('Demo.view.main.MainController', {
          */
         var {
             className,
-            requires, 
+            requires,
             categorySlug,
             slug
         } = record.getData();
@@ -83,7 +127,6 @@ Ext.define('Demo.view.main.MainController', {
          * main view then do something custom. If this isn't done
          * you get a cool infinity mirror situation. Try it out.
          */
-        console.log(className)
         if (className === 'Demo.view.main.Main') {
             demo = Ext.create({
                 xtype: 'code',
@@ -97,22 +140,13 @@ Ext.define('Demo.view.main.MainController', {
                 frame: false
             });
         }
-        
-        
-        /**
-         * Remove all items from the component but don't destroy as it has a chain reaction for 
-         * required classes I think.
-         */
-        demoContainer.removeAll(false, false);
 
         /**
-         * Add the demo class instance to the panel.
+         * Remove all items from the component but don't destroy as
+         * it has a chain reaction for required classes.
          */
+        demoContainer.removeAll(false, false);
         demoContainer.add(demo);
-        
-        /**
-         * Clear and add the source code tabs to the tabpanel.
-         */
         demoSource.removeAll(true);
         
         /**
@@ -136,8 +170,8 @@ Ext.define('Demo.view.main.MainController', {
              * For each file in the files array add a new `code`
              * component for displaying the source code.
              * 
-             * Conditionally, handle differently if the main view 
-             * files are getting loaded. 
+             * Special Condition if the Main view
+             * files are getting loaded.
              */
             if (className === 'Demo.view.main.Main' && path.endsWith('data.json')) {
 
@@ -145,7 +179,7 @@ Ext.define('Demo.view.main.MainController', {
                     xtype: 'code',
                     value: this.getFileInfo(),
                     title: this.fileToTitle(filename),
-                }))
+                }));
 
             } else {
                 
@@ -154,7 +188,7 @@ Ext.define('Demo.view.main.MainController', {
                     url: path,
                     title: this.fileToTitle(filename),
                     language: path.substr(path.lastIndexOf('.') + 1)
-                }))                
+                }));
             }
         });
 
@@ -162,107 +196,119 @@ Ext.define('Demo.view.main.MainController', {
          * Select the first tab by default
          */
         demoSource.setActiveTab(0);
+
         var catSlug;
-        if(categorySlug.charAt(0) === '-'){
+        if (categorySlug.charAt(0) === '-'){
             catSlug = categorySlug.slice(1);
-        }else{
+        } else {
             catSlug = categorySlug;
         }
+
         this.updateHash(catSlug, slug);
+
+        var currentIndex = this.getViewModel().getStore('nav').find('id', record.getId());
         
-    },
+        console.log('currentIndex:', currentIndex);
 
-    /*******************************
-     * ROUTING:
-     *******************************/
-    listen: {
-        global: {
-            unmatchedroute: 'onUnmatchedRoute'
-        }
-    },
-
-    routes: {
-        '/'               : 'onUnmatchedRoute',
-        '/:category'      : 'routeCategory',
-        '/:category/:demo': 'routeDemo'
+        this.getViewModel().get('currentIndex', currentIndex);
     },
 
     /**
      * When no route is matched just load the main view example
+     * 
+     * @param {string} token
+     * @returns {void}
      */
     onUnmatchedRoute: function (token) {
         this.route('demo code structure', 'demoviewmainmain');
     },
 
+    /**
+     * @param {string} category
+     * @returns {void}
+     */
     routeCategory: function (category) {
         this.route(category, null);
     },
 
+    /**
+     * @param {string} category
+     * @param {string} demo
+     * @returns {void}
+     */
     routeDemo: function (category, demo) {
         this.route(category, demo);
     },
     
+    /**
+     * @param {string} category
+     * @param {string} demo
+     * @returns {void}
+     */
     route: function (category, demo) {
-        console.log(this.$className + '.' + arguments.callee.name, '/' + category + '/' + demo);
-
+    
         var grid = this.getView().down('#navigation');
         var vm = this.getViewModel();
         var store = vm.getStore('nav');
         var collection = store;
-
+        
+        /**
+         * Filter nav store to matching categories.
+         */
         if (category) {
             collection = store.query('categorySlug', category);
         }
-
+        
+        /**
+         * Filter nav store to matching demo.
+         */
         if (demo) {
             collection = store.query('slug', demo);
         }
 
+        /**
+         * If there's not any matches then tell the user. 
+         */
         if (!collection.length) {
             Ext.Msg.alert('404', 'The URL was not found. Instead loading the application Main View.');
             return this.onUnmatchedRoute();
         }
 
+        /**
+         * Load/Display the top match. 
+         */
         var record = collection.first();
 
         vm.set('currentDemo', record);
+        vm.set('currentIndex')
 
+        /**
+         * Scroll (and/or expand category group) the grid to the selected demo.
+         */
         grid.ensureVisible(record, {
             animate: true,
             select: false,
             highlight: true
         });
     },
-    
-    prevDemo: function (btn) {
-        this.nextDemo(btn);
-    },
 
     /**
-     * Finds the next and prev record based on index of stores current sorting.
+     * Updates the URL hash value.
+     * 
+     * @param {string} category the category
+     * @param {string} demo the demo title
+     * @returns {void}
      */
-    nextDemo: function (btn) {
-
-        var addOne = (btn.getItemId() == 'nextDemo');
-        var vm = this.getViewModel();
-        var store = vm.getStore('nav');
-        
-        var prevRecord = vm.get('currentDemo');
-        var prevIndex = store.find('id', prevRecord.get('id'));
-        var nextIndex = addOne ? prevIndex + 1 : prevIndex -1;
-        var nextRecord = store.getAt(nextIndex);
-        
-        var result = nextRecord ? nextRecord : (addOne ? store.first() : store.last());
-
-        vm.set('currentDemo', result);
-    },
-
     updateHash: function (category, demo) {
         window.location.hash = `#/${category}/${demo}`;
     },
 
+    /**
+     * Copies code to clipboard.
+     * 
+     * @returns {void}
+     */
     copyToClipboard: function () {
-
         var tabpanel = this.getView().down('#demoSource');
         var activeTab = tabpanel.getActiveTab();
         if (!activeTab) {
@@ -273,6 +319,7 @@ Ext.define('Demo.view.main.MainController', {
         var range = document.createRange();
 
         range.selectNodeContents(node);
+
         selection.removeAllRanges();
         selection.addRange(range);
 
@@ -280,11 +327,10 @@ Ext.define('Demo.view.main.MainController', {
     },
 
     /**
-     * Interaction Event Handlers:
-     */
-
-    /**
      * Shows a toast for Copy/Paste events
+     * 
+     * @param {Event} e
+     * @returns {void}
      */
     onClipboardEvent: function (e) {
         var message = '';
@@ -301,6 +347,11 @@ Ext.define('Demo.view.main.MainController', {
 
     /**
      * Handles navigation filtering/searching.
+     * 
+     * @param {Ext.data.field.TextField} field
+     * @param {string} newValue
+     * @param {string} oldValue
+     * @returns {void}
      */
     filterNavigation: function (field, newValue, oldValue) {
         
@@ -318,6 +369,9 @@ Ext.define('Demo.view.main.MainController', {
      * Pass in a filename and if the name contains View, Controller, Model 
      * or Store it returns just that text. If no matches are found returns 
      * the input value as a safety net.
+     * 
+     * @param {string} filename
+     * @returns {string}
      */
     fileToTitle: function (filename) {
         var results = filename.match(/(View|Controller|Model|Store)/g, '');
@@ -327,16 +381,25 @@ Ext.define('Demo.view.main.MainController', {
 
     /**
      * Converts a string of text to a `url-friendly-string`
+     * 
+     * @param {string} string
+     * @returns {string} slug
      */
     titleToSlug: function (string) {
         return string.toLowerCase().replace(/ +/g, '-').replace(/[^\w-]+/g, '').replace(/[-]+/g, '-');
     },
 
+    /**
+     * Generates the file list data used by the navigation from metadata 
+     * found in the framework. It might be a bit overwhelming to look at,
+     * but just know it's to automatically identify each demo based on the 
+     * applications known structure.
+     * 
+     * @returns {object[]} files
+     */
     getFileInfo: function () {
-        // console.time('build-nav')
 
         var files = Object.keys(Ext.ClassManager.classes)
-       // console.log(Ext.ClassManager.classes)
             /**
              * Filter the class list to only the classes with the 
              * namespace of view and exclude all except the views.
@@ -383,6 +446,7 @@ Ext.define('Demo.view.main.MainController', {
                     var requiredFilePath = Ext.Loader.getPath(requiredClassname);
                     requires.push(requiredFilePath);
                 });
+
                 /**
                  * Since the requires are used to determine the source 
                  * code files but requires only wants js files.

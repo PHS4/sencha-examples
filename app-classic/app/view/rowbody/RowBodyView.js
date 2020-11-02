@@ -3,6 +3,9 @@ Ext.define('Demo.view.rowbody.RowBodyView',{
     extend: 'Ext.grid.Panel',
 
     requires: [
+        'Ext.grid.column.Widget',
+        'Ext.grid.plugin.RowWidget',
+
         'Demo.view.rowbody.RowBodyViewController',
         'Demo.view.rowbody.RowBodyViewModel',
         'Demo.view.rowbody.RowBodyStore',

@@ -11,7 +11,7 @@ Ext.define('Demo.view.editablevalidation.EditableValidationViewController', {
 
         Ext.toast({
             category: '',
-    title: 'Event',
+            title: 'Event',
             iconCls: 'x-fa fa-broadcast-tower',
             html: arguments.callee.name,
             layout: 'fit'
@@ -27,7 +27,7 @@ Ext.define('Demo.view.editablevalidation.EditableValidationViewController', {
         
         Ext.toast({
             category: '',
-    title: 'Event',
+            title: 'Event',
             iconCls: 'x-fa fa-broadcast-tower',
             html: arguments.callee.name,
             layout: 'fit',
@@ -62,7 +62,7 @@ Ext.define('Demo.view.editablevalidation.EditableValidationViewController', {
             layout: 'fit',
             html: `'${context.originalValue}' to '${context.value}'`,
             category: '',
-    title: 'Cell Edited',
+            title: 'Cell Edited',
             align: 't'
         });
 

@@ -7,8 +7,7 @@ Ext.define('Demo.view.main.MainModel', {
 
     data: {
         name: 'ExtJS Grid Demos',
-        
-        // If false the component will be hidden or collapsed.
+
         toolbar: true,
         description: true,
         demo: true,
@@ -17,7 +16,8 @@ Ext.define('Demo.view.main.MainModel', {
 
         filter: '',
 
-        currentDemo: null, // object
+        currentIndex: 1,
+        currentDemo: null
     },
 
     stores: {
@@ -59,7 +59,6 @@ Ext.define('Demo.view.main.MainModel', {
         },
 
         files: {
-
             groupField: 'folder',
 
             storeId: 'files',

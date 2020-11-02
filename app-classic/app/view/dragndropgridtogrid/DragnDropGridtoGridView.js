@@ -3,6 +3,9 @@ Ext.define('Demo.view.dragndropgridtogrid.DragnDropGridtoGridView',{
     extend: 'Ext.panel.Panel',
 
     requires: [
+        'Ext.dd.*',
+        'Ext.grid.plugin.DragDrop',
+        
         'Demo.view.dragndropgridtogrid.DragnDropGridtoGridViewController',
         'Demo.view.dragndropgridtogrid.DragnDropGridtoGridViewModel',
         'Demo.view.dragndropgridtogrid.DragnDropGridtoGridStore',

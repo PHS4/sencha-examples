@@ -5,10 +5,13 @@ Ext.define('Demo.view.editablewidget.EditableWidgetView', {
     extend: 'Ext.grid.Panel',
 
     requires: [
+        'Ext.grid.column.Widget',
+        'Ext.grid.plugin.RowWidget',
+
         'Demo.view.editablewidget.EditableWidgetViewController',
         'Demo.view.editablewidget.EditableWidgetViewModel',
-        'Demo.view.editablewidget.EditableWidgetStore',
         'Demo.view.editablewidget.EditableWidgetStoreModel',
+        'Demo.view.editablewidget.EditableWidgetStore',
     ],
 
     xtype: 'editable-editablewidgetview',
@@ -90,12 +93,12 @@ Ext.define('Demo.view.editablewidget.EditableWidgetView', {
             // method which, when called yields a store containing associated
             // orders.
             widget: {
-                xtype: 'base-grid',
+                xtype: 'grid',
                 autoLoad: true,
                 bind: {
                     store: '{record.orders}',
                     category: '',
-    title: 'Orders for {record.name}'
+                    title: 'Orders for {record.name}'
                 },
                 columns: [{
                     text: 'Order Id',

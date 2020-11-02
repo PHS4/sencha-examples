@@ -5,8 +5,7 @@ Ext.define('Demo.view.dragndropfieldtogrid.DragnDropFieldToGridView',{
     extend: 'Ext.panel.Panel',
 
     requires: [
-        'Ext.ux.dd.CellFieldDropZone',
-        'Ext.ux.dd.PanelFieldDragZone',
+        'Ext.dd.*',
 
         'Demo.view.dragndropfieldtogrid.DragnDropFieldToGridViewController',
         'Demo.view.dragndropfieldtogrid.DragnDropFieldToGridViewModel',
