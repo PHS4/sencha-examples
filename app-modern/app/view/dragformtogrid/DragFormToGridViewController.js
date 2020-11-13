@@ -1,13 +1,20 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/modern/Ext.app.ViewController.html
+ * https://docs.sencha.com/extjs/7.3.1/modern/Ext.app.ViewController.html
  */
 Ext.define('Demo.view.dragformtogrid.DragFormToGridViewController', {
     extend: 'Ext.app.ViewController',
     alias: 'controller.dragformtogrid',
+    
     init: function() {
         this.registerDragZone();
         this.registerDropZone();
     },
+
+    dragZone: null,
+
+    dropZone: null,
+
+    ddEl: null,
 
     registerDragZone: function() {
         var me = this,
@@ -25,7 +32,7 @@ Ext.define('Demo.view.dragformtogrid.DragFormToGridViewController', {
             },
 
             getDragText: function(info) {
-                var selector = '.x-dataview-item',
+                var selector = '.x-listitem',
                     el = Ext.fly(info.eventTarget).up(selector);
 
                 return el.dom.innerHTML;
@@ -47,122 +54,78 @@ Ext.define('Demo.view.dragformtogrid.DragFormToGridViewController', {
             element: hospitalView.bodyElement,
             view: hospitalView,
             $configStrict: false,
-            prepareNameString: me.prepareNameString,
 
             onDragMove: function(info) {
-                var me = this,
-                    ddManager = Ext.dd.Manager,
-                    targetEl = ddManager.getTargetEl(info),
-                    rowBody = Ext.fly(targetEl),
-                    isRowBody = rowBody.hasCls('hospital-target'),
-                    hospital, patients, name;
 
-                if (!isRowBody) {
-                    rowBody = Ext.fly(targetEl).parent('.x-rowbody');
-
-                    if (rowBody) {
-                        isRowBody = rowBody.hasCls('hospital-target');
-                    }
-                }
-
+                var me = this;
+                var ddManager = Ext.dd.Manager;
+                var targetEl = ddManager.getTargetEl(info);
+                var rowBody = Ext.fly(targetEl) && Ext.fly(targetEl);
+                var isRowBody = rowBody.hasCls('hospital-target');
+                
+                rowBody = !isRowBody ? Ext.fly(targetEl).parent('.x-rowbody') : rowBody;
+                isRowBody = rowBody && rowBody.hasCls('hospital-target');
+                
                 me.toggleDropMarker(info, false);
 
-                if (!isRowBody) {
-                    return;
-                }
-
-                hospital = rowBody.component.getRecord();
-                patients = hospital.get('patients');
-                name = info.data.dragData.patientData.get('name');
-
-                if (patients && patients.indexOf(name) !== -1) {
-                    return;
-                }
-
+                if (!isRowBody) return;
+                
                 me.ddEl = rowBody;
+                
                 me.toggleDropMarker(info, true);
             },
 
             onDrop: function(info) {
-                var me = this,
-                    hospital, patients, name, component;
+                var me = this;
 
-                if (!me.ddEl) {
-                    return;
+                if (!me.ddEl) return;
+                
+                var row = me.ddEl.component;
+                var hospital = row.getRecord();
+                var patient = info.data.dragData.patientData;
+
+                // Check if the name already exists on this record.
+                if (hospital.get('patients').indexOf(patient.get('name')) !== -1) {
+                    return Ext.toast(`${patient.get('name')} is already a patient of hospital ${hospital.get('name')}`);
                 }
 
-                component = me.ddEl.component;
-                hospital = component.getRecord();
-                patients = hospital.get('patients');
-                name = info.data.dragData.patientData.get('name');
-
-                if (patients && patients.indexOf(name) !== -1) {
-                    return;
-                }
-
-                if (!patients) {
-                    patients = [];
-                    hospital.set('patients', patients);
-                }
-
-                patients.push(name);
-                component.contentElement.update(me.prepareNameString(patients));
+                // Push data to model field called `patients`
+                hospital.get('patients').push(patient.get('name'));
+                
+                // commit the changes to the model instance.
+                hospital.commit();
+                
                 me.toggleDropMarker(info, false);
             },
 
             toggleDropMarker: function(info, state) {
-                var me = this,
-                    ddManager;
+                var me = this;
+                var ddManager = Ext.dd.Manager;
 
-                if (!me.ddEl) {
-                    return;
-                }
+                if (!me.ddEl) return;
 
-                ddManager = Ext.dd.Manager;
                 ddManager.toggleTargetNodeCls(me.ddEl, 'hospital-target-hover', state);
                 ddManager.toggleProxyCls(info, me.validDropCls, state);
 
-                if (!state) {
-                    me.ddEl = null;
-                }
+                if (!state) me.ddEl = null;
             }
         });
     },
 
-    prepareNameString: function(values) {
-        var str = '',
-            i = 0,
-            ln = values.length;
-
-        for (; i < ln; i++) {
-            str += [
-                '<div class="name-tag x-tooltiptool">',
-                '<span>', values[i], '</span>',
-                '<span index="', i,
-                '" style="color:red" class="remove-icon x-icon-el x-font-icon x-tool-type-close"></span></div>'
-            ].join('');
-        }
-
-        return (str || 'Drop patients here');
-    },
-
     onRemoveTapped: function(e, target) {
-        var me = this,
-            patientIndex = +target.getAttribute('index'),
-            rowBody = Ext.Component.from(target),
-            record = rowBody.getRecord(),
-            patients = record.get('patients');
 
-        if (patientIndex === -1) {
-            return;
-        }
+        var patientIndex = +target.getAttribute('index');
+        var rowBody = Ext.Component.from(target);
+        var hospital = rowBody.getRecord();
 
-        patients = Ext.Array.removeAt(patients, patientIndex, 0);
-        rowBody.contentElement.update(me.prepareNameString(patients));
-
-        if (!patients.length) {
-            record.set('patients', null);
-        }
+        if (patientIndex === -1) return;
+        
+        // remove the name from patients field and save modified array to variable
+        var patients = Ext.Array.removeAt(hospital.get('patients'), patientIndex, 0) || [];
+        
+        // update the patients field.
+        hospital.set('patients', patients);
+        hospital.commit();
     },
 
     destroy: function() {
