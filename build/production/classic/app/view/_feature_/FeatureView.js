@@ -1,5 +1,5 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.Panel.html
+ * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.Panel.html
  */
 Ext.define('Demo.view._feature_.FeatureView', {
     extend: 'Ext.grid.Panel',
@@ -33,7 +33,7 @@ Ext.define('Demo.view._feature_.FeatureView', {
     },
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.Panel.html#cfg-selModel
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.Panel.html#cfg-selModel
      */
     selModel: {
         /**
@@ -50,17 +50,17 @@ Ext.define('Demo.view._feature_.FeatureView', {
     },
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.Panel.html#cfg-features
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.Panel.html#cfg-features
      */
     features: [],
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.Panel.html#cfg-plugins
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.Panel.html#cfg-plugins
      */
     plugins: [],
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.column.Column.html
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.column.Column.html
      */
     columns: [
         { dataIndex: 'id',   text: 'ID' },

@@ -42,7 +42,7 @@ Ext.define('Demo.view.editablecell.EditableCellView',{
 
     /**
      * Functionality to add onto a grid.
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.plugin.RowEditing.html
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.plugin.RowEditing.html
      */
     plugins: [{
         id: 'editingPlugin',
@@ -53,7 +53,7 @@ Ext.define('Demo.view.editablecell.EditableCellView',{
 
     /**
      * Define a selection as the row (record) row or a cell (single value).
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.selection.Model.html
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.selection.Model.html
      */
     selModel: {
         selType: 'cellmodel',
@@ -61,7 +61,7 @@ Ext.define('Demo.view.editablecell.EditableCellView',{
     },
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.Panel.html#cfg-columns
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.Panel.html#cfg-columns
      */
     columns: [{
         text: 'Company',

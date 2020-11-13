@@ -1,5 +1,5 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.Grid.html
+ * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.Grid.html
  */
 Ext.define('Demo.view.groupedgrid.GroupedGridView', {
     extend: 'Ext.grid.Grid',
@@ -34,7 +34,7 @@ Ext.define('Demo.view.groupedgrid.GroupedGridView', {
     },
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.Grid.html#cfg-columns
+     * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.Grid.html#cfg-columns
      */
     columns: [{
         text: 'Name',
@@ -56,11 +56,11 @@ Ext.define('Demo.view.groupedgrid.GroupedGridView', {
         groupHeaderTpl: '{value:repeat("★")} ({value:plural("Star")})',
 
         /**
-        * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.cell.Cell.html#cfg-tools
+        * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.cell.Cell.html#cfg-tools
         */
         cell: {
             /**
-             * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.cell.Widget.html
+             * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.cell.Widget.html
              */
             xtype: 'widgetcell',
             widget: {

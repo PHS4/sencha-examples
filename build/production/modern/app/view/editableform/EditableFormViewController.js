@@ -1,5 +1,5 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/modern/Ext.app.ViewController.html
+ * https://docs.sencha.com/extjs/7.3.1/modern/Ext.app.ViewController.html
  */
 Ext.define('Demo.view.editableform.EditableFormViewController', {
     extend: 'Ext.app.ViewController',
@@ -7,7 +7,7 @@ Ext.define('Demo.view.editableform.EditableFormViewController', {
 
     /**
      * Listen for changes made to data in the ViewModel
-     * https://docs.sencha.com/extjs/7.2.0/modern/Ext.app.ViewController.html#cfg-bindings
+     * https://docs.sencha.com/extjs/7.3.1/modern/Ext.app.ViewController.html#cfg-bindings
      */
     bindings: {
         onSelectionChange: '{selection}'
@@ -37,7 +37,7 @@ Ext.define('Demo.view.editableform.EditableFormViewController', {
     save: function (btn, eOpts) {
         var title = this.getViewModel().data.selection.data.name;
         /**
-         * https://docs.sencha.com/extjs/7.2.0/modern/Ext.Msg.html#method-alert
+         * https://docs.sencha.com/extjs/7.3.1/modern/Ext.Msg.html#method-alert
          */
         Ext.Msg.alert(title + ' Saved', 'Record Saved.', Ext.emptyFn);
     }

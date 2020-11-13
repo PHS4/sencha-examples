@@ -1,5 +1,5 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.Panel.html
+ * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.Panel.html
  */
 Ext.define('Demo.view.editableform.EditableFormView', {
     extend: 'Ext.grid.Panel',
@@ -25,13 +25,13 @@ Ext.define('Demo.view.editableform.EditableFormView', {
 
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.panel.Panel.html#cfg-dockedItems
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.panel.Panel.html#cfg-dockedItems
      */
     dockedItems: [{
         dock: 'right',
 
         /**
-         * https://docs.sencha.com/extjs/7.2.0/classic/Ext.form.Panel.html
+         * https://docs.sencha.com/extjs/7.3.1/classic/Ext.form.Panel.html
          */
         xtype: 'form',
         iconCls: 'x-fa fa-building',
@@ -48,13 +48,13 @@ Ext.define('Demo.view.editableform.EditableFormView', {
         bodyPadding: 10,
         
         /**
-         * https://docs.sencha.com/extjs/7.2.0/classic/Ext.layout.container.Anchor.html
+         * https://docs.sencha.com/extjs/7.3.1/classic/Ext.layout.container.Anchor.html
          */
         layout: 'anchor',
         
         defaults: {
             /**
-             * https://docs.sencha.com/extjs/7.2.0/classic/Ext.layout.container.Anchor.html#cfg-anchor
+             * https://docs.sencha.com/extjs/7.3.1/classic/Ext.layout.container.Anchor.html#cfg-anchor
              */
             anchor: '100%',
             labelAlign: 'top'
@@ -90,7 +90,7 @@ Ext.define('Demo.view.editableform.EditableFormView', {
         }],
 
         /**
-         * https://docs.sencha.com/extjs/7.2.0/classic/Ext.panel.Panel.html#cfg-buttons
+         * https://docs.sencha.com/extjs/7.3.1/classic/Ext.panel.Panel.html#cfg-buttons
          */
         buttons: [{
             text: 'Save',
@@ -111,7 +111,7 @@ Ext.define('Demo.view.editableform.EditableFormView', {
     },
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.Panel.html#cfg-columns
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.Panel.html#cfg-columns
      */
     columns: [{
         text: 'Company',

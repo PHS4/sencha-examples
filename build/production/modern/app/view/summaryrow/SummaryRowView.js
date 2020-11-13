@@ -1,5 +1,5 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.Grid.html
+ * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.Grid.html
  */
 Ext.define('Demo.view.summaryrow.SummaryRowView', {
     extend: 'Ext.grid.Grid',
@@ -26,7 +26,7 @@ Ext.define('Demo.view.summaryrow.SummaryRowView', {
 
     plugins: {
         /**
-         * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.SummaryRow.html
+         * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.SummaryRow.html
          */
         gridsummaryrow: true
     },
@@ -38,7 +38,7 @@ Ext.define('Demo.view.summaryrow.SummaryRowView', {
     },
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.Grid.html#cfg-columns
+     * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.Grid.html#cfg-columns
      */
     columns: [{
         text: 'Company',
@@ -46,7 +46,7 @@ Ext.define('Demo.view.summaryrow.SummaryRowView', {
         dataIndex: 'name',
         minWidth: 100,
         /**
-         * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.column.Column.html#cfg-summaryRenderer
+         * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.column.Column.html#cfg-summaryRenderer
          */
         summaryRenderer: 'summarizeCompanies'
     }, {
@@ -55,7 +55,7 @@ Ext.define('Demo.view.summaryrow.SummaryRowView', {
         dataIndex: 'price',
         formatter: 'usMoney',
         /**
-         * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.column.Column.html#cfg-summary
+         * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.column.Column.html#cfg-summary
          */
         summary: 'average'
     }, {

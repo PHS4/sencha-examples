@@ -1,5 +1,5 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewModel.html
+ * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewModel.html
  */
 Ext.define('Demo.view.rowheight.RowHeightView',{
     extend: 'Ext.grid.Panel',
@@ -31,7 +31,7 @@ Ext.define('Demo.view.rowheight.RowHeightView',{
     frame: false,
     
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.panel.Table.html#cfg-viewConfig
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.panel.Table.html#cfg-viewConfig
      */
     viewConfig: {
         enableTextSelection: true,

@@ -1,5 +1,5 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html
+ * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html
  */
 Ext.define('Demo.view.pivotmatrix.PivotMatrixView', {
     extend: 'Ext.pivot.Grid',
@@ -19,7 +19,7 @@ Ext.define('Demo.view.pivotmatrix.PivotMatrixView', {
     title: 'Matrix Pivot Grid',
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.matrix.Remote.html
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.matrix.Remote.html
      */
     matrix: {
         type: 'remote',

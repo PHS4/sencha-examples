@@ -1,12 +1,12 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/modern/Ext.Panel.html
+ * https://docs.sencha.com/extjs/7.3.1/modern/Ext.Panel.html
  */
 Ext.define('Demo.view.main.Main', {
     extend: 'Ext.Panel',
 
     requires: [
         /**
-         * https://docs.sencha.com/extjs/7.2.0/modern/Ext.panel.Resizer.html
+         * https://docs.sencha.com/extjs/7.3.1/modern/Ext.panel.Resizer.html
          */
         'Ext.panel.Resizer',
         'Demo.view.main.MainController',
@@ -51,7 +51,7 @@ Ext.define('Demo.view.main.Main', {
         width: 300,
         items: [
             /**
-             * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.Grid.html
+             * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.Grid.html
              */
             {
                 xtype: 'grid',
@@ -105,7 +105,7 @@ Ext.define('Demo.view.main.Main', {
                         flex: 1,
 
                         /**
-                         * https://docs.sencha.com/extjs/7.2.0/modern/Ext.util.Format.html#method-uppercase
+                         * https://docs.sencha.com/extjs/7.3.1/modern/Ext.util.Format.html#method-uppercase
                          */
                         renderer: Ext.util.Format.uppercase
                     }
@@ -116,7 +116,7 @@ Ext.define('Demo.view.main.Main', {
     },
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/modern/Ext.Container.html
+     * https://docs.sencha.com/extjs/7.3.1/modern/Ext.Container.html
      */
     {
         xtype: 'container',
@@ -206,7 +206,7 @@ Ext.define('Demo.view.main.Main', {
         ]
     }],
     /**
-     * https://docs.sencha.com/extjs/7.2.0/modern/Ext.mixin.Responsive.html#cfg-responsiveConfig
+     * https://docs.sencha.com/extjs/7.3.1/modern/Ext.mixin.Responsive.html#cfg-responsiveConfig
      */
     responsiveConfig: {
         tall: {

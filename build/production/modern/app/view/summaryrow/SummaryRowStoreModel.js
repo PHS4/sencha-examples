@@ -1,5 +1,5 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/modern/Ext.data.Model.html
+ * https://docs.sencha.com/extjs/7.3.1/modern/Ext.data.Model.html
  */
 Ext.define('Demo.view.summaryrow.SummaryRowStoreModel', {
     extend: 'Ext.data.Model',

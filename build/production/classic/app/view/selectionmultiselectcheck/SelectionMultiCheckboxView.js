@@ -1,5 +1,5 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.Panel.html
+ * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.Panel.html
  */
 Ext.define('Demo.view.selectionmultiselectcheck.SelectionMultiCheckboxView', {
     extend: 'Ext.grid.Panel',
@@ -23,7 +23,7 @@ Ext.define('Demo.view.selectionmultiselectcheck.SelectionMultiCheckboxView', {
     description: 'Select/Deselect rows by holding CTL or CMD and clicking on any of the rows below.',
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.selection.Model.html
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.selection.Model.html
      */
     selType: 'checkboxmodel',
 

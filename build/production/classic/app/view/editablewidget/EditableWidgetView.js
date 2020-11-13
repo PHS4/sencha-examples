@@ -1,5 +1,5 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.Panel.html
+ * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.Panel.html
  */
 Ext.define('Demo.view.editablewidget.EditableWidgetView', {
     extend: 'Ext.grid.Panel',
@@ -31,7 +31,7 @@ Ext.define('Demo.view.editablewidget.EditableWidgetView', {
     frame: false,
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.Panel.html#cfg-columns
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.Panel.html#cfg-columns
      */
     columns: [{
         text: 'Company',

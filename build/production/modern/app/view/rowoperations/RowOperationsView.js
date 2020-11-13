@@ -1,5 +1,5 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.Panel.html
+ * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.Panel.html
  */
 Ext.define('Demo.view.rowoperations.RowOperationsView', {
     extend: 'Ext.grid.Grid',
@@ -27,7 +27,7 @@ Ext.define('Demo.view.rowoperations.RowOperationsView', {
     itemId: 'operations-grid',
     plugins: {
         /**
-         * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.plugin.RowOperations.html
+         * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.plugin.RowOperations.html
          */
         rowoperations: {
             // This config replaces the default "Delete" button
@@ -55,7 +55,7 @@ Ext.define('Demo.view.rowoperations.RowOperationsView', {
         store: '{companies}'
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.Grid.html#cfg-columns
+     * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.Grid.html#cfg-columns
      */
     columns: [{
         text: 'Company',

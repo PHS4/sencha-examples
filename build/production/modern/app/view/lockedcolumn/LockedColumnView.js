@@ -1,5 +1,5 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.locked.Grid.html
+ * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.locked.Grid.html
  */
 Ext.define('Demo.view.lockedcolumn.LockedColumnView', {
     extend: 'Ext.grid.locked.Grid',
@@ -25,7 +25,7 @@ Ext.define('Demo.view.lockedcolumn.LockedColumnView', {
         store:'{companies}'
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.locked.Grid.html#cfg-columns
+     * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.locked.Grid.html#cfg-columns
      */
     columns: [{
         text: 'Company',

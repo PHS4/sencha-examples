@@ -43,7 +43,7 @@ Ext.define('Demo.view.main.MainController', {
 
     /**
      * When the data in currentDemo changes call currentSelectionChange
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html#cfg-bindings
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html#cfg-bindings
      */
     bindings: {
         currentSelectionChange: '{currentDemo}'

@@ -1,12 +1,12 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html
+ * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html
  */
 Ext.define('Demo.view.reconfigure.ReconfigureViewController', {
     extend: 'Ext.app.ViewController',
     alias: 'controller.advanced-reconfigure',
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html#cfg-listen
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html#cfg-listen
      */
     listen: {
         component: {
@@ -19,7 +19,7 @@ Ext.define('Demo.view.reconfigure.ReconfigureViewController', {
                 generategrid: 'onGenerateGrid',
 
                 /**
-                 * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.Panel.html#event-select
+                 * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.Panel.html#event-select
                  */
                 select: 'onSelect'
             }
@@ -29,7 +29,7 @@ Ext.define('Demo.view.reconfigure.ReconfigureViewController', {
     /**
      * Once the view has rendered we want to add some listeners to the raw data source
      * to allow user clicks to set the root value.
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html#method-afterRender
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html#method-afterRender
      * @param {*} view
      */
     afterRender: function (view) {
@@ -152,13 +152,13 @@ Ext.define('Demo.view.reconfigure.ReconfigureViewController', {
         grid.setTitle(selection.get('name') + (rootProperty ? '.' + rootProperty : ''));
 
         // update the grid store
-        // https://docs.sencha.com/extjs/7.2.0/classic/Ext.data.Store.html
+        // https://docs.sencha.com/extjs/7.3.1/classic/Ext.data.Store.html
         grid.setStore({
 
             // we aren't using a model so we provide the fields here instead.
             fields: fields,
 
-            // https://docs.sencha.com/extjs/7.2.0/classic/Ext.data.proxy.Ajax.html
+            // https://docs.sencha.com/extjs/7.3.1/classic/Ext.data.proxy.Ajax.html
             proxy: {
                 type: 'ajax',
                 url: selection.get('url'),

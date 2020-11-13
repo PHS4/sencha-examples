@@ -1,5 +1,5 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.Grid.html
+ * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.Grid.html
  */
 Ext.define('Demo.view.widgetgrid.WidgetGridView', {
     extend: 'Ext.grid.Grid',

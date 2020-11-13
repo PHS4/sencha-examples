@@ -1,228 +1,228 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html
+ * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html
  */
 Ext.define('Demo.view.pivotmatrix.PivotMatrixViewController', {
     extend: 'Ext.app.ViewController',
     alias: 'controller.pivot-matrix-matrixgrid',
     
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html#cfg-bindings
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html#cfg-bindings
      */
     bindings: {},
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html#cfg-control
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html#cfg-control
      */
     control: {},
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html#cfg-id
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html#cfg-id
      */
     id: null,
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html#cfg-listen
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html#cfg-listen
      */
     listen: {},
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html#cfg-listeners
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html#cfg-listeners
      */
     listeners: {},
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html#cfg-routes
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html#cfg-routes
      */
     routes: {},
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivotbeforereconfigure
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivotbeforereconfigure
      */
     pivotbeforereconfigure: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivotbeforerequest
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivotbeforerequest
      */
     pivotbeforerequest: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivotbuildtotals
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivotbuildtotals
      */
     pivotbuildtotals: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivotcolumnsbuilt
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivotcolumnsbuilt
      */
     pivotcolumnsbuilt: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivotdone
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivotdone
      */
     pivotdone: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivotgroupcellclick
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivotgroupcellclick
      */
     pivotgroupcellclick: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivotgroupcellcontextmenu
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivotgroupcellcontextmenu
      */
     pivotgroupcellcontextmenu: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivotgroupcelldblclick
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivotgroupcelldblclick
      */
     pivotgroupcelldblclick: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivotgroupclick
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivotgroupclick
      */
     pivotgroupclick: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivotgroupcollapse
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivotgroupcollapse
      */
     pivotgroupcollapse: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivotgroupcontextmenu
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivotgroupcontextmenu
      */
     pivotgroupcontextmenu: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivotgroupdblclick
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivotgroupdblclick
      */
     pivotgroupdblclick: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivotgroupexpand
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivotgroupexpand
      */
     pivotgroupexpand: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivotitemcellclick
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivotitemcellclick
      */
     pivotitemcellclick: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivotitemcellcontextmenu
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivotitemcellcontextmenu
      */
     pivotitemcellcontextmenu: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivotitemcelldblclick
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivotitemcelldblclick
      */
     pivotitemcelldblclick: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivotitemclick
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivotitemclick
      */
     pivotitemclick: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivotitemcontextmenu
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivotitemcontextmenu
      */
     pivotitemcontextmenu: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivotitemdblclick
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivotitemdblclick
      */
     pivotitemdblclick: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivotmodelbuilt
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivotmodelbuilt
      */
     pivotmodelbuilt: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivotprogress
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivotprogress
      */
     pivotprogress: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivotreconfigure
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivotreconfigure
      */
     pivotreconfigure: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivotrecordbuilt
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivotrecordbuilt
      */
     pivotrecordbuilt: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivotrequestexception
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivotrequestexception
      */
     pivotrequestexception: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivotstart
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivotstart
      */
     pivotstart: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivotstorebuilt
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivotstorebuilt
      */
     pivotstorebuilt: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivottotalcellclick
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivottotalcellclick
      */
     pivottotalcellclick: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivottotalcellcontextmenu
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivottotalcellcontextmenu
      */
     pivottotalcellcontextmenu: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivottotalcelldblclick
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivottotalcelldblclick
      */
     pivottotalcelldblclick: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivottotalclick
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivottotalclick
      */
     pivottotalclick: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivottotalcontextmenu
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivottotalcontextmenu
      */
     pivottotalcontextmenu: function () {
         console.log(this.$className + '.' + arguments.callee.name);
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.pivot.Grid.html#event-pivottotaldblclick
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.pivot.Grid.html#event-pivottotaldblclick
      */
     pivottotaldblclick: function () {
         console.log(this.$className + '.' + arguments.callee.name);

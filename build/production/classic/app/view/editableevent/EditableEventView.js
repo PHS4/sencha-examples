@@ -1,5 +1,5 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.Panel.html
+ * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.Panel.html
  */
 Ext.define('Demo.view.editableevent.EditableEventView', {
     extend: 'Ext.grid.Panel',
@@ -28,7 +28,7 @@ Ext.define('Demo.view.editableevent.EditableEventView', {
 
     /**
      * Tools are Icon based buttons added to the panel header.
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.panel.Tool.html
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.panel.Tool.html
      */
     tools: [{
         iconCls: 'x-fa fa-plus',
@@ -36,7 +36,7 @@ Ext.define('Demo.view.editableevent.EditableEventView', {
     }],
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.selection.Model.html
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.selection.Model.html
      */
     selModel: {
         mode: 'rowmodel'
@@ -44,7 +44,7 @@ Ext.define('Demo.view.editableevent.EditableEventView', {
 
     plugins: {
         /**
-         * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.plugin.CellEditing.html
+         * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.plugin.CellEditing.html
          */
         cellediting: {
             clicksToEdit: 2,
@@ -66,7 +66,7 @@ Ext.define('Demo.view.editableevent.EditableEventView', {
         { dataIndex: 'root', text: 'Root', editor: 'textfield', flex: 1 },
         {
             /**
-             * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.column.Column.html
+             * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.column.Column.html
              */
             xtype: 'actioncolumn',
             align: 'center',
@@ -82,7 +82,7 @@ Ext.define('Demo.view.editableevent.EditableEventView', {
             }]
         }, {
             /**
-             * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.column.Column.html
+             * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.column.Column.html
              */
             xtype: 'actioncolumn',
             align: 'center',
@@ -99,7 +99,7 @@ Ext.define('Demo.view.editableevent.EditableEventView', {
         },
         {
             /**
-             * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.column.Column.html
+             * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.column.Column.html
              */
             xtype: 'actioncolumn',
             align: 'center',

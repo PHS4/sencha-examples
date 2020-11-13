@@ -1,12 +1,12 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/classic/Ext.tab.Panel.html
+ * https://docs.sencha.com/extjs/7.3.1/classic/Ext.tab.Panel.html
  */
 Ext.define('Demo.view.main.Main', {
     extend: 'Ext.panel.Panel',
 
     requires: [
         /**
-         * https://docs.sencha.com/extjs/7.2.0/classic/Ext.plugin.Viewport.html
+         * https://docs.sencha.com/extjs/7.3.1/classic/Ext.plugin.Viewport.html
          */
         'Ext.plugin.Viewport',
         'Common.ux.Code',
@@ -59,7 +59,7 @@ Ext.define('Demo.view.main.Main', {
         collapseDirection: 'left',
 
         /**
-         * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.selection.Rows.html
+         * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.selection.Rows.html
          */
         selModel: {
             selType: 'rowmodel',
@@ -70,7 +70,7 @@ Ext.define('Demo.view.main.Main', {
             collapsed: '{navigation}',
 
             /**
-             * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.selection.Selection.html
+             * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.selection.Selection.html
              */
             selection: '{currentDemo}',
             /**
@@ -80,7 +80,7 @@ Ext.define('Demo.view.main.Main', {
         },
 
         /**
-         * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.feature.Grouping.html
+         * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.feature.Grouping.html
          */
         features: [{
             id: 'navGrouping',
@@ -124,7 +124,7 @@ Ext.define('Demo.view.main.Main', {
                 flex: 1,
 
                 /**
-                 * https://docs.sencha.com/extjs/7.2.0/classic/Ext.util.Format.html#method-uppercase
+                 * https://docs.sencha.com/extjs/7.3.1/classic/Ext.util.Format.html#method-uppercase
                  */
                 renderer: Ext.util.Format.uppercase
             }

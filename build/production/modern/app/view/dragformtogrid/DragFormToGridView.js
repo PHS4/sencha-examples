@@ -1,5 +1,5 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/modern/Ext.Panel.html
+ * https://docs.sencha.com/extjs/7.3.1/modern/Ext.Panel.html
  */
 Ext.define('Demo.view.dragformtogrid.DragFormToGridView', {
     extend: 'Ext.Panel',
@@ -66,7 +66,7 @@ Ext.define('Demo.view.dragformtogrid.DragFormToGridView', {
         maxWidth: 20
     }, {
         /**
-        * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.Grid.html
+        * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.Grid.html
          */
         xtype: 'grid',
         flex: 0.6,
@@ -83,7 +83,7 @@ Ext.define('Demo.view.dragformtogrid.DragFormToGridView', {
             drag: true
         },
         /**
-         * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.Grid.html#cfg-itemConfig
+         * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.Grid.html#cfg-itemConfig
          */
         itemConfig: {
             body: {
@@ -91,7 +91,7 @@ Ext.define('Demo.view.dragformtogrid.DragFormToGridView', {
             }
         },
         /**
-         * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.Grid.html#cfg-columns
+         * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.Grid.html#cfg-columns
          */
         columns: [{
             dataIndex: 'name',

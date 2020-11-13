@@ -1,5 +1,5 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.Grid.html
+ * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.Grid.html
  */
 Ext.define('Demo.view.singleselectclick.SingleSelectClickView', {
     extend: 'Ext.grid.Grid',
@@ -34,7 +34,7 @@ Ext.define('Demo.view.singleselectclick.SingleSelectClickView', {
     },
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.Grid.html#cfg-columns
+     * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.Grid.html#cfg-columns
      */
     columns: [{
         text: 'Company',

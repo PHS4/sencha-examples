@@ -1,12 +1,12 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html
+ * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html
  */
 Ext.define('Demo.view.editablepopup.EditablePopupViewController', {
     extend: 'Ext.app.ViewController',
     alias: 'controller.editable-editablepopupgrid',
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html#cfg-listen
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html#cfg-listen
      */
     listen: {
         component: {
@@ -115,7 +115,7 @@ Ext.define('Demo.view.editablepopup.EditablePopupViewController', {
         var form = btn.up('form').getForm();
 
         /**
-         * https://docs.sencha.com/extjs/7.2.0/classic/Ext.data.Model.html#method-commit
+         * https://docs.sencha.com/extjs/7.3.1/classic/Ext.data.Model.html#method-commit
          */
         form.updateRecord().getRecord().commit();
     }

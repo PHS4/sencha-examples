@@ -55,7 +55,7 @@ Ext.define('Demo.view.pagingslider.PagingSliderView',{
     }],
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.toolbar.Paging.html
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.toolbar.Paging.html
      */
     bbar: {
         xtype: 'pagingtoolbar',

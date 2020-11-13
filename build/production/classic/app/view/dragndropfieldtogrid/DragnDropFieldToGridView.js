@@ -1,5 +1,5 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.Panel.html
+ * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.Panel.html
  */
 Ext.define('Demo.view.dragndropfieldtogrid.DragnDropFieldToGridView',{
     extend: 'Ext.panel.Panel',
@@ -41,7 +41,7 @@ Ext.define('Demo.view.dragndropfieldtogrid.DragnDropFieldToGridView',{
     title: 'Source Form',
 
         /**
-         * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.plugin.DragDrop.html#cfg-ddGroup
+         * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.plugin.DragDrop.html#cfg-ddGroup
          */        
         plugins: [{
             ptype: 'ux-panelfielddragzone',
@@ -78,14 +78,14 @@ Ext.define('Demo.view.dragndropfieldtogrid.DragnDropFieldToGridView',{
 
             ptype: 'ux-cellfielddropzone',
             /**
-             * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.plugin.DragDrop.html#cfg-ddGroup
+             * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.plugin.DragDrop.html#cfg-ddGroup
              */
             ddGroup: 'dd-field-to-grid',
             // FYI: 
             // - If this is in the viewController it errors thinking it needs to call the MainViewController.
             // - This also fails when onNodeEnter is called when trying to drag a datefield.
             /**
-             * https://docs.sencha.com/extjs/7.2.0/classic/Ext.ux.dd.CellFieldDropZone.html#cfg-onCellDrop
+             * https://docs.sencha.com/extjs/7.3.1/classic/Ext.ux.dd.CellFieldDropZone.html#cfg-onCellDrop
              */
             onCellDrop: function (fieldName, value) {
                 Log.log(arguments.callee.name, arguments);

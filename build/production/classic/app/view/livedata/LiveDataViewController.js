@@ -1,5 +1,5 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html
+ * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html
  */
 Ext.define('Demo.view.livedata.LiveDataViewController', {
     extend: 'Ext.app.ViewController',

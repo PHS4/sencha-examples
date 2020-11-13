@@ -1,5 +1,5 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.Grid.html
+ * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.Grid.html
  */
 Ext.define('Demo.view.rowexpander.RowExpanderView', {
     extend: 'Ext.grid.Grid',
@@ -24,13 +24,13 @@ Ext.define('Demo.view.rowexpander.RowExpanderView', {
 
     plugins: {
         /**
-         * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.plugin.RowExpander.html
+         * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.plugin.RowExpander.html
          */
         rowexpander: true
     },
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.Grid.html#cfg-itemConfig
+     * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.Grid.html#cfg-itemConfig
      */
     itemConfig: {
         body: {
@@ -44,7 +44,7 @@ Ext.define('Demo.view.rowexpander.RowExpanderView', {
         store: '{companies}'
     },
     /**
-     * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.Grid.html#cfg-columns
+     * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.Grid.html#cfg-columns
      */
     columns: [{
         text: 'Company',

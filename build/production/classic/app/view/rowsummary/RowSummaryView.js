@@ -41,7 +41,7 @@ Ext.define('Demo.view.rowsummary.RowSummaryView',{
     }],
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.feature.Grouping.html
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.feature.Grouping.html
      */
     features: [{
         id: 'group',
@@ -59,11 +59,11 @@ Ext.define('Demo.view.rowsummary.RowSummaryView',{
         dataIndex: 'description',
         hideable: false,
         /**
-         * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.feature.Summary.html
+         * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.feature.Summary.html
          */
         summaryType: 'count',
         /**
-         * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.column.Column.html#cfg-summaryRenderer
+         * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.column.Column.html#cfg-summaryRenderer
          */
         summaryRenderer: 'summaryRenderer'
     }, {

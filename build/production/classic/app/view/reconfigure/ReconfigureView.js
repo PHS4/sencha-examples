@@ -64,7 +64,7 @@ Ext.define('Demo.view.reconfigure.ReconfigureView',{
                     /**
                      * This component allows a gutter between containers/components to 
                      * be resized when dragging.
-                     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.resizer.Splitter.html
+                     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.resizer.Splitter.html
                      */
                     xtype: 'splitter'
                 },
@@ -156,7 +156,7 @@ Ext.define('Demo.view.reconfigure.ReconfigureView',{
 
             /**
              * Tools are Icon based buttons added to the panel header.
-             * https://docs.sencha.com/extjs/7.2.0/classic/Ext.panel.Tool.html
+             * https://docs.sencha.com/extjs/7.3.1/classic/Ext.panel.Tool.html
              */
             tools: [{
                 iconCls: 'x-fas fa-table',
@@ -172,7 +172,7 @@ Ext.define('Demo.view.reconfigure.ReconfigureView',{
              * This Object will drop configuration directly to the underlying 
              * TableView component the Grid Panel is based on. 
              * 
-             * https://docs.sencha.com/extjs/7.2.0/classic/Ext.view.Table.html
+             * https://docs.sencha.com/extjs/7.3.1/classic/Ext.view.Table.html
              */
             viewConfig: {
                 emptyText: 'Grid has not been configured'
