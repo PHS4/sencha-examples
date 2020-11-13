@@ -1,12 +1,12 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html
+ * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html
  */
 Ext.define('Demo.view._feature_.FeatureViewController', {
     extend: 'Ext.app.ViewController',
     alias: 'controller._feature_view',
     
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html#cfg-control
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html#cfg-control
      */
     control: {
         'viewport': {
@@ -18,7 +18,7 @@ Ext.define('Demo.view._feature_.FeatureViewController', {
     },
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html#cfg-listen
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html#cfg-listen
      */
     listen: {
         // controller: {},
@@ -34,7 +34,7 @@ Ext.define('Demo.view._feature_.FeatureViewController', {
     
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html#cfg-routes
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html#cfg-routes
      */
     routes: {
         'classic/:{demo}': {
@@ -54,7 +54,7 @@ Ext.define('Demo.view._feature_.FeatureViewController', {
     },
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html#cfg-bindings
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html#cfg-bindings
      */
     binding: {
         selectionChange: '{selection}'

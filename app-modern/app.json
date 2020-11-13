@@ -1,10 +1,10 @@
 {
     "name": "Demo",
     "namespace": "Demo",
-    "version": "1.0.0.0",
+    "version": "1.1.0.0",
     "framework": "ext",
     "toolkit": "modern",
-    "theme": "theme-triton",
+    "theme": "theme-material",
 
     /**
      * The list of required packages (with optional versions; default is "latest").
@@ -211,7 +211,6 @@
             "path": "resources/prism/prism.js",
             "remote": false
         },
-       
         {
             "path": "https://cdnjs.cloudflare.com/ajax/libs/markdown-it/10.0.0/markdown-it.min.js",
             "remote": true
@@ -358,7 +357,6 @@
      */
     "bootstrap": {
         "base": "${app.dir}",
-
         "microloader": "bootstrap.js",
         "css": "bootstrap.css"
     },
@@ -408,7 +406,6 @@
      *      }
      *
      */
-
     "output": {
         "base": "${workspace.build.dir}/${build.environment}/modern",
         "appCache": {
@@ -480,7 +477,6 @@
      * generated inside this directory must be kept intact for proper generation of
      * deltas between updates.
      */
-
     "archivePath": "archive",
 
     "slicer": {

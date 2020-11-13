@@ -1,5 +1,5 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.locked.Grid.html
+ * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.locked.Grid.html
  */
 Ext.define('Demo.view.rowediting.RowEditingView', {
     extend: 'Ext.grid.locked.Grid',
@@ -24,7 +24,7 @@ Ext.define('Demo.view.rowediting.RowEditingView', {
 
     plugins: {
         /**
-         * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.rowedit.Plugin.html
+         * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.rowedit.Plugin.html
          */
         rowedit: {
             autoConfirm: false
@@ -36,7 +36,7 @@ Ext.define('Demo.view.rowediting.RowEditingView', {
     },
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.locked.Grid.html#cfg-columns
+     * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.locked.Grid.html#cfg-columns
      */
     columns: [{
         text: 'Common Name',

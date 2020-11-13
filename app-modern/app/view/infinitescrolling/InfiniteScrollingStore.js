@@ -1,5 +1,5 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/modern/Ext.data.virtual.Store.html
+ * https://docs.sencha.com/extjs/7.3.1/modern/Ext.data.virtual.Store.html
  */
 Ext.define('Demo.view.infinitescrolling.InfiniteScrollingStore', {
     extend: 'Ext.data.virtual.Store',
@@ -13,7 +13,7 @@ Ext.define('Demo.view.infinitescrolling.InfiniteScrollingStore', {
         }],
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/modern/Ext.data.virtual.Store.html#cfg-leadingBufferZone
+     * https://docs.sencha.com/extjs/7.3.1/modern/Ext.data.virtual.Store.html#cfg-leadingBufferZone
      */
     leadingBufferZone: 100,
 

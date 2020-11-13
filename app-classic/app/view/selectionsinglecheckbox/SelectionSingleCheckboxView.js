@@ -23,7 +23,7 @@ Ext.define('Demo.view.selectionsinglecheckbox.SelectionSingleCheckboxView',{
     store: { type: 'selectionsinglecheckboxstore' },
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.selection.Rows.html
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.selection.Rows.html
      */
     selModel: {
         selType: 'checkboxmodel',

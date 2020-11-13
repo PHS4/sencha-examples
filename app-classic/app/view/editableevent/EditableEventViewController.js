@@ -1,5 +1,5 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html
+ * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html
  */
 Ext.define('Demo.view.editableevent.EditableEventViewController', {
     extend: 'Ext.app.ViewController',
@@ -7,7 +7,7 @@ Ext.define('Demo.view.editableevent.EditableEventViewController', {
 
     /**
      * The event handler method called by an action column
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.column.Action.html
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.column.Action.html
      */
     onLoadDataActionClick: function (grid, rowIndex, colIndex, actionCmp, event, record) {
         
@@ -21,7 +21,7 @@ Ext.define('Demo.view.editableevent.EditableEventViewController', {
 
     /**
      * The event handler method called by an action column
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.column.Action.html
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.column.Action.html
      */
     onGenerateGridActionClick: function (grid, rowIndex, colIndex, actionCmp, event, record) {
         
@@ -35,7 +35,7 @@ Ext.define('Demo.view.editableevent.EditableEventViewController', {
 
     /**
      * The event handler method called by an action column
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.column.Action.html
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.column.Action.html
      */
     onRemoveDataSource: function (grid, rowIndex, colIndex, actionCmp, event, record) {
         
@@ -49,7 +49,7 @@ Ext.define('Demo.view.editableevent.EditableEventViewController', {
 
     /**
      * The event handler method called by an action column
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.column.Action.html
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.column.Action.html
      */
     addDataSource: function (event, element, header, tool) {
         
@@ -70,13 +70,13 @@ Ext.define('Demo.view.editableevent.EditableEventViewController', {
          * Then calls the plugin method to enter editing mode.
          * for a specific row/record.
          * 
-         * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.plugin.CellEditing.html#methods
+         * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.plugin.CellEditing.html#methods
          */
         grid.findPlugin('cellediting').startEdit(rec[0], 0);
     },
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.plugin.CellEditing.html#events
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.plugin.CellEditing.html#events
      */
     onEdit: function (editor, context) {
 
@@ -85,7 +85,7 @@ Ext.define('Demo.view.editableevent.EditableEventViewController', {
         /**
          * `context.record` is a Model instance.
          * That is why `.save()` is an available method.
-         * https://docs.sencha.com/extjs/7.2.0/classic/Ext.data.Model.html
+         * https://docs.sencha.com/extjs/7.3.1/classic/Ext.data.Model.html
          */
         context.record.save();
     }

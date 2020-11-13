@@ -6,6 +6,9 @@ Test Deployment ([Classic](https://sencha.trozlabs.com/grids/build/production/cl
 
 ## Getting Started
 
+Sencha CMD v7.3.0.19
+
+
 ### Classic:
 
 Run locally

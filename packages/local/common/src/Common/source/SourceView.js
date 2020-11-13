@@ -1,5 +1,5 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/classic/Ext.window.Window.html
+ * https://docs.sencha.com/extjs/7.3.1/classic/Ext.window.Window.html
  */
 Ext.define('Common.ux.source.SourceView', {
     extend: 'Ext.panel.Panel',
@@ -22,7 +22,7 @@ Ext.define('Common.ux.source.SourceView', {
     title: 'View Source',
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.Component.html#method-initComponent
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.Component.html#method-initComponent
      */
     initComponent: function() {
 
@@ -61,7 +61,7 @@ Ext.define('Common.ux.source.SourceView', {
                     },
 
                     /**
-                     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.feature.Grouping.html
+                     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.feature.Grouping.html
                      */
                     features: [{
                         ftype: 'grouping',
@@ -83,7 +83,7 @@ Ext.define('Common.ux.source.SourceView', {
                 },
                 {
                     /**
-                     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.property.Grid.html
+                     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.property.Grid.html
                      */
                     xtype: 'propertygrid',
                     title: 'Requires',

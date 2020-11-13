@@ -25,14 +25,14 @@ Ext.define('Demo.view.renderingbuffered.RenderingBufferedView',{
         'draws upon data near either end of the prefetched data.',
     
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.data.BufferedStore.html
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.data.BufferedStore.html
      */
     store: {
         type: 'renderingbufferedstore'
     },
     
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.filters.Filters.html
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.filters.Filters.html
      */
     plugins: {
         gridfilters: true
@@ -42,7 +42,7 @@ Ext.define('Demo.view.renderingbuffered.RenderingBufferedView',{
         
         defaults: {
             /**
-             * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.filters.filter.String.html
+             * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.filters.filter.String.html
              */
             filter: {
                 type: 'string'
@@ -62,7 +62,7 @@ Ext.define('Demo.view.renderingbuffered.RenderingBufferedView',{
             width: 50,
             dataIndex: 'id',
             /**
-             * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.filters.filter.Number.html
+             * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.filters.filter.Number.html
              */
             filter: {
                 type: 'number'

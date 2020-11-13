@@ -1,5 +1,5 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/modern/Ext.data.Store.html
+ * https://docs.sencha.com/extjs/7.3.1/modern/Ext.data.Store.html
  */
 Ext.define('Demo.view.livedata.LiveDataStore', {
     extend: 'Ext.data.Store',

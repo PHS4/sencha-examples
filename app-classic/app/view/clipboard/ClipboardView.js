@@ -1,5 +1,5 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.Panel.html
+ * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.Panel.html
  */
 Ext.define('Demo.view.clipboard.ClipboardView',{
     extend: 'Ext.grid.Panel',
@@ -23,7 +23,7 @@ Ext.define('Demo.view.clipboard.ClipboardView',{
     description: 'Click and Drag Cells or Rows to make a Selection then use Copy and Paste Keyboard Commands',
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.data.Store.html
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.data.Store.html
      */
     store: {
         type: 'clipboardstore'
@@ -31,25 +31,25 @@ Ext.define('Demo.view.clipboard.ClipboardView',{
 
     plugins: [{
         /**
-         * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.plugin.CellEditing.html
+         * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.plugin.CellEditing.html
          */
         ptype: 'cellediting'
     }, {
         /**
-         * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.plugin.Clipboard.html
+         * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.plugin.Clipboard.html
          */
         ptype: 'clipboard'
     }],
 
     selModel: {
         /**
-         * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.selection.SpreadsheetModel.html
+         * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.selection.SpreadsheetModel.html
          */
         type: 'spreadsheet'
     },
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/guides/tutorials/grid_tutorial/basics/selection_model/configuration.html
+     * https://docs.sencha.com/extjs/7.3.1/guides/tutorials/grid_tutorial/basics/selection_model/configuration.html
      */
     // selectable: {
     //     mode: 'multi',    // 'single' 'multi'

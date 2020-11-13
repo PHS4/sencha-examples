@@ -1,12 +1,12 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewModel.html
+ * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewModel.html
  */
 Ext.define('Demo.view.dragndropgridtoform.DragnDropGridToFormViewController', {
     extend: 'Ext.app.ViewController',
     alias: 'controller.dndtoform-gridtoform',
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html#method-beforeRender
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html#method-beforeRender
      */
     beforeRender: function () {
         var store = this.lookup('grid').store,
@@ -21,7 +21,7 @@ Ext.define('Demo.view.dragndropgridtoform.DragnDropGridToFormViewController', {
     },
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html#method-boxReady
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html#method-boxReady
      */
     boxReady: function () {
         var form = this.lookup('form'),
@@ -52,7 +52,7 @@ Ext.define('Demo.view.dragndropgridtoform.DragnDropGridToFormViewController', {
     },
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html#method-destroy
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html#method-destroy
      */
     destroy: function () {
         var target = this.formPanelDropTarget;

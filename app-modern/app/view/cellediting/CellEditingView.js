@@ -1,5 +1,5 @@
 /**
-*  https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.Grid.html
+*  https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.Grid.html
 */
 Ext.define('Demo.view.cellediting.CellEditingView', {
     extend: 'Ext.grid.Grid',
@@ -25,13 +25,13 @@ Ext.define('Demo.view.cellediting.CellEditingView', {
     markDirty: true,
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/modern/Ext.ClassManager.html#cfg-platformConfig
+     * https://docs.sencha.com/extjs/7.3.1/modern/Ext.ClassManager.html#cfg-platformConfig
      */
     platformConfig: {
         desktop: {
             plugins: {
                 /**
-                 * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.plugin.CellEditing.html
+                 * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.plugin.CellEditing.html
                  */
                 gridcellediting: true
             }
@@ -40,7 +40,7 @@ Ext.define('Demo.view.cellediting.CellEditingView', {
         '!desktop': {
             plugins: {
                 /**
-                 * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.plugin.Editable.html
+                 * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.plugin.Editable.html
                  */
                 grideditable: true
             }
@@ -55,7 +55,7 @@ Ext.define('Demo.view.cellediting.CellEditingView', {
     },
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.column.Column.html
+     * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.column.Column.html
      */
     columns: [{
         text: 'Plant',

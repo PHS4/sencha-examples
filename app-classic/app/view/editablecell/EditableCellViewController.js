@@ -3,32 +3,32 @@ Ext.define('Demo.view.editablecell.EditableCellViewController', {
     alias: 'controller.editing-cell-cellgrid',
     
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html#cfg-bindings
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html#cfg-bindings
      */    
     // bindings: {},
     
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html#cfg-control
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html#cfg-control
      */
     // control: {},
     
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html#cfg-listen
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html#cfg-listen
      */
     // listen: {},
     
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html#cfg-listeners
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html#cfg-listeners
      */
     // listeners: {},
     
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html#cfg-routes
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html#cfg-routes
      */
     // routes: {},
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html#method-beforeRender
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html#method-beforeRender
      */
     beforeRender: function (view) {
         Log.event(arguments.callee.name, arguments, this);
@@ -44,7 +44,7 @@ Ext.define('Demo.view.editablecell.EditableCellViewController', {
     },
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html#method-afterRender
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html#method-afterRender
      */
     afterRender: function (view) {
         Log.event(arguments.callee.name, arguments, this);
@@ -52,14 +52,14 @@ Ext.define('Demo.view.editablecell.EditableCellViewController', {
 
     /**
      * Return false to cancel editing
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.plugin.CellEditing.html#events
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.plugin.CellEditing.html#events
      */
     onBeforeEdit: function (editor, context, eOpts) {
         Log.event(arguments.callee.name, arguments, this);
     },
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.plugin.CellEditing.html#event-edit
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.plugin.CellEditing.html#event-edit
      */
     onEdit: function (editor, context, eOpts) {
         Log.event(arguments.callee.name, arguments, this);
@@ -70,12 +70,12 @@ Ext.define('Demo.view.editablecell.EditableCellViewController', {
              * Commit 'saves' the change to memory. When connected to an API
              * you can call `context.record.save();`
              * 
-             * https://docs.sencha.com/extjs/7.2.0/classic/Ext.data.Model.html
+             * https://docs.sencha.com/extjs/7.3.1/classic/Ext.data.Model.html
              */
             context.record.commit();
 
             /**
-             * https://docs.sencha.com/extjs/7.2.0/classic/Ext.window.Toast.html
+             * https://docs.sencha.com/extjs/7.3.1/classic/Ext.window.Toast.html
              */
             Ext.toast({
                 layout: 'fit', // this seems to fix a problem with auto width
@@ -88,7 +88,7 @@ Ext.define('Demo.view.editablecell.EditableCellViewController', {
     },
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.plugin.CellEditing.html#event-canceledit
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.plugin.CellEditing.html#event-canceledit
      */
     onCancelEdit: function (editor, context, eOpts) {
         Log.event(arguments.callee.name, arguments, this);
@@ -99,7 +99,7 @@ Ext.define('Demo.view.editablecell.EditableCellViewController', {
      * - Return true - Return true to commit the change to the underlying record and hide the editor
      * - Return 'false' - Return false to prevent 1) the edit from being committed to the underlying record and 2) the editor from hiding / blurring.
      * - Set context.cancel: true and return false - Set the context param's cancel property to true and returning false will 1) prevent the edit from being committed to the underlying record but will allow the edit to hide once blurred.
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.plugin.CellEditing.html#event-validateedit
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.plugin.CellEditing.html#event-validateedit
      */
     onValidateEdit: function (editor, context, eOpts) {
         Log.event(arguments.callee.name, arguments, this);

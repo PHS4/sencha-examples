@@ -1,5 +1,5 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html
+ * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html
  */
 Ext.define('Demo.view.columnmenu.ColumnMenuViewController', {
     extend: 'Ext.app.ViewController',
@@ -7,19 +7,19 @@ Ext.define('Demo.view.columnmenu.ColumnMenuViewController', {
 
     /**
      * ViewController Template Method
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewController.html#method-afterRender
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewController.html#method-afterRender
      */
     afterRender: function () {
         
         Log.event(arguments.callee.name, arguments, this);
         
         /**
-         * https://docs.sencha.com/extjs/7.2.0/classic/Ext.panel.Table.html#method-getHeaderContainer
+         * https://docs.sencha.com/extjs/7.3.1/classic/Ext.panel.Table.html#method-getHeaderContainer
          */
         var menu = this.getView().getHeaderContainer().getMenu();
 
         /**
-         * https://docs.sencha.com/extjs/7.2.0/classic/Ext.menu.Menu.html
+         * https://docs.sencha.com/extjs/7.3.1/classic/Ext.menu.Menu.html
          */
         menu.add([
             {

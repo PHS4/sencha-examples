@@ -25,7 +25,7 @@ Ext.define('Demo.view.selectionmultiselectclick.MultiSelectClickView',{
     columnLines: true,
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.selection.Rows.html
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.selection.Rows.html
      */
     selModel: {
         selType: 'rowmodel',

@@ -29,7 +29,7 @@ Ext.define('Demo.view.columnoverflow.OverflowView',{
     frame: false,
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.Panel.html#cfg-columns
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.Panel.html#cfg-columns
      */
     columns: {
         defaults: {

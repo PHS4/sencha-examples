@@ -1,5 +1,5 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.Panel.html
+ * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.Panel.html
  */
 Ext.define('Demo.view.editablerow.EditableRowView',{
     extend: 'Ext.grid.Panel',
@@ -38,7 +38,7 @@ Ext.define('Demo.view.editablerow.EditableRowView',{
 
     /**
      * Functionality to add onto a grid.
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.plugin.RowEditing.html
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.plugin.RowEditing.html
      */
     plugins: [{
         ptype: 'rowediting',
@@ -54,12 +54,12 @@ Ext.define('Demo.view.editablerow.EditableRowView',{
 
     /**
      * Define a selection as the row (record) row or a cell (single value).
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.selection.Model.html
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.selection.Model.html
      */
     selModel: 'rowmodel',
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.Panel.html#cfg-columns
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.Panel.html#cfg-columns
      */
     columns: [{
         text: 'Company',

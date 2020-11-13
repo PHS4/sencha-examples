@@ -1,6 +1,6 @@
 
 /**
- * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.Grid.html
+ * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.Grid.html
  */
 Ext.define('Demo.view.singleselectcheck.SingleSelectCheckView', {
     extend: 'Ext.grid.Grid',
@@ -27,11 +27,11 @@ Ext.define('Demo.view.singleselectcheck.SingleSelectCheckView', {
 
     columns: [
         /**
-        * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.column.Check.html
+        * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.column.Check.html
         */
         {
             /**
-             * https://docs.sencha.com/extjs/7.2.0/modern/Ext.grid.column.Check.html
+             * https://docs.sencha.com/extjs/7.3.1/modern/Ext.grid.column.Check.html
              */
             xtype: 'checkcolumn',
             text: '',

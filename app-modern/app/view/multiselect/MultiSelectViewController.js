@@ -1,5 +1,5 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/modern/Ext.app.ViewController.html
+ * https://docs.sencha.com/extjs/7.3.1/modern/Ext.app.ViewController.html
  */
 Ext.define('Demo.view.multiselect.MultiSelectViewController', {
     extend: 'Ext.app.ViewController',

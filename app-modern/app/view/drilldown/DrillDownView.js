@@ -27,7 +27,7 @@ Ext.define('Demo.view.drilldown.DrillDownView', {
 
     plugins: {
         /**
-         * https://docs.sencha.com/extjs/7.2.0/modern/Ext.pivot.plugin.DrillDown.html
+         * https://docs.sencha.com/extjs/7.3.1/modern/Ext.pivot.plugin.DrillDown.html
          */
         pivotdrilldown: true
     },

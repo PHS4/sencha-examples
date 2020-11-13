@@ -1,12 +1,12 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/classic/Ext.tab.Panel.html
+ * https://docs.sencha.com/extjs/7.3.1/classic/Ext.tab.Panel.html
  */
 Ext.define('Demo.view.main.Main', {
     extend: 'Ext.panel.Panel',
 
     requires: [
         /**
-         * https://docs.sencha.com/extjs/7.2.0/classic/Ext.plugin.Viewport.html
+         * https://docs.sencha.com/extjs/7.3.1/classic/Ext.plugin.Viewport.html
          */
         'Ext.plugin.Viewport',
         'Common.ux.Code',
@@ -38,7 +38,7 @@ Ext.define('Demo.view.main.Main', {
             xtype: 'tbfill',
         }, {
             xtype: 'tbtext',
-            html: '<h1>ExtJS Classic Grid Demos</h1>'
+            html: 'ExtJS Classic Grid Demos'
         }, {
             xtype: 'tbfill',
         }, {
@@ -52,6 +52,7 @@ Ext.define('Demo.view.main.Main', {
         dock: 'left',
         xtype: 'grid',
         frame: true,
+        shadow: true,
         itemId: 'navigation',
         title: 'Demos',
         width: 300,
@@ -59,7 +60,7 @@ Ext.define('Demo.view.main.Main', {
         collapseDirection: 'left',
 
         /**
-         * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.selection.Rows.html
+         * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.selection.Rows.html
          */
         selModel: {
             selType: 'rowmodel',
@@ -68,9 +69,8 @@ Ext.define('Demo.view.main.Main', {
 
         bind: {
             collapsed: '{navigation}',
-
             /**
-             * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.selection.Selection.html
+             * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.selection.Selection.html
              */
             selection: '{currentDemo}',
             /**
@@ -80,7 +80,7 @@ Ext.define('Demo.view.main.Main', {
         },
 
         /**
-         * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.feature.Grouping.html
+         * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.feature.Grouping.html
          */
         features: [{
             id: 'navGrouping',
@@ -88,15 +88,15 @@ Ext.define('Demo.view.main.Main', {
             startCollapsed: false,
             groupHeaderTpl: '{name:uppercase}',
             startCollapsed: true
-            // depthToIndent: 40,
         }],
 
         /**
          * Top docking a texfield to be used for filtering the navigation list.
          */
         tbar: [{
-            flex: 1,
             xtype: 'textfield',
+            ui: 'solo',
+            flex: 1,
             emptyText: 'Search...',
             listeners: {
                 change: 'filterNavigation'
@@ -111,7 +111,6 @@ Ext.define('Demo.view.main.Main', {
                 dataIndex: 'iconCls',
                 width: 60,
                 align: 'right',
-
                 /**
                  * Using a renderer to apply the iconCls value to a dom element.
                  */
@@ -122,9 +121,8 @@ Ext.define('Demo.view.main.Main', {
             {
                 dataIndex: 'title',
                 flex: 1,
-
                 /**
-                 * https://docs.sencha.com/extjs/7.2.0/classic/Ext.util.Format.html#method-uppercase
+                 * https://docs.sencha.com/extjs/7.3.1/classic/Ext.util.Format.html#method-uppercase
                  */
                 renderer: Ext.util.Format.uppercase
             }
@@ -153,8 +151,8 @@ Ext.define('Demo.view.main.Main', {
     items: [
         {
             xtype: 'container',
-            padding: 20,
             flex: 1,
+            padding: 20,
             minWidth: 500,
             layout: {
                 type: 'vbox',
@@ -174,6 +172,8 @@ Ext.define('Demo.view.main.Main', {
                     bodyPadding: '0px 10px 5px 10px',
                     margin: '0px 0px 20px 0px',
                     flex: 0,
+                    frame: true,
+                    shadow: true,
                     itemId: 'demoDescription',
                     bind: {
                         hidden: '{description}',
@@ -184,6 +184,7 @@ Ext.define('Demo.view.main.Main', {
                     xtype: 'panel',
                     itemId: 'classicDemo',
                     frame: true,
+                    shadow: true,
                     layout: 'fit',
                     flex: 4,
                     bind: { 
@@ -197,7 +198,7 @@ Ext.define('Demo.view.main.Main', {
         },
         
         /**
-         * The Source Code Panel is not a docked item since it is rearraynged 
+         * The Source Code Panel is not a docked item since it is rearranged 
          * depending on viewport width.
          */
         {
@@ -205,11 +206,9 @@ Ext.define('Demo.view.main.Main', {
             itemId: 'demoSource',
             resizable: true,
             collapsible: true,
-            
             bind: {
                 collapsed: '{source}'
             },
-
             flex: 1,
             responsiveConfig: {
                 tall: {
@@ -219,8 +218,8 @@ Ext.define('Demo.view.main.Main', {
                     collapseDirection: 'right',
                 }
             },
-
             frame: true,
+            shadow: true,
             titleRotation: 0,
             tabRotation: 0,
             tabBarHeaderPosition: 1,

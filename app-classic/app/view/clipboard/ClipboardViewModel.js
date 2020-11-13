@@ -3,23 +3,23 @@ Ext.define('Demo.view.clipboard.ClipboardViewModel', {
     alias: 'viewmodel.clipboard-clipboardgrid',
     
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewModel.html#cfg-data
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewModel.html#cfg-data
      */
     data: {},
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewModel.html#cfg-formulas
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewModel.html#cfg-formulas
      */
     formulas: {},
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewModel.html#cfg-links
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewModel.html#cfg-links
      */
     links: {},
 
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewModel.html#cfg-root
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewModel.html#cfg-root
      */
     
 });

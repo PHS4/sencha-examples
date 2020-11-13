@@ -1,10 +1,10 @@
 {
     "name": "Demo",
     "namespace": "Demo",
-    "version": "0.0.6.0",
+    "version": "1.1.0.0",
     "framework": "ext",
     "toolkit": "classic",
-    "theme": "theme-triton",
+    "theme": "theme-material",
 
     /**
      * The list of required packages (with optional versions; default is "latest").

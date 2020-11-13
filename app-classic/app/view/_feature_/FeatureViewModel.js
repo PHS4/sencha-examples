@@ -1,12 +1,12 @@
 /**
- * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewModel.html
+ * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewModel.html
  */
 Ext.define('Demo.view._feature_.FeatureViewModel', {
     extend: 'Ext.app.ViewModel',
     alias: 'viewmodel._feature_view',
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewModel.html#cfg-data
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewModel.html#cfg-data
      */
     data: {
         
@@ -16,21 +16,21 @@ Ext.define('Demo.view._feature_.FeatureViewModel', {
     },
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewModel.html#cfg-stores
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewModel.html#cfg-stores
      */
     stores: {
 
     },
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewModel.html#cfg-formulas
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewModel.html#cfg-formulas
      */
     formulas: {
 
     },
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.app.ViewModel.html#cfg-links
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.app.ViewModel.html#cfg-links
      */
     links: {
 

@@ -4,7 +4,7 @@ Ext.define('Demo.view.editablevalidation.EditableValidationViewController', {
 
     /**
      * Return false if desired to prevent/cancel editing.
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.plugin.RowEditing.html#event-beforeedit
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.plugin.RowEditing.html#event-beforeedit
      */
     onBeforeEdit: function (editor, context, eOpts) {
         Log.event(arguments.callee.name, arguments, this);
@@ -20,7 +20,7 @@ Ext.define('Demo.view.editablevalidation.EditableValidationViewController', {
     },
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.plugin.RowEditing.html#event-canceledit
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.plugin.RowEditing.html#event-canceledit
      */
     onCancelEdit: function (editor, context, eOpts) {
         Log.event(arguments.callee.name, arguments, this);
@@ -36,7 +36,7 @@ Ext.define('Demo.view.editablevalidation.EditableValidationViewController', {
     },
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.plugin.RowEditing.html#event-validateedit
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.plugin.RowEditing.html#event-validateedit
      */
     onValidateEdit: function (editor, context, eOpts) {
         Log.event(arguments.callee.name, arguments, this);
@@ -50,13 +50,13 @@ Ext.define('Demo.view.editablevalidation.EditableValidationViewController', {
     },
 
     /**
-     * https://docs.sencha.com/extjs/7.2.0/classic/Ext.grid.plugin.RowEditing.html#event-edit
+     * https://docs.sencha.com/extjs/7.3.1/classic/Ext.grid.plugin.RowEditing.html#event-edit
      */
     onEdit: function (editor, context, eOpts) {
         Log.event(arguments.callee.name, arguments, this);
 
         /**
-         * https://docs.sencha.com/extjs/7.2.0/classic/Ext.window.Toast.html
+         * https://docs.sencha.com/extjs/7.3.1/classic/Ext.window.Toast.html
          */
         Ext.toast({
             layout: 'fit',

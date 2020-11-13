@@ -4,7 +4,7 @@ Ext.define('Demo.view.editableform.EditableFormViewController', {
 
     /**
      * Listen for changes made to data in the ViewModel
-     * https://docs.sencha.com/extjs/7.2.0/modern/Ext.app.ViewController.html#cfg-bindings
+     * https://docs.sencha.com/extjs/7.3.1/modern/Ext.app.ViewController.html#cfg-bindings
      */
     bindings: {
         onSelectionChange: '{selection}'
@@ -29,7 +29,7 @@ Ext.define('Demo.view.editableform.EditableFormViewController', {
 
             /**
              * Passing true for `animate`
-             * https://docs.sencha.com/extjs/7.2.0/classic/Ext.panel.Panel.html#method-expand
+             * https://docs.sencha.com/extjs/7.3.1/classic/Ext.panel.Panel.html#method-expand
              */
             form.expand(true);
 
@@ -40,7 +40,7 @@ Ext.define('Demo.view.editableform.EditableFormViewController', {
              * 
              * If you're using an object of key value pairs, use `form.setValues(object)`
              * 
-             * https://docs.sencha.com/extjs/7.2.0/classic/Ext.form.Panel.html#method-loadRecord
+             * https://docs.sencha.com/extjs/7.3.1/classic/Ext.form.Panel.html#method-loadRecord
              */
             form.loadRecord(selection);
         }
@@ -56,7 +56,7 @@ Ext.define('Demo.view.editableform.EditableFormViewController', {
         var form = this.getView().down('form').getForm();
 
         /**
-         * https://docs.sencha.com/extjs/7.2.0/classic/Ext.data.Model.html#method-commit
+         * https://docs.sencha.com/extjs/7.3.1/classic/Ext.data.Model.html#method-commit
          */
         form.updateRecord().getRecord().commit();
     }
